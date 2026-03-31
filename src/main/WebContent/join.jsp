@@ -13,7 +13,6 @@
 <body>
 	<div class="container">
 		<h1>회원가입</h1>
-		<script type="text/javascript" src="resource/js/verify.js" defer></script>
 		<form action="JoinServlet" method="post" onsubmit="return joinCheck()">
 			<div class="form-group">
 				<label for="name">이름</label> <input type="text" name="name"
