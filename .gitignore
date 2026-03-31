@@ -1,3 +1,6 @@
 **/db.properties
 ROOT.war
 /build
+.classpath
+.project
+.settings/
