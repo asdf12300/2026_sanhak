@@ -7,7 +7,7 @@ git pull
 
 __db연결__
 ```
-아래창의 data source explorer 클릭 -> database connections -> 만든 db(NEW MYSQL 등) 더블클릭
+아래창의 data source explorer 클릭 -> database connections -> 만든 db 더블클릭
 ```
 
 __sql 위치__
