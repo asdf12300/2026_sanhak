@@ -59,6 +59,9 @@
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
   .nav-badge { margin-left: auto; background: var(--blue); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
   .nav-badge.red { background: var(--red); }
+.nav-item, .nav-item:hover, .nav-item:visited {
+  text-decoration: none !important;
+}
   .sdiv { height: 1px; background: var(--border); margin: 10px 16px; }
   .sidebar-bot { margin-top: auto; padding: 14px 10px 0; border-top: 1px solid var(--border); }
   .av-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: background .16s; }
