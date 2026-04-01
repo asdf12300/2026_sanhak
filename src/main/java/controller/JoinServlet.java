@@ -69,7 +69,7 @@ public class JoinServlet extends HttpServlet {
             return;
         }
 
-        // 5. 성공 시 success.jsp로 이동
-        response.sendRedirect("success.jsp");
+        // 5. 성공 시 join_success.jsp로 이동
+        response.sendRedirect("join_success.jsp");
     }
 }
