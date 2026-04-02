@@ -17,8 +17,6 @@
 <link rel="stylesheet" href="resource/css/app.css">
 </head>
 <body>
-
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -26,24 +24,20 @@
     </svg>
     ProjectOS
   </div>
-
   <div class="nav-section">
     <div class="nav-label">메인</div>
     <a href="index.jsp" class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
         <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-      </svg>
-      대시보드
+      </svg>대시보드
     </a>
     <a href="list" class="nav-item active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-      </svg>
-      프로젝트
+      </svg>프로젝트
     </a>
   </div>
-
   <div class="sidebar-bottom">
     <div class="user-row">
       <div class="avatar"><%= initials %></div>
@@ -57,13 +51,10 @@
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
-      로그아웃
+      </svg>로그아웃
     </button></a>
   </div>
 </aside>
-
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div>
@@ -74,12 +65,10 @@
       <a href="createProject.jsp"><button class="btn btn-primary">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        새 프로젝트
+        </svg>새 프로젝트
       </button></a>
     </div>
   </div>
-
   <div class="page-content">
     <%
       Object listObj = request.getAttribute("list");
@@ -89,7 +78,6 @@
           if (o instanceof ProjectDTO) list.add((ProjectDTO)o);
         }
       }
-
       if (!list.isEmpty()) {
     %>
     <div class="project-grid">
@@ -109,7 +97,6 @@
       </a>
       <% } %>
     </div>
-
     <%
       PagingVO p = (PagingVO) request.getAttribute("paging");
       if (p != null && p.getTotalPage() > 1) {
@@ -119,16 +106,13 @@
         <a href="list?page=<%= p.getStartPage()-1 %>"><button class="page-btn">‹</button></a>
       <% } %>
       <% for (int i = p.getStartPage(); i <= p.getEndPage(); i++) { %>
-        <a href="list?page=<%= i %>">
-          <button class="page-btn <%= (i == p.getPage()) ? "active" : "" %>"><%= i %></button>
-        </a>
+        <a href="list?page=<%= i %>"><button class="page-btn <%= (i == p.getPage()) ? "active" : "" %>"><%= i %></button></a>
       <% } %>
       <% if (p.getEndPage() < p.getTotalPage()) { %>
         <a href="list?page=<%= p.getEndPage()+1 %>"><button class="page-btn">›</button></a>
       <% } %>
     </div>
     <% } %>
-
     <% } else { %>
     <div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -139,6 +123,5 @@
     <% } %>
   </div>
 </div>
-
 </body>
 </html>

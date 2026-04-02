@@ -4,7 +4,6 @@
   String userName = (loginUser != null) ? loginUser.getName() : "게스트";
   String userId   = (loginUser != null) ? loginUser.getId()   : "";
   String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
-
   String error = (String) request.getAttribute("error");
   model.ProjectDTO dto = (model.ProjectDTO) request.getAttribute("dto");
 %>
@@ -19,8 +18,6 @@
 <link rel="stylesheet" href="resource/css/app.css">
 </head>
 <body>
-
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -28,24 +25,20 @@
     </svg>
     ProjectOS
   </div>
-
   <div class="nav-section">
     <div class="nav-label">메인</div>
     <a href="index.jsp" class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
         <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-      </svg>
-      대시보드
+      </svg>대시보드
     </a>
     <a href="list" class="nav-item active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-      </svg>
-      프로젝트
+      </svg>프로젝트
     </a>
   </div>
-
   <div class="sidebar-bottom">
     <div class="user-row">
       <div class="avatar"><%= initials %></div>
@@ -59,16 +52,13 @@
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
-      로그아웃
+      </svg>로그아웃
     </button></a>
   </div>
 </aside>
-
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <button class="topbar-back" onclick="history.back()">
+    <button class="topbar-back" onclick="location.href='list'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
@@ -84,52 +74,36 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          수정
+          </svg>수정
         </button>
       </a>
       <button class="btn btn-danger btn-sm" onclick="document.getElementById('deleteModal').classList.add('open')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
           <path d="M10 11v6"/><path d="M14 11v6"/>
-        </svg>
-        삭제
+        </svg>삭제
       </button>
     </div>
     <% } %>
   </div>
-
   <div class="page-content">
     <% if (error != null) { %>
       <div class="alert alert-danger"><%= error %></div>
     <% } else if (dto != null) { %>
-
     <div class="card">
       <div class="card-body">
         <div class="detail-meta">
-          <div class="detail-meta-item">
-            <strong>마감일</strong>&nbsp;
-            <%= dto.getDeadline() != null && !dto.getDeadline().isEmpty() ? dto.getDeadline() : "미정" %>
-          </div>
-          <div class="detail-meta-item">
-            <strong>팀장</strong>&nbsp;
-            <%= dto.getTeam_leader() != null && !dto.getTeam_leader().isEmpty() ? dto.getTeam_leader() : "-" %>
-          </div>
-          <div class="detail-meta-item">
-            <strong>등록일</strong>&nbsp;<%= dto.getFormattedCreatedAt() %>
-          </div>
+          <div class="detail-meta-item"><strong>마감일</strong>&nbsp;<%= dto.getDeadline() != null && !dto.getDeadline().isEmpty() ? dto.getDeadline() : "미정" %></div>
+          <div class="detail-meta-item"><strong>팀장</strong>&nbsp;<%= dto.getTeam_leader() != null && !dto.getTeam_leader().isEmpty() ? dto.getTeam_leader() : "-" %></div>
+          <div class="detail-meta-item"><strong>등록일</strong>&nbsp;<%= dto.getFormattedCreatedAt() %></div>
         </div>
         <div class="detail-content"><%= dto.getContent() != null ? dto.getContent() : "" %></div>
       </div>
     </div>
-
-    <!-- 삭제 확인 모달 -->
     <div class="modal-overlay" id="deleteModal">
       <div class="modal-box">
         <div class="modal-title">프로젝트 삭제</div>
-        <div class="modal-desc">
-          "<%= dto.getTitle() %>" 프로젝트를 삭제하면 복구할 수 없어요. 정말 삭제할까요?
-        </div>
+        <div class="modal-desc">"<%= dto.getTitle() %>" 프로젝트를 삭제하면 복구할 수 없어요. 정말 삭제할까요?</div>
         <div class="modal-actions">
           <button class="btn btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">취소</button>
           <form action="deleteProject" method="post" style="display:inline">
@@ -139,10 +113,8 @@
         </div>
       </div>
     </div>
-
     <% } %>
   </div>
 </div>
-
 </body>
 </html>
