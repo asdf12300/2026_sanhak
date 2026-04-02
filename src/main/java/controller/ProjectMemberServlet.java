@@ -43,6 +43,12 @@ public class ProjectMemberServlet extends HttpServlet {
         } else if ("remove".equals(action)) {
             dao.removeMember(projectId, memberId);
             msg = memberId + " 님을 팀에서 제외했습니다.";
+        } else if ("setLeader".equals(action)) {
+            if (dao.setLeader(projectId, memberId)) {
+                msg = memberId + " 님을 팀장으로 지정했습니다.";
+            } else {
+                msg = "팀장 지정에 실패했습니다.";
+            }
         } else {
             msg = "잘못된 요청입니다.";
         }
