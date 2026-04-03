@@ -1,0 +1,18 @@
+# MySQL Database Configuration Example
+# 이 파일을 복사하여 db.properties로 이름을 변경하고 본인의 정보로 수정하세요.
+
+# 사용 방법:
+# 1. 이 파일을 db.properties로 복사
+# 2. db.url의 데이터베이스 이름 변경 (sanhak → 본인 DB명)
+# 3. db.username과 db.password를 본인의 MySQL 계정 정보로 변경
+
+db.driver=com.mysql.cj.jdbc.Driver
+db.url=jdbc:mysql://localhost:3306/YOUR_DATABASE_NAME?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+db.username=YOUR_USERNAME
+db.password=YOUR_PASSWORD
+
+# Connection Pool Settings
+db.initialSize=5
+db.maxTotal=20
+db.maxIdle=10
+db.minIdle=5

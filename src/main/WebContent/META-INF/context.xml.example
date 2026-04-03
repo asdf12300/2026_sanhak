@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  이 파일을 복사하여 context.xml로 이름을 변경하고 
+  본인의 데이터베이스 정보로 수정하세요.
+  
+  사용 방법:
+  1. 이 파일을 context.xml로 복사
+  2. url의 데이터베이스 이름 변경 (teamproject → 본인 DB명)
+  3. username과 password를 본인의 MySQL 계정 정보로 변경
+-->
+<Context>
+  <Resource
+    name="jdbc/sanhak"
+    auth="Container"
+    type="javax.sql.DataSource"
+    driverClassName="com.mysql.cj.jdbc.Driver"
+    url="jdbc:mysql://localhost:3306/YOUR_DATABASE_NAME?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true"
+    username="YOUR_USERNAME"
+    password="YOUR_PASSWORD"
+    maxTotal="20"
+    maxIdle="10"
+    minIdle="2"
+    maxWaitMillis="5000"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    testWhileIdle="true"
+  />
+</Context>
