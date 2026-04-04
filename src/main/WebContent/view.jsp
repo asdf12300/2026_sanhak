@@ -1,5 +1,6 @@
+<%@ page import="model.ProjectMemberDTO" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, model.LoginDTO, model.*" %>
+<%@ page import="java.util.List, model.ProjectMemberDTO, model.*" %>
 <%
   model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
   String userName = (loginUser != null) ? loginUser.getName() : "게스트";
@@ -8,10 +9,10 @@
   String error = (String) request.getAttribute("error");
   model.ProjectDTO dto = (model.ProjectDTO) request.getAttribute("dto");
 
-  List<LoginDTO> members = null;
+  List<ProjectMemberDTO> members = null;
   if (dto != null) {
       ProjectMemberDAO memberDAO = new ProjectMemberDAO();
-      members = memberDAO.getMembersByProject(dto.getId());
+      members = memberDAO.getMembersByProject(dto.getId());	
   }
   String memberMsg = request.getParameter("msg");
 %>
@@ -142,42 +143,43 @@
               </tr>
             </thead>
             <tbody>
-            <% for (LoginDTO m : members) { 
-                 boolean isLeader = (dto.getTeam_leader() != null && dto.getTeam_leader().equals(m.getId()));
-                 boolean isMe = m.getId().equals(userId);
-            %>
-              <tr style="border-bottom:1px solid #f1f5f9">
-                <td style="padding:10px 8px">
-                  <%= m.getName() %>
-                  <% if (isLeader) { %>
-                    <span style="display:inline-block;padding:2px 6px;background:#e2e8f0;color:#475569;font-size:11px;border-radius:4px;margin-left:4px">팀장</span>
-                  <% } %>
-                  <% if (isMe) { %>
-                    <span style="display:inline-block;padding:2px 6px;background:#e2e8f0;color:#475569;font-size:11px;border-radius:4px;margin-left:4px">나</span>
-                  <% } %>
-                </td>
-                <td style="padding:10px 8px;color:#64748b"><%= m.getId() %></td>
-                <td style="padding:10px 8px;text-align:right;display:flex;gap:6px;justify-content:flex-end">
-                  <% if (!isLeader) { %>
-                  <form method="post" action="projectMember" style="display:inline">
-                    <input type="hidden" name="action" value="setLeader">
-                    <input type="hidden" name="projectId" value="<%= dto.getId() %>">
-                    <input type="hidden" name="memberId" value="<%= m.getId() %>">
-                    <button type="submit" class="btn btn-secondary btn-sm" style="font-size:12px;padding:4px 10px">팀장 지정</button>
-                  </form>
-                  <% } %>
-                  <% if (!isMe) { %>
-                  <form method="post" action="projectMember" style="display:inline"
-                        onsubmit="return confirm('<%= m.getName() %> 님을 팀에서 제외하시겠습니까?')">
-                    <input type="hidden" name="action" value="remove">
-                    <input type="hidden" name="projectId" value="<%= dto.getId() %>">
-                    <input type="hidden" name="memberId" value="<%= m.getId() %>">
-                    <button type="submit" class="btn btn-danger btn-sm" style="font-size:12px;padding:4px 10px">제외</button>
-                  </form>
-                  <% } %>
-                </td>
-              </tr>
-            <% } %>
+            <% for (ProjectMemberDTO m : members) { 
+     boolean isLeader = (dto.getTeam_leader() != null && dto.getTeam_leader().equals(m.getMemberId()));
+     boolean isMe = m.getMemberId().equals(userId);
+%>
+  <tr style="border-bottom:1px solid #f1f5f9">
+    <td style="padding:10px 8px">
+      <%= m.getMemberId() %>
+      <% if (isLeader) { %>
+        <span style="display:inline-block;padding:2px 6px;background:#e2e8f0;color:#475569;font-size:11px;border-radius:4px;margin-left:4px">팀장</span>
+      <% } %>
+      <% if (isMe) { %>
+        <span style="display:inline-block;padding:2px 6px;background:#e2e8f0;color:#475569;font-size:11px;border-radius:4px;margin-left:4px">나</span>
+      <% } %>
+    </td>
+    <td style="padding:10px 8px;color:#64748b"><%= m.getMemberId() %></td>
+    <td style="padding:10px 8px;text-align:right;display:flex;gap:6px;justify-content:flex-end">
+      <% if (!isLeader) { %>
+      <form method="post" action="projectMember" style="display:inline">
+        <input type="hidden" name="action" value="setLeader">
+        <input type="hidden" name="projectId" value="<%= dto.getId() %>">
+        <input type="hidden" name="memberId" value="<%= m.getMemberId() %>">
+        <button type="submit" class="btn btn-secondary btn-sm" style="font-size:12px;padding:4px 10px">팀장 지정</button>
+      </form>
+      <% } %>
+
+      <% if (!isMe) { %>
+      <form method="post" action="projectMember" style="display:inline"
+            onsubmit="return confirm('<%= m.getMemberId() %> 님을 팀에서 제외하시겠습니까?')">
+        <input type="hidden" name="action" value="remove">
+        <input type="hidden" name="projectId" value="<%= dto.getId() %>">
+        <input type="hidden" name="memberId" value="<%= m.getMemberId() %>">
+        <button type="submit" class="btn btn-danger btn-sm" style="font-size:12px;padding:4px 10px">제외</button>
+      </form>
+      <% } %>
+    </td>
+  </tr>
+<% } %>
             </tbody>
           </table>
         <% } %>
