@@ -1,10 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.LoginDTO, model.*" %>
+<%@ include file="session.jsp" %>
 <%
-  model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
-  String userName = (loginUser != null) ? loginUser.getName() : "게스트";
-  String userId   = (loginUser != null) ? loginUser.getId()   : "";
-  String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
   String error = (String) request.getAttribute("error");
   model.ProjectDTO dto = (model.ProjectDTO) request.getAttribute("dto");
 
@@ -22,9 +19,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><%= dto != null ? dto.getTitle() : "프로젝트 상세" %> — ProjectOS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resource/css/index.css"> 
 <link rel="stylesheet" href="resource/css/app.css">
-<link rel="stylesheet" href="resource/css/index.css">
 </head>
 <body>
 <jsp:include page="sidebar.jsp"/>

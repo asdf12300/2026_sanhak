@@ -33,6 +33,7 @@ CREATE TABLE project_member (
     FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE
 );
 
+TRUNCATE TABLE board;
 select * from project_member;
 select * from member;
 select * from board;
