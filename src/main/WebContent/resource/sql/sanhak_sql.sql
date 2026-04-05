@@ -6,9 +6,9 @@ email varchar(30) NOT NULL,
 tel varchar(15) NOT NULL
 )
 
+ALTER TABLE member DROP COLUMN tel;
 desc member;
-ALTER TABLE member
-ADD PRIMARY KEY (id);
+ALTER TABLE member ADD PRIMARY KEY (id);
 
 INSERT INTO member VALUES ('홍길동', 'hong123', '1234', 'hong@email.com', '010-1234-5678');
 

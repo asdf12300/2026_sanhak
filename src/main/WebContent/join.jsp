@@ -35,11 +35,6 @@
 					id="email" placeholder="이메일을 입력하세요.">
 			</div>
 			<div class="form-group">
-				<label for="tel">휴대폰번호</label> <input type="tel" name="tel" id="tel"
-					placeholder="휴대폰번호를 입력하세요.">
-				<button type="button" id="verify">인증하기</button>
-			</div>
-			<div class="form-group">
 				<input type="submit" value="회원가입">
 			</div>
 		</form>
