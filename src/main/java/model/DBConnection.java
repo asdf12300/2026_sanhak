@@ -12,7 +12,7 @@ public class DBConnection {
     static {
         try {
             Context ctx = new InitialContext();
-            ds = (DataSource) ctx.lookup("java:comp/env/jdbc/sanhak");
+            ds = (DataSource) ctx.lookup("java:comp/env/jdbc/sanhak2");
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("DataSource 초기화 실패: " + e.getMessage());

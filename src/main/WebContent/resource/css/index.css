@@ -32,7 +32,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: 13px; min-height: 100vh; }
 
-  /* SIDEBAR */
+/* SIDEBAR */
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0; width: 224px;
     background: var(--surface); border-right: 1px solid var(--border);
@@ -40,6 +40,7 @@
     z-index: 100; box-shadow: var(--shadow-sm);
   }
   .logo {
+   text-decoration: none;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 19px; font-weight: 800; color: var(--blue);
     padding: 0 22px 26px; letter-spacing: -.5px;
@@ -69,6 +70,7 @@
   .av { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #60a5fa); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,.25); }
   .av-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .av-role { font-size: 11px; color: var(--muted); }
+
 
   /* MAIN */
   .main { margin-left: 224px; padding: 28px 28px 48px; min-height: 100vh; }

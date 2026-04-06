@@ -1,0 +1,38 @@
+@charset "UTF-8";
+ /* SIDEBAR */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 224px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 24px 0 20px;
+    z-index: 100; box-shadow: var(--shadow-sm);
+  }
+  .logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 19px; font-weight: 800; color: var(--blue);
+    padding: 0 22px 26px; letter-spacing: -.5px;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--blue), #60a5fa);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .logo-icon svg { width: 16px; height: 16px; stroke: #fff; }
+  .nav-sec { padding: 0 10px 6px; }
+  .nav-label { font-size: 10px; font-weight: 700; letter-spacing: 1.4px; color: var(--muted2); text-transform: uppercase; padding: 2px 12px 8px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: var(--radius-sm); color: var(--muted); cursor: pointer; transition: all .16s; font-size: 13px; font-weight: 500; }
+  .nav-item:hover { background: var(--blue-light); color: var(--blue); }
+  .nav-item.active { background: var(--blue-light); color: var(--blue); font-weight: 600; }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; background: var(--blue); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+  .nav-badge.red { background: var(--red); }
+.nav-item, .nav-item:hover, .nav-item:visited {
+  text-decoration: none !important;
+}
+  .sdiv { height: 1px; background: var(--border); margin: 10px 16px; }
+  .sidebar-bot { margin-top: auto; padding: 14px 10px 0; border-top: 1px solid var(--border); }
+  .av-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: background .16s; }
+  .av-row:hover { background: var(--blue-light); }
+  .av { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #60a5fa); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,.25); }
+  .av-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .av-role { font-size: 11px; color: var(--muted); }

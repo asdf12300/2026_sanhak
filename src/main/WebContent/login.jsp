@@ -5,6 +5,9 @@
 <meta charset="UTF-8">
 <title>로그인</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resource/css/index.css">
 <style>
     body {
         background-color: #f7f9fc;
@@ -30,7 +33,7 @@
 </style>
 </head>
 <body>
-
+<jsp:include page="sidebar.jsp"/>
 <div class="login-card">
     <h2>로그인</h2>
 
