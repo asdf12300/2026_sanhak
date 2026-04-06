@@ -8,9 +8,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>회원가입</title>
 <link rel="stylesheet" href="resource/css/join.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resource/css/index.css">
 <script type="text/javascript" src="resource/js/join.js" defer></script>
 </head>
 <body>
+<jsp:include page="sidebar.jsp"/>
 	<div class="container">
 		<h1>회원가입</h1>
 		<form action="JoinServlet" method="post" onsubmit="return joinCheck()">
@@ -33,11 +37,6 @@
 			<div class="form-group">
 				<label for="email">이메일</label> <input type="email" name="email"
 					id="email" placeholder="이메일을 입력하세요.">
-			</div>
-			<div class="form-group">
-				<label for="tel">휴대폰번호</label> <input type="tel" name="tel" id="tel"
-					placeholder="휴대폰번호를 입력하세요.">
-				<button type="button" id="verify">인증하기</button>
 			</div>
 			<div class="form-group">
 				<input type="submit" value="회원가입">
