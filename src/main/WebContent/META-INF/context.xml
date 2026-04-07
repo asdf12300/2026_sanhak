@@ -7,7 +7,7 @@
     driverClassName="com.mysql.cj.jdbc.Driver"
     url="jdbc:mysql://localhost:3306/sanhak?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;allowPublicKeyRetrieval=true"
     username="root"
-    password="btsjin7@34"
+    password="Sohui0407!"
     maxTotal="20"
     maxIdle="10"
     minIdle="2"

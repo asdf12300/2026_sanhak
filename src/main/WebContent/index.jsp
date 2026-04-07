@@ -5,25 +5,21 @@
   String userName = (loginUser != null) ? loginUser.getName() : "게스트";
   String userId   = (loginUser != null) ? loginUser.getId()   : "";
   String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
-  
-  // 프로젝트 정보 가져오기
+
   String projectIdParam = request.getParameter("projectId");
   ProjectDTO currentProject = null;
   boolean isLeader = false;
-  
+
   if (projectIdParam != null && !projectIdParam.isEmpty()) {
     try {
       int projectId = Integer.parseInt(projectIdParam);
       ProjectDAO projectDAO = new ProjectDAO();
       currentProject = projectDAO.getById(projectId);
-      
       if (currentProject != null && loginUser != null) {
-        isLeader = currentProject.getTeam_leader() != null && 
+        isLeader = currentProject.getTeam_leader() != null &&
                    currentProject.getTeam_leader().equals(loginUser.getId());
       }
-    } catch (Exception e) {
-      // 프로젝트 정보를 가져올 수 없는 경우 무시
-    }
+    } catch (Exception e) { }
   }
 %>
 <!DOCTYPE html>
@@ -40,7 +36,6 @@
 <jsp:include page="sidebar.jsp"/>
 <main class="main">
   <% if (currentProject != null) { %>
-  <!-- 프로젝트 헤더 -->
   <div style="padding:20px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
     <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin:0;line-height:1.2;letter-spacing:-0.5px;white-space:nowrap"><%= currentProject.getTitle() %></h1>
     <% if (currentProject.getContent() != null && !currentProject.getContent().isEmpty()) { %>

@@ -1,28 +1,23 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="session.jsp" %>
 <%
-    // 현재 URL 경로 가져오기
     String path = request.getRequestURI();
     String activeDashboard = path.endsWith("index.jsp") ? "active" : "";
     String activeList      = path.endsWith("list") || path.endsWith("list.jsp") ? "active" : "";
     String activeCalendar  = path.endsWith("calendar.jsp") ? "active" : "";
     String activeTeam      = path.endsWith("team.jsp") ? "active" : "";
-    
-    // 현재 프로젝트 ID 가져오기
+
     Integer currentProjectId = (Integer) session.getAttribute("currentProjectId");
     String projectParam = request.getParameter("projectId");
     if (projectParam != null && !projectParam.isEmpty()) {
         try {
             currentProjectId = Integer.parseInt(projectParam);
-        } catch (NumberFormatException e) {
-            // 무시
-        }
+        } catch (NumberFormatException e) { }
     }
     String projectQuery = (currentProjectId != null) ? "?projectId=" + currentProjectId : "";
 %>
 
 <aside class="sidebar">
-  <!-- 로고 -->
   <a href="./index.jsp<%= projectQuery %>" class="logo">
     <div class="logo">
       <div class="logo-icon">
@@ -34,10 +29,8 @@
     </div>
   </a>
 
-  <!-- 메인 네비게이션 -->
   <div class="nav-sec">
     <div class="nav-label">메인</div>
-
     <a href="./index.jsp<%= projectQuery %>" class="nav-item <%= activeDashboard %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7"/>
@@ -47,7 +40,6 @@
       </svg>
       대시보드
     </a>
-
     <div class="nav-item <%= activeList %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -57,7 +49,6 @@
       </svg>
       팀원 관리 <span style="font-size:10px;color:var(--muted);margin-left:4px">(개발 예정)</span>
     </div>
-
     <div class="nav-item <%= activeCalendar %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -67,14 +58,12 @@
       </svg>
       업무 관리
     </div>
-
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
       </svg>
       팀 채팅 <span class="nav-badge red">2</span>
     </div>
-
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
@@ -84,10 +73,8 @@
     </div>
   </div>
 
-  <!-- 설정 -->
   <div class="nav-sec">
     <div class="nav-label">설정</div>
-
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="3"/>
@@ -97,7 +84,6 @@
     </div>
   </div>
 
-  <!-- 사용자 영역 -->
   <div class="sidebar-bot">
     <div class="av-row">
       <div class="av"><%= initials %></div>
@@ -106,7 +92,6 @@
         <div class="av-role"><%= userId %></div>
       </div>
     </div>
-
     <% if (loginUser != null) { %>
       <a href="projects.jsp" style="text-decoration:none">
         <div class="nav-item" style="margin-top:8px;color:#2563eb">
