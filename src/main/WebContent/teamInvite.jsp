@@ -111,21 +111,18 @@
         .status-accepted { color: #22a745; font-weight: bold; }
         .status-rejected { color: #e74c3c; font-weight: bold; }
     </style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="resource/css/index.css">
 </head>
 <body>
-<jsp:include page="sidebar.jsp"/>
+
 <%
     Object projectIdObj = request.getAttribute("projectId");
     int projectId = 1;
     if (projectIdObj != null) {
-        projectId = Integer.parseInt(projectIdObj.toString());
+        projectId = (Integer) projectIdObj;
     }
 
-    String successMsg = request.getParameter("successMsg");
-    String errorMsg = request.getParameter("errorMsg");
+    String successMsg = (String) request.getAttribute("successMsg");
+    String errorMsg = (String) request.getAttribute("errorMsg");
 
     List<ProjectMemberDTO> memberList = (List<ProjectMemberDTO>) request.getAttribute("memberList");
 %>
@@ -148,7 +145,7 @@
     <form class="invite-form" action="<%= request.getContextPath() %>/inviteMembers" method="post">
         <input type="hidden" name="projectId" value="<%= projectId %>">
         <input type="text" name="memberId" placeholder="초대할 회원 ID를 입력하세요" required>
-       <button type="submit">초대하기</button>
+        <button type="submit">초대하기</button>
     </form>
 
     <div class="sub-title">현재 팀원 / 초대 목록</div>

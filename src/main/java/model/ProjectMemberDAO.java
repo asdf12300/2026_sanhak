@@ -38,8 +38,8 @@ public class ProjectMemberDAO {
     }
 
     // 프로젝트 팀원 목록 조회
-    public List<ProjectMemberDTO> getMembersByProject(int projectId) {
-        List<ProjectMemberDTO> list = new ArrayList<ProjectMemberDTO>();
+    public List<LoginDTO> getMembersByProject(int projectId) {
+        List<LoginDTO> list = new ArrayList<>();
         String sql = "SELECT m.id, m.name FROM member m "
                    + "JOIN project_member pm ON m.id = pm.member_id "
                    + "WHERE pm.project_id = ?";
@@ -48,33 +48,9 @@ public class ProjectMemberDAO {
             ps.setInt(1, projectId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                	ProjectMemberDTO dto = new ProjectMemberDTO();
-                	dto.setMemberId(rs.getString("id"));
-                	dto.setName(rs.getString("name"));  // ProjectMemberDTO의 실제 setter명 확인 필요
-                	list.add(dto);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-    
- // 내가 받은 초대 목록 조회
-    public List<ProjectMemberDTO> getInvitationList(String memberId) {
-        List<ProjectMemberDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM project_member WHERE member_id = ? AND status = 'invited'";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, memberId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    ProjectMemberDTO dto = new ProjectMemberDTO();
-                    dto.setPmNo(rs.getInt("id"));
-                    dto.setProjectId(rs.getInt("project_id"));
-                    dto.setMemberId(rs.getString("member_id"));
-                    dto.setStatus(rs.getString("status"));
-                    dto.setInvitedAt(rs.getString("invited_at"));
+                    LoginDTO dto = new LoginDTO();
+                    dto.setId(rs.getString("id"));
+                    dto.setName(rs.getString("name"));
                     list.add(dto);
                 }
             }

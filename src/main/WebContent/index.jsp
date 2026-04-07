@@ -1,9 +1,26 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="model.*" %>
 <%
   model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
   String userName = (loginUser != null) ? loginUser.getName() : "게스트";
   String userId   = (loginUser != null) ? loginUser.getId()   : "";
   String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
+
+  String projectIdParam = request.getParameter("projectId");
+  ProjectDTO currentProject = null;
+  boolean isLeader = false;
+
+  if (projectIdParam != null && !projectIdParam.isEmpty()) {
+    try {
+      int projectId = Integer.parseInt(projectIdParam);
+      ProjectDAO projectDAO = new ProjectDAO();
+      currentProject = projectDAO.getById(projectId);
+      if (currentProject != null && loginUser != null) {
+        isLeader = currentProject.getTeam_leader() != null &&
+                   currentProject.getTeam_leader().equals(loginUser.getId());
+      }
+    } catch (Exception e) { }
+  }
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -18,17 +35,26 @@
 <body>
 <jsp:include page="sidebar.jsp"/>
 <main class="main">
-  <div class="topbar">
-    <div>
-      <div class="page-title">대시보드</div>
-      <div class="page-sub">ProjectOS v2.4 &nbsp;·&nbsp; 스프린트 12 진행 중</div>
-    </div>
-    <div class="topbar-r">
-      <div class="notif-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot"></div></div>
-      <button class="btn btn-g"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>검색</button>
-      <button class="btn btn-p"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>새 업무</button>
-    </div>
+  <% if (currentProject != null) { %>
+  <div style="padding:20px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin:0;line-height:1.2;letter-spacing:-0.5px;white-space:nowrap"><%= currentProject.getTitle() %></h1>
+    <% if (currentProject.getContent() != null && !currentProject.getContent().isEmpty()) { %>
+    <span style="font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px"><%= currentProject.getContent() %></span>
+    <% } %>
+    <span style="color:var(--border)">·</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      마감일: <%= (currentProject.getDeadline() != null && !currentProject.getDeadline().isEmpty()) ? currentProject.getDeadline() : "미정" %>
+    </span>
+    <span style="color:var(--border)">·</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;border-radius:12px;<%= isLeader ? "background:var(--blue-soft);color:var(--blue);font-weight:600" : "background:var(--surface2);color:var(--muted)" %>">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <%= isLeader ? "팀장" : "팀원" %>
+    </span>
   </div>
+  <div style="height:1px;background:var(--border);margin:0 0 0 0"></div>
+  <% } %>
+  
   <div class="grid" style="margin-bottom:16px">
     <div class="card c3">
       <div class="card-hd"><div class="card-t">프로젝트 진행률</div><span class="badge b-tl">On Track</span></div>

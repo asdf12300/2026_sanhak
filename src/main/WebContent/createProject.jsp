@@ -1,126 +1,77 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%
+  model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
+  if (loginUser == null) {
+    response.sendRedirect("login.jsp");
+    return;
+  }
+  String userName = loginUser.getName();
+  String userId = loginUser.getId();
+  String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
+%>
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>프로젝트 생성</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>새 프로젝트 만들기 — ProjectOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resource/css/index.css">
+<link rel="stylesheet" href="resource/css/app.css">
 </head>
-<body class="container py-4">
-  <h2 class="mb-4">프로젝트 생성</h2>
+<body>
 
-  <!-- 프로젝트 생성 폼 -->
-  <form action="writeProcess" method="post">
-    <div class="mb-3">
-      <label class="form-label">프로젝트명</label>
-      <input type="text" name="title" class="form-control" required>
+<div class="main" style="margin-left: 0;">
+  <!-- Topbar -->
+  <div class="topbar">
+    <a href="projects.jsp" class="topbar-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
+    </a>
+    <div style="flex: 1;">
+      <div class="topbar-title">새 프로젝트 만들기</div>
+      <div class="topbar-sub">프로젝트 정보를 입력하고 팀원을 초대하세요</div>
     </div>
+  </div>
 
-    <div class="mb-3">
-      <label class="form-label">프로젝트 설명</label>
-      <textarea name="content" class="form-control" rows="10" required></textarea>
-    </div>
+  <!-- Page Content -->
+  <div class="page-content">
+    <div style="max-width: 720px; margin: 0 auto;">
+      <div class="card">
+        <div class="card-body">
+          <!-- 프로젝트 생성 폼 -->
+          <form action="writeProcess" method="post">
+            <div class="form-group">
+              <label class="form-label">프로젝트명</label>
+              <input type="text" name="title" class="form-control" placeholder="예: 웹 개발 프로젝트" required>
+            </div>
 
-    <div class="mb-3">
-      <label>프로젝트 기한</label>
-      <input type="date" name="deadline" class="form-control">
-    </div>
+            <div class="form-group">
+              <label class="form-label">프로젝트 설명</label>
+              <textarea name="content" class="form-control" rows="8" placeholder="프로젝트에 대한 설명을 입력하세요" required></textarea>
+            </div>
 
-    <button type="submit" class="btn btn-primary">등록</button>
-    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#inviteModal">
-      팀원 초대
-    </button>
-  </form>
+            <div class="form-group">
+              <label class="form-label">프로젝트 마감일</label>
+              <input type="date" name="deadline" class="form-control">
+            </div>
 
-  <!-- 팀원 초대 모달 -->
-  <div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">팀원 초대</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <!-- 검색 -->
-          <input type="text" id="searchInput" placeholder="회원 이름 검색" class="form-control mb-2">
-          <button type="button" id="searchBtn" class="btn btn-outline-primary mb-3">검색</button>
-          <div id="searchResults"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="sendInviteBtn">초대 보내기</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px;">
+              <a href="projects.jsp" style="text-decoration: none;">
+                <button type="button" class="btn btn-secondary">취소</button>
+              </a>
+              <button type="submit" class="btn btn-primary">프로젝트 생성</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
- <script>
-  const contextPath = '<%= request.getContextPath() %>';
 
-  // 회원 검색
-  document.getElementById("searchBtn").addEventListener("click", function() {
-    const keyword = document.getElementById("searchInput").value.trim();
-    if(!keyword){
-      alert("검색어를 입력하세요.");
-      return;
-    }
-
-    fetch(contextPath + '/searchMembers?keyword=' + encodeURIComponent(keyword))
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById("searchResults");
-        container.innerHTML = "";
-
-        if(data.length === 0){
-          container.innerHTML = "<p>검색 결과가 없습니다.</p>";
-          return;
-        }
-
-        data.forEach(m => {
-        	  const div = document.createElement("div");
-        	  div.classList.add("form-check");
-        	  div.innerHTML = 
-        	    '<input class="form-check-input member-checkbox" type="checkbox" value="' + m.id + '" id="member' + m.id + '">' +
-        	    '<span style="margin-left:8px;">' + m.name + '</span>';
-        	  container.appendChild(div);
-        	});
-      })
-      .catch(err => {
-        alert("회원 검색 중 오류가 발생했습니다.");
-      });
-  });
-
-  // 초대 버튼 클릭
-  document.getElementById("sendInviteBtn").addEventListener("click", function() {
-    const checked = Array.from(document.querySelectorAll(".member-checkbox:checked")).map(cb => cb.value);
-    if(checked.length === 0){
-      alert("팀원을 선택해주세요.");
-      return;
-    }
-
-    fetch(contextPath + '/inviteMembers', {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({memberIds: checked})
-    })
-    .then(res => res.json())
-    .then(data => {
-      if(data.success){
-        alert("팀원 초대가 완료되었습니다.");
-        const modal = bootstrap.Modal.getInstance(document.getElementById('inviteModal'));
-        modal.hide();
-        document.getElementById("searchResults").innerHTML = "";
-        document.getElementById("searchInput").value = "";
-      } else {
-        alert("초대 실패: " + data.message);
-      }
-    })
-    .catch(err => {
-      alert("초대 중 오류가 발생했습니다.");
-    });
-  });
-</script>
 </body>
 </html>

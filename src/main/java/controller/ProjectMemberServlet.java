@@ -22,7 +22,7 @@ public class ProjectMemberServlet extends HttpServlet {
         String action       = req.getParameter("action");
         String projectIdStr = req.getParameter("projectId");
         String memberId     = req.getParameter("memberId");
-        
+
         if (projectIdStr == null || memberId == null || action == null) {
             resp.sendRedirect("list");
             return;

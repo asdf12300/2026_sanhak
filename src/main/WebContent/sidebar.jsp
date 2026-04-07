@@ -1,19 +1,24 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="session.jsp" %>
-
 <%
-    // 현재 URL 경로 가져오기
-    String path = request.getRequestURI(); // 예: /ProjectOS/list.jsp
+    String path = request.getRequestURI();
     String activeDashboard = path.endsWith("index.jsp") ? "active" : "";
     String activeList      = path.endsWith("list") || path.endsWith("list.jsp") ? "active" : "";
     String activeCalendar  = path.endsWith("calendar.jsp") ? "active" : "";
     String activeTeam      = path.endsWith("team.jsp") ? "active" : "";
+
+    Integer currentProjectId = (Integer) session.getAttribute("currentProjectId");
+    String projectParam = request.getParameter("projectId");
+    if (projectParam != null && !projectParam.isEmpty()) {
+        try {
+            currentProjectId = Integer.parseInt(projectParam);
+        } catch (NumberFormatException e) { }
+    }
+    String projectQuery = (currentProjectId != null) ? "?projectId=" + currentProjectId : "";
 %>
 
 <aside class="sidebar">
-  <!-- 로고 -->
-  <a href="./index.jsp" class="logo">
+  <a href="./index.jsp<%= projectQuery %>" class="logo">
     <div class="logo">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5">
@@ -24,70 +29,50 @@
     </div>
   </a>
 
-  <!-- 메인 네비게이션 -->
   <div class="nav-sec">
     <div class="nav-label">메인</div>
-
-    <a href="./list" class="nav-item <%= activeList %>">
+    <a href="./index.jsp<%= projectQuery %>" class="nav-item <%= activeDashboard %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 11l3 3L22 4"/>
-        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
       </svg>
-      프로젝트
+      대시보드
     </a>
-
-    <div class="nav-item <%= activeCalendar %>">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      캘린더
-    </div>
-
-    <div class="nav-item <%= activeTeam %>">
+    <div class="nav-item <%= activeList %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
         <path d="M23 21v-2a4 4 0 00-3-3.87"/>
         <path d="M16 3.13a4 4 0 010 7.75"/>
       </svg>
-      팀 멤버
+      팀원 관리 <span style="font-size:10px;color:var(--muted);margin-left:4px">(개발 예정)</span>
     </div>
-    
-    <a href="<%= request.getContextPath() %>/inviteMembers" class="nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="8.5" cy="7" r="4"/>
-        <path d="M20 8v6"/>
-        <path d="M17 11h6"/>
-    </svg>
-       팀원 초대
-    </a>
-   <a href="<%= request.getContextPath() %>/inviteMembers?type=received" class="nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="8.5" cy="7" r="4"/>
-        <path d="M20 8v6"/>
-        <path d="M17 11h6"/>
-    </svg>
-       초대 목록
-    </a>
-    
-  </div>
-
-  <!-- 협업 도구 -->
-  <div class="nav-sec">
-    <div class="nav-label">협업 도구</div>
-
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      업무 관리
+    </div>
+    <a href="calendar.jsp" class="nav-item" <%= activeCalendar %>>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      일정 관리
+      </a>
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
       </svg>
       팀 채팅 <span class="nav-badge red">2</span>
     </div>
-
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
@@ -95,7 +80,10 @@
       </svg>
       파일 공유
     </div>
+  </div>
 
+  <div class="nav-sec">
+    <div class="nav-label">설정</div>
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="3"/>
@@ -105,7 +93,6 @@
     </div>
   </div>
 
-  <!-- 사용자 영역 -->
   <div class="sidebar-bot">
     <div class="av-row">
       <div class="av"><%= initials %></div>
@@ -114,8 +101,16 @@
         <div class="av-role"><%= userId %></div>
       </div>
     </div>
-
     <% if (loginUser != null) { %>
+      <a href="projects.jsp" style="text-decoration:none">
+        <div class="nav-item" style="margin-top:8px;color:#2563eb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          프로젝트 목록
+        </div>
+      </a>
       <a href="logout" style="text-decoration:none">
         <div class="nav-item" style="margin-top:8px;color:#ef4444">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
