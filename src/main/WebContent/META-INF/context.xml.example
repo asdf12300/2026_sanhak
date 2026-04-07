@@ -5,14 +5,15 @@
     auth="Container"
     type="javax.sql.DataSource"
     driverClassName="com.mysql.cj.jdbc.Driver"
-    url="jdbc:mysql://localhost:3306/sanhak?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;allowPublicKeyRetrieval=true"
-    username="root"
-    password="Sohui0407!"
+    url="jdbc:mysql://localhost:3306/YOUR_DATABASE_NAME?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true"
+    username="YOUR_USERNAME"
+    password="YOUR_PASSWORD"
     maxTotal="20"
     maxIdle="10"
     minIdle="2"
     maxWaitMillis="5000"
     validationQuery="SELECT 1"
     testOnBorrow="true"
+    testWhileIdle="true"
   />
 </Context>

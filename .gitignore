@@ -4,6 +4,9 @@
 !**/db.properties.example
 !**/context.xml.example
 
+# Kiro 개인 작업 공간
+.kiro/
+
 # 빌드 결과물
 ROOT.war
 /build
