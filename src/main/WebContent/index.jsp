@@ -1,9 +1,30 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="model.*" %>
 <%
   model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
   String userName = (loginUser != null) ? loginUser.getName() : "게스트";
   String userId   = (loginUser != null) ? loginUser.getId()   : "";
   String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
+  
+  // 프로젝트 정보 가져오기
+  String projectIdParam = request.getParameter("projectId");
+  ProjectDTO currentProject = null;
+  boolean isLeader = false;
+  
+  if (projectIdParam != null && !projectIdParam.isEmpty()) {
+    try {
+      int projectId = Integer.parseInt(projectIdParam);
+      ProjectDAO projectDAO = new ProjectDAO();
+      currentProject = projectDAO.getById(projectId);
+      
+      if (currentProject != null && loginUser != null) {
+        isLeader = currentProject.getTeam_leader() != null && 
+                   currentProject.getTeam_leader().equals(loginUser.getId());
+      }
+    } catch (Exception e) {
+      // 프로젝트 정보를 가져올 수 없는 경우 무시
+    }
+  }
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -16,50 +37,29 @@
 <link rel="stylesheet" href="resource/css/index.css">
 </head>
 <body>
-<aside class="sidebar">
-<a href="./index.jsp" class="logo">
-  <div class="logo"><div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>ProjectOS</div>
-</a>
-  <div class="nav-sec">
-    <div class="nav-label">메인</div>
-    <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>대시보드</div>
-    <a href="./list" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>프로젝트</a>
-    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>캘린더</div>
-    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>팀 멤버</div>
-  </div>
-  <div class="sdiv"></div>
-  <div class="nav-sec">
-    <div class="nav-label">협업 도구</div>
-    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>팀 채팅 <span class="nav-badge red">2</span></div>
-    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>파일 공유</div>
-    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>설정</div>
-  </div>
-  <div class="sidebar-bot">
-    <div class="av-row">
-      <div class="av"><%= initials %></div>
-      <div><div class="av-name"><%= userName %></div><div class="av-role"><%= userId %></div></div>
-    </div>
-    <a href="logout" style="text-decoration:none">
-      <div class="nav-item" style="margin-top:8px;color:#ef4444">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        로그아웃
-      </div>
-    </a>
-  </div>
-</aside>
+<jsp:include page="sidebar.jsp"/>
 <main class="main">
-  <div class="topbar">
-    <div>
-      <div class="page-title">대시보드</div>
-      <div class="page-sub">ProjectOS v2.4 &nbsp;·&nbsp; 스프린트 12 진행 중</div>
-    </div>
-    <div class="topbar-r">
-      <div class="notif-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot"></div></div>
-      <button class="btn btn-g"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>검색</button>
-      <button class="btn btn-g"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>새 업무</button>
-      <button class="btn btn-p" onclick="location.href='logout'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>로그아웃</button>
-    </div>
+  <% if (currentProject != null) { %>
+  <!-- 프로젝트 헤더 -->
+  <div style="padding:20px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin:0;line-height:1.2;letter-spacing:-0.5px;white-space:nowrap"><%= currentProject.getTitle() %></h1>
+    <% if (currentProject.getContent() != null && !currentProject.getContent().isEmpty()) { %>
+    <span style="font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px"><%= currentProject.getContent() %></span>
+    <% } %>
+    <span style="color:var(--border)">·</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      마감일: <%= (currentProject.getDeadline() != null && !currentProject.getDeadline().isEmpty()) ? currentProject.getDeadline() : "미정" %>
+    </span>
+    <span style="color:var(--border)">·</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;border-radius:12px;<%= isLeader ? "background:var(--blue-soft);color:var(--blue);font-weight:600" : "background:var(--surface2);color:var(--muted)" %>">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <%= isLeader ? "팀장" : "팀원" %>
+    </span>
   </div>
+  <div style="height:1px;background:var(--border);margin:0 0 0 0"></div>
+  <% } %>
+  
   <div class="grid" style="margin-bottom:16px">
     <div class="card c3">
       <div class="card-hd"><div class="card-t">프로젝트 진행률</div><span class="badge b-tl">On Track</span></div>

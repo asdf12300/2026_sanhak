@@ -5,6 +5,9 @@
 <meta charset="UTF-8">
 <title>로그인</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resource/css/index.css">
 <style>
     body {
         background-color: #f7f9fc;
@@ -30,7 +33,6 @@
 </style>
 </head>
 <body>
-
 <div class="login-card">
     <h2>로그인</h2>
 
@@ -50,7 +52,7 @@
         <input type="password" name="password" class="form-control" placeholder="비밀번호 입력" required>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100">로그인</button>
+      <button type="submit" class="btn btn-primary w-100" style="text-align:center;justify-content:center;">로그인</button>
     </form>
 
     <div class="mt-3 text-center">

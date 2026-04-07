@@ -4,17 +4,24 @@ import java.sql.*;
 
 public class ProjectDAO {
 
-    public boolean insert(ProjectDTO dto) {
+    public int insert(ProjectDTO dto) {
         String sql = "INSERT INTO board (title, team_leader, content, deadline) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, dto.getTitle());
             pstmt.setString(2, dto.getTeam_leader());
             pstmt.setString(3, dto.getContent());
             pstmt.setString(4, dto.getDeadline());
             int count = pstmt.executeUpdate();
             if (count == 0) throw new SQLException("insert failed");
-            return true;
+            
+            // 생성된 ID 반환
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+            return -1;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("글쓰기 실패: " + e.getMessage(), e);

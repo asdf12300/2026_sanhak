@@ -27,7 +27,7 @@ public class LoginServlet extends HttpServlet {
             if (member != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("loginUser", member);
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
+                response.sendRedirect(request.getContextPath() + "/projects.jsp");
             } else {
                 request.setAttribute("error", "아이디 또는 비밀번호가 일치하지 않습니다.");
                 request.getRequestDispatcher("login.jsp").forward(request, response);

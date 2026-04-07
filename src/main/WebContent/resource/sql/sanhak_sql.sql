@@ -6,12 +6,9 @@ email varchar(30) NOT NULL,
 tel varchar(15) NOT NULL
 )
 
-<<<<<<< HEAD
 ALTER TABLE member
 ADD PRIMARY KEY (id);
 
-=======
->>>>>>> b113b0db29118a378ecbc8602537f589fa63a86f
 INSERT INTO member VALUES ('홍길동', 'hong123', '1234', 'hong@email.com', '010-1234-5678');
 
 select * from member;
@@ -36,13 +33,7 @@ CREATE TABLE project_member (
     FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE
 );
 
-<<<<<<< HEAD
-
-=======
-ALTER TABLE member
-ADD PRIMARY KEY (id);
->>>>>>> b113b0db29118a378ecbc8602537f589fa63a86f
-
+TRUNCATE TABLE board;
 select * from project_member;
 select * from member;
 select * from board;
