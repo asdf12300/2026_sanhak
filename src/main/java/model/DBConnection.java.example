@@ -12,8 +12,14 @@ public class DBConnection {
     static {
         try {
             Context ctx = new InitialContext();
+<<<<<<< HEAD:src/main/java/model/DBConnection.java
             ds = (DataSource) ctx.lookup("java:comp/env/jdbc/sanhak");
 
+=======
+            // TODO: context.xml의 Resource name과 일치하도록 수정하세요
+            // 예: jdbc/sanhak, jdbc/teamproject 등
+            ds = (DataSource) ctx.lookup("java:comp/env/jdbc/YOUR_RESOURCE_NAME");
+>>>>>>> 69901bb5220221456d0359ce3bbb4e1e1622da3e:src/main/java/model/DBConnection.java.example
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("DataSource 초기화 실패: " + e.getMessage());

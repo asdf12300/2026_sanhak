@@ -1,8 +1,47 @@
+# 개인 데이터베이스 설정 파일 (example 파일은 제외)
 **/db.properties
+**/context.xml
+**/DBConnection.java
+!**/db.properties.example
+!**/context.xml.example
+!**/DBConnection.java.example
+
+# Kiro 개인 작업 공간
+.kiro/
+
+# 빌드 결과물
 ROOT.war
 /build
+/target
+
+# Eclipse 설정
 .classpath
 .project
+<<<<<<< HEAD
 .settings
 .settings/
 /bin/
+=======
+.settings/
+
+# IntelliJ IDEA 설정
+.idea/
+*.iml
+*.iws
+
+# 컴파일된 클래스 파일
+*.class
+
+# 로그 파일
+*.log
+
+# OS 파일
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+*.tmp
+*.bak
+*.swp
+*~
+>>>>>>> 69901bb5220221456d0359ce3bbb4e1e1622da3e

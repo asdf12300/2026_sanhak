@@ -41,6 +41,6 @@ public class createProjectServlet extends HttpServlet {
             memberDAO.addMember(projectId, teamLeader);
         }
 
-        response.sendRedirect("list");
+        response.sendRedirect("projects.jsp");
     }
 }

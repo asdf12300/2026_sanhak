@@ -4,10 +4,17 @@
     name="jdbc/sanhak"
     auth="Container"
     type="javax.sql.DataSource"
+<<<<<<< HEAD:src/main/WebContent/META-INF/context.xml
     driverClassName="com.mysql.jdbc.Driver"
     url="jdbc:mysql://localhost:3306/sanhak?useSSL=false"
     username="root"
     password="1234"
+=======
+    driverClassName="com.mysql.cj.jdbc.Driver"
+    url="jdbc:mysql://localhost:3306/YOUR_DATABASE_NAME?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true"
+    username="YOUR_USERNAME"
+    password="YOUR_PASSWORD"
+>>>>>>> 69901bb5220221456d0359ce3bbb4e1e1622da3e:src/main/WebContent/META-INF/context.xml.example
     maxTotal="20"
     maxIdle="10"
     minIdle="2"

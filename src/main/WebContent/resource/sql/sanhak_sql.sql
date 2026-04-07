@@ -34,6 +34,7 @@ CREATE TABLE project_member (
     FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE
 );
 
+<<<<<<< HEAD
 CREATE TABLE calendar_event (
     event_id    INT           NOT NULL AUTO_INCREMENT PRIMARY KEY,
     event_date  DATE          NOT NULL,
@@ -52,6 +53,9 @@ WHERE YEAR(event_date) = 2026
   AND MONTH(event_date) = 4
 ORDER BY event_date, event_time;
 
+=======
+TRUNCATE TABLE board;
+>>>>>>> 69901bb5220221456d0359ce3bbb4e1e1622da3e
 select * from project_member;
 select * from member;
 select * from board;
