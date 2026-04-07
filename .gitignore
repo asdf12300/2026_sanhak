@@ -1,8 +1,10 @@
 # 개인 데이터베이스 설정 파일 (example 파일은 제외)
 **/db.properties
 **/context.xml
+**/DBConnection.java
 !**/db.properties.example
 !**/context.xml.example
+!**/DBConnection.java.example
 
 # Kiro 개인 작업 공간
 .kiro/
