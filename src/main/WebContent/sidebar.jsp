@@ -58,7 +58,7 @@
       </svg>
       업무 관리
     </div>
-    <a href="calendar.jsp" class="nav-item" <%= activeCalendar %>>
+    <a href="calendar.jsp<%= projectQuery %>" class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>

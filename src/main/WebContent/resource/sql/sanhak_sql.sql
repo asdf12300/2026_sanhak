@@ -34,28 +34,29 @@ CREATE TABLE project_member (
     FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE
 );
 
-<<<<<<< HEAD
-CREATE TABLE calendar_event (
+CREATE TABLE calendar (
     event_id    INT           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    project_id	int			  not null,
     event_date  DATE          NOT NULL,
     event_time  TIME,
     title       VARCHAR(100)  NOT NULL,
     category    TINYINT       DEFAULT 0,      -- 0:일반 1:중요 2:개인 3:업무 (숫자로 저장해야 DB 용량이 작아 효율적.)
     memo        VARCHAR(500),
-    created_at  DATETIME      DEFAULT NOW()
+    created_at  DATETIME      DEFAULT NOW(),
+    FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE
 );
 
-INSERT INTO calendar_event (event_date, event_time, title, category, memo)
-VALUES ('2026-04-06', '14:00:00', '팀 회의', 1, '주간 보고');
+
+INSERT INTO calendar (event_date, project_id, event_time, title, category, memo)
+VALUES ('2026-04-06', 1, '14:00:00', '팀 회의', 1, '주간 보고');
 
 SELECT * FROM calendar_event
 WHERE YEAR(event_date) = 2026
   AND MONTH(event_date) = 4
 ORDER BY event_date, event_time;
 
-=======
 TRUNCATE TABLE board;
->>>>>>> 69901bb5220221456d0359ce3bbb4e1e1622da3e
 select * from project_member;
 select * from member;
 select * from board;
+select * from calendar;

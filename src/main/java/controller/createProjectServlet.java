@@ -9,7 +9,7 @@ import model.ProjectDAO;
 import model.ProjectDTO;
 
 @WebServlet("/writeProcess")
-public class createProjectServlet extends HttpServlet {
+public class CreateProjectServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

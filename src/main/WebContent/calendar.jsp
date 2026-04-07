@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%String projectIdParam = request.getParameter("projectId"); %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,6 +10,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="resource/css/index.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resource/css/calendar.css?v=1.0">
+<script>
+  const contextPath = "${pageContext.request.contextPath}";
+</script>
 <script src="resource/js/calendar.js" defer></script>
 </head>
 <body>
@@ -25,6 +29,7 @@
   <div class="cal-grid" id="calGrid"></div>
 </div>
 
+<input type="hidden" id="evtProjectId" value="<%= projectIdParam != null ? projectIdParam : "" %>">
 <!-- 모달 -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">

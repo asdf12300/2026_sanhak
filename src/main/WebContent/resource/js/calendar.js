@@ -12,7 +12,9 @@ let editIdx = -1;
 //  서버에서 데이터 불러오기
 // =====================
 function loadEvents() {
-  fetch("event?action=list")
+  const el = document.getElementById('evtProjectId');
+  const projectId = el ? el.value : '';
+  fetch(contextPath + "/event?action=list&projectId=" + projectId)
     .then(res => res.json())
     .then(data => {
       events = data;
@@ -80,7 +82,6 @@ function renderCal(){
 
     const dateStr = formatDate(curY,curM,d);
 
-    //  이벤트 표시
     const dayEvents = events.filter(e => e.date === dateStr);
 
     dayEvents.slice(0,2).forEach(e=>{
@@ -160,6 +161,7 @@ document.getElementById('saveBtn').onclick=()=>{
   const params = new URLSearchParams({
     action: editIdx>=0 ? "update" : "save",
     title: title,
+    project_id: document.getElementById('evtProjectId').value,
     date: document.getElementById('evtDate').value,
     time: document.getElementById('evtTime').value,
     cat: parseInt(document.getElementById('evtCat').value),
@@ -170,7 +172,7 @@ document.getElementById('saveBtn').onclick=()=>{
     params.append("id", events[editIdx].id);
   }
 
-  fetch("event", {
+  fetch(contextPath + "/event", {
     method:"POST",
     headers:{"Content-Type":"application/x-www-form-urlencoded"},
     body:params
@@ -186,7 +188,7 @@ document.getElementById('saveBtn').onclick=()=>{
 // =====================
 document.getElementById('delBtn').onclick=()=>{
   if(editIdx>=0){
-    fetch("event", {
+    fetch(contextPath + "/event", {
       method:"POST",
       headers:{"Content-Type":"application/x-www-form-urlencoded"},
       body:new URLSearchParams({

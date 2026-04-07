@@ -8,8 +8,9 @@ public class CalendarDTO {
     private String title;
     private int category;
     private String memo;
+    private int projectId;
 
-    // =====================
+	// =====================
     // 기본 생성자
     // =====================
     public CalendarDTO() {}
@@ -65,4 +66,12 @@ public class CalendarDTO {
     public void setMemo(String memo) {
         this.memo = memo;
     }
+
+    public int getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(int projectId) {
+		this.projectId = projectId;
+	}
 }
