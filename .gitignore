@@ -17,11 +17,6 @@ ROOT.war
 # Eclipse 설정
 .classpath
 .project
-<<<<<<< HEAD
-.settings
-.settings/
-/bin/
-=======
 .settings/
 
 # IntelliJ IDEA 설정
@@ -44,4 +39,3 @@ Thumbs.db
 *.bak
 *.swp
 *~
->>>>>>> 69901bb5220221456d0359ce3bbb4e1e1622da3e

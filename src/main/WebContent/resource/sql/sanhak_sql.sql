@@ -70,11 +70,29 @@ INSERT INTO calendar (event_date, project_id, event_time, title, category, memo)
 VALUES ('2026-04-06', 1, '14:00:00', '팀 회의', 1, '주간 보고');
 
 WHERE YEAR(event_date) = 2026
-  AND MONTH(event_date) = 4
+AND MONTH(event_date) = 4
 ORDER BY event_date, event_time;
 
-TRUNCATE TABLE board;
+CREATE TABLE task (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    project_id  INT NOT NULL,
+    title       VARCHAR(200) NOT NULL,
+    content     TEXT,
+    assignee    VARCHAR(20),
+    status      ENUM('To Do', 'In Progress', 'Done') NOT NULL DEFAULT 'To Do',
+    deadline    DATE,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
+    FOREIGN KEY (assignee)   REFERENCES member(id) ON DELETE SET NULL
+);
+
+truncate table project_member;
+
+
 select * from project_member;
 select * from member;
 select * from board;
 select * from calendar;
+select * from task;
+
+drop table task;

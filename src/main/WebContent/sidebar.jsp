@@ -4,6 +4,7 @@
     String path = request.getRequestURI();
     String activeDashboard = path.endsWith("index.jsp") ? "active" : "";
     String activeList      = path.endsWith("list") || path.endsWith("list.jsp") ? "active" : "";
+    String activeTask      = path.endsWith("task.jsp") ? "active" : "";
     String activeCalendar  = path.endsWith("calendar.jsp") ? "active" : "";
     String activeTeam      = path.endsWith("team.jsp") ? "active" : "";
 
@@ -15,6 +16,8 @@
         } catch (NumberFormatException e) { }
     }
     String projectQuery = (currentProjectId != null) ? "?projectId=" + currentProjectId : "";
+
+	
 %>
 
 <aside class="sidebar">
@@ -40,7 +43,7 @@
       </svg>
       대시보드
     </a>
-    <div class="nav-item <%= activeList %>">
+    <div class="nav-item <%= activeList %>"class="nav-item <%= activeList %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
@@ -49,7 +52,7 @@
       </svg>
       팀원 관리 <span style="font-size:10px;color:var(--muted);margin-left:4px">(개발 예정)</span>
     </div>
-     <a href="task.jsp<%= projectQuery %>" class="nav-item" style="text-decoration:none;color:inherit">
+     <a href="task.jsp<%= projectQuery %>" class="nav-item <%= activeTask %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -58,7 +61,7 @@
       </svg>
       업무 관리
     </a>
-    <a href="calendar.jsp<%= projectQuery %>" class="nav-item">
+    <a href="calendar.jsp<%= projectQuery %>" class="nav-item <%= activeCalendar %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>

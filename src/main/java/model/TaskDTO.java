@@ -10,7 +10,7 @@ public class TaskDTO {
     private String content;
     private String createdAt;
 
-	public TaskDTO() {}
+    public TaskDTO() {}
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -35,5 +35,4 @@ public class TaskDTO {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-
 }

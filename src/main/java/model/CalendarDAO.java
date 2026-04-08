@@ -45,7 +45,7 @@ public class CalendarDAO {
         Integer finalTaskId = null;
 
         // category 1(중요) 또는 3(업무)이면 task 먼저 생성
-        if (e.getCategory() == 1 || e.getCategory() == 3) {
+        if (e.getCategory() == 3) {
             String taskSql = "INSERT INTO task (project_id, title, status, deadline) " +
                              "VALUES (?, ?, 'To Do', ?)";
             try (PreparedStatement ps = conn.prepareStatement(taskSql, Statement.RETURN_GENERATED_KEYS)) {

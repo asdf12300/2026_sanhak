@@ -387,7 +387,7 @@
   <%
     // 내가 속한 프로젝트 목록 가져오기
     ListDAO dao = new ListDAO();
-    List<ProjectDTO> myProjects = dao.getList(1, 100); // 임시로 전체 가져오기
+    List<ProjectDTO> myProjects = dao.getMyProjects(userId);
     
     if (myProjects != null && !myProjects.isEmpty()) {
   %>
@@ -399,7 +399,7 @@
     %>
     <a href="index.jsp?projectId=<%= project.getId() %>" class="project-card">
       <!-- 삭제 버튼 (모든 사용자) -->
-      <button class="project-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('정말 이 프로젝트를 삭제하시겠습니까?')) { location.href='deleteProject?projectId=<%= project.getId() %>'; }">
+      <button class="project-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('정말 이 프로젝트를 삭제하시겠습니까?\n\n프로젝트와 관련된 모든 데이터(팀원, 업무, 일정)가 함께 삭제됩니다.')) { location.href='deleteProject?id=<%= project.getId() %>'; }">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>

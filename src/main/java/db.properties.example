@@ -1,0 +1,11 @@
+# Database Configuration
+driver=com.mysql.cj.jdbc.Driver
+url=jdbc:mysql://localhost:3306/db이름?useSSL=false
+username=계정
+password=암호
+
+# Connection Pool Settings
+db.maxTotal=20
+db.maxIdle=10
+db.minIdle=2
+db.maxWaitMillis=5000

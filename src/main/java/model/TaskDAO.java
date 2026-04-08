@@ -43,6 +43,7 @@ public class TaskDAO {
     public void insertTask(Connection conn, TaskDTO t) throws Exception {
         String sql = "INSERT INTO task (project_id, title, content, assignee, status, deadline) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
+        System.out.println("DAO.insertTask - projectId=" + t.getProjectId() + ", title=" + t.getTitle() + ", deadline=" + t.getDeadline());
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, t.getProjectId());
@@ -61,7 +62,8 @@ public class TaskDAO {
             if (deadline == null) ps.setNull(6, Types.DATE);
             else ps.setString(6, deadline);
 
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+            System.out.println("DAO.insertTask - 영향받은 행: " + rows);
 
             // 생성된 task id 가져오기
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -111,12 +113,12 @@ public class TaskDAO {
             ps.executeUpdate();
         }
 
-        // ← 연결된 캘린더 이벤트 날짜/제목 동기화
+        // 연결된 캘린더 이벤트 날짜/제목 동기화
         syncCalendarFromTask(conn, t);
     }
 
     // =====================
-    // 삭제 - calendar FK가 ON DELETE SET NULL이므로 그대로
+    // 삭제
     // =====================
     public void deleteTask(Connection conn, int id) throws Exception {
         String sql = "DELETE FROM task WHERE id=?";
@@ -131,7 +133,7 @@ public class TaskDAO {
     // =====================
     private void insertCalendarFromTask(Connection conn, TaskDTO t) throws Exception {
         String sql = "INSERT INTO calendar (project_id, task_id, event_date, title, category) "
-                   + "VALUES (?, ?, ?, ?, 3)"; // category=3 (업무)
+                   + "VALUES (?, ?, ?, ?, 3)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, t.getProjectId());
             ps.setInt(2, t.getId());
@@ -149,13 +151,11 @@ public class TaskDAO {
                         ? null : t.getDeadline().trim();
 
         if (deadline != null) {
-            // 연결된 캘린더 있으면 날짜+제목 업데이트, 없으면 새로 등록
             String checkSql = "SELECT event_id FROM calendar WHERE task_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
                 ps.setInt(1, t.getId());
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        // 기존 캘린더 이벤트 업데이트
                         String updateSql = "UPDATE calendar SET event_date=?, title=? WHERE task_id=?";
                         try (PreparedStatement ups = conn.prepareStatement(updateSql)) {
                             ups.setString(1, deadline);
@@ -164,7 +164,6 @@ public class TaskDAO {
                             ups.executeUpdate();
                         }
                     } else {
-                        // 캘린더 이벤트 없으면 새로 등록
                         insertCalendarFromTask(conn, t);
                     }
                 }
