@@ -16,6 +16,12 @@ public class DeleteProjectServlet extends HttpServlet {
         if (idStr != null) {
             new ProjectDAO().delete(Integer.parseInt(idStr));
         }
-        response.sendRedirect("list");
+        response.sendRedirect("projects.jsp");
+    }
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doPost(request, response);
     }
 }
