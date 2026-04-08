@@ -17,6 +17,25 @@ ROOT.war
 # Eclipse 설정
 .classpath
 .project
-.settings
 .settings/
-/bin/
+
+# IntelliJ IDEA 설정
+.idea/
+*.iml
+*.iws
+
+# 컴파일된 클래스 파일
+*.class
+
+# 로그 파일
+*.log
+
+# OS 파일
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+*.tmp
+*.bak
+*.swp
+*~
