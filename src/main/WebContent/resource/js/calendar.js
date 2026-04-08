@@ -4,229 +4,245 @@ const DAYS = ['일','월','화','수','목','금','토'];
 let today = new Date();
 let curY = today.getFullYear();
 let curM = today.getMonth();
-
 let events = [];
 let editIdx = -1;
 
 // =====================
-//  서버에서 데이터 불러오기
+// 서버에서 데이터 불러오기
 // =====================
 function loadEvents() {
   const el = document.getElementById('evtProjectId');
   const projectId = el ? el.value : '';
   fetch(contextPath + "/event?action=list&projectId=" + projectId)
     .then(res => res.json())
-    .then(data => {
-      events = data;
-      renderCal();
-    })
-    .catch(() => {
-      events = [];
-      renderCal();
-    });
+    .then(data => { events = data; renderCal(); })
+    .catch(() => { events = []; renderCal(); });
 }
 
 // =====================
 // 캘린더 렌더링
 // =====================
 const monthSel = document.getElementById('monthSel');
-const yearSel = document.getElementById('yearSel');
+const yearSel  = document.getElementById('yearSel');
 
-MONTHS.forEach((m,i)=>{
-  const o=document.createElement('option');
-  o.value=i;
-  o.textContent=m;
+MONTHS.forEach((m,i) => {
+  const o = document.createElement('option');
+  o.value = i; o.textContent = m;
   monthSel.appendChild(o);
 });
-
-for(let y=today.getFullYear()-10; y<=today.getFullYear()+10; y++){
-  const o=document.createElement('option');
-  o.value=y;
-  o.textContent=y+'년';
+for (let y = today.getFullYear()-10; y <= today.getFullYear()+10; y++) {
+  const o = document.createElement('option');
+  o.value = y; o.textContent = y + '년';
   yearSel.appendChild(o);
 }
 
-function renderCal(){
+function renderCal() {
   monthSel.value = curM;
-  yearSel.value = curY;
-
-  document.getElementById('calTitle').textContent =
-    curY+'년 '+MONTHS[curM];
+  yearSel.value  = curY;
+  document.getElementById('calTitle').textContent = curY + '년 ' + MONTHS[curM];
 
   const grid = document.getElementById('calGrid');
-  grid.innerHTML='';
+  grid.innerHTML = '';
 
-  DAYS.forEach(d=>{
-    const el=document.createElement('div');
-    el.className='day-label';
-    el.textContent=d;
+  DAYS.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'day-label';
+    el.textContent = d;
     grid.appendChild(el);
   });
 
-  const first=new Date(curY,curM,1).getDay();
-  const last=new Date(curY,curM+1,0).getDate();
+  const first = new Date(curY, curM, 1).getDay();
+  const last  = new Date(curY, curM+1, 0).getDate();
 
-  for(let i=0;i<first;i++){
-    const empty=document.createElement('div');
-    empty.className='day-cell';
+  for (let i = 0; i < first; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'day-cell';
     grid.appendChild(empty);
   }
 
-  for(let d=1; d<=last; d++){
-    const cell=document.createElement('div');
-    cell.className='day-cell';
+  for (let d = 1; d <= last; d++) {
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
 
-    const num=document.createElement('div');
-    num.textContent=d;
+    const num = document.createElement('div');
+    num.textContent = d;
     cell.appendChild(num);
 
-    const dateStr = formatDate(curY,curM,d);
-
+    const dateStr   = formatDate(curY, curM, d);
     const dayEvents = events.filter(e => e.date === dateStr);
 
-    dayEvents.slice(0,2).forEach(e=>{
-      const ev=document.createElement('div');
-      ev.className='event-dot cat-'+e.cat;
-      ev.textContent=(e.time?e.time.substring(0,5)+' ':'')+e.title;
-
-      ev.onclick=(event)=>{
+    // 최대 2개만 표시
+    dayEvents.slice(0, 2).forEach(e => {
+      const ev = document.createElement('div');
+      ev.className = 'event-dot cat-' + e.cat;
+      ev.textContent = (e.time ? e.time.substring(0,5) + ' ' : '') + e.title;
+      ev.onclick = (event) => {
         event.stopPropagation();
         openEdit(events.indexOf(e));
       };
-
       cell.appendChild(ev);
     });
 
-    if(dayEvents.length>2){
-      const more=document.createElement('div');
-      more.textContent='+'+(dayEvents.length-2);
+    // +N 더보기 버튼
+    if (dayEvents.length > 2) {
+      const more = document.createElement('div');
+      more.className = 'more-btn';
+      more.textContent = '+' + (dayEvents.length - 2) + ' 더보기';
+      more.onclick = (event) => {
+        event.stopPropagation();
+        openMorePopup(dateStr, dayEvents); // ← 팝업 열기
+      };
       cell.appendChild(more);
     }
 
-    cell.onclick=()=>openNew(curY,curM,d);
+    cell.onclick = () => openNew(curY, curM, d);
     grid.appendChild(cell);
   }
 }
 
 // =====================
+// +N 더보기 팝업
+// =====================
+function openMorePopup(dateStr, dayEvents) {
+  document.getElementById('morePopupDate').textContent = dateStr + ' 일정';
+
+  const list = document.getElementById('morePopupList');
+  list.innerHTML = '';
+
+  dayEvents.forEach(e => {
+    const item = document.createElement('div');
+    item.className = 'more-popup-item cat-' + e.cat;
+
+    // task 연동된 경우 상태 배지 표시
+    const badge = e.taskStatus
+      ? `<span class="task-badge status-${e.taskStatus.replace(/ /g,'-')}">${e.taskStatus}</span>`
+      : '';
+
+    item.innerHTML = `
+      <span class="more-item-time">${e.time ? e.time.substring(0,5) : ''}</span>
+      <span class="more-item-title">${e.title}</span>
+      ${badge}
+    `;
+    item.onclick = () => {
+      closeMorePopup();
+      openEdit(events.indexOf(e));
+    };
+    list.appendChild(item);
+  });
+
+  document.getElementById('morePopupBg').classList.add('open');
+}
+
+function closeMorePopup() {
+  document.getElementById('morePopupBg').classList.remove('open');
+}
+
+document.getElementById('morePopupClose').onclick = closeMorePopup;
+document.getElementById('morePopupBg').onclick = (e) => {
+  if (e.target.id === 'morePopupBg') closeMorePopup();
+};
+
+// =====================
 // 날짜 포맷
 // =====================
-function formatDate(y,m,d){
+function formatDate(y,m,d) {
   return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
 }
 
 // =====================
 // 모달
 // =====================
-function openNew(y,m,d){
-  editIdx=-1;
-
-  document.getElementById('modalTitle').textContent='일정 등록';
-  document.getElementById('evtTitle').value='';
-  document.getElementById('evtDate').value=formatDate(y,m,d);
-  document.getElementById('evtTime').value='';
-  document.getElementById('evtCat').value='0';
-  document.getElementById('evtMemo').value='';
-
-  document.getElementById('delBtn').style.display='none';
+function openNew(y,m,d) {
+  editIdx = -1;
+  document.getElementById('modalTitle').textContent = '일정 등록';
+  document.getElementById('evtTitle').value  = '';
+  document.getElementById('evtDate').value   = formatDate(y,m,d);
+  document.getElementById('evtTime').value   = '';
+  document.getElementById('evtCat').value    = '0';
+  document.getElementById('evtMemo').value   = '';
+  document.getElementById('delBtn').style.display = 'none';
   document.getElementById('modalBg').classList.add('open');
 }
 
-function openEdit(idx){
-  editIdx=idx;
-  const e=events[idx];
-
-  document.getElementById('modalTitle').textContent='일정 수정';
-  document.getElementById('evtTitle').value=e.title;
-  document.getElementById('evtDate').value=e.date;
-  document.getElementById('evtTime').value=e.time||'';
-  document.getElementById('evtCat').value=e.cat;
-  document.getElementById('evtMemo').value=e.memo||'';
-
-  document.getElementById('delBtn').style.display='';
+function openEdit(idx) {
+  editIdx = idx;
+  const e = events[idx];
+  document.getElementById('modalTitle').textContent = '일정 수정';
+  document.getElementById('evtTitle').value  = e.title;
+  document.getElementById('evtDate').value   = e.date;
+  document.getElementById('evtTime').value   = e.time || '';
+  document.getElementById('evtCat').value    = e.cat;
+  document.getElementById('evtMemo').value   = e.memo || '';
+  document.getElementById('delBtn').style.display = '';
   document.getElementById('modalBg').classList.add('open');
 }
 
-function closeModal(){
+function closeModal() {
   document.getElementById('modalBg').classList.remove('open');
 }
 
 // =====================
-//  저장 / 수정
+// 저장 / 수정
 // =====================
-document.getElementById('saveBtn').onclick=()=>{
-  const title=document.getElementById('evtTitle').value.trim();
-  if(!title)return;
+document.getElementById('saveBtn').onclick = () => {
+  const title = document.getElementById('evtTitle').value.trim();
+  if (!title) return;
 
   const params = new URLSearchParams({
-    action: editIdx>=0 ? "update" : "save",
-    title: title,
+    action: editIdx >= 0 ? "update" : "save",
+    title:      title,
     project_id: document.getElementById('evtProjectId').value,
-    date: document.getElementById('evtDate').value,
-    time: document.getElementById('evtTime').value,
-    cat: parseInt(document.getElementById('evtCat').value),
-    memo: document.getElementById('evtMemo').value
+    date:       document.getElementById('evtDate').value,
+    time:       document.getElementById('evtTime').value,
+    cat:        parseInt(document.getElementById('evtCat').value),
+    memo:       document.getElementById('evtMemo').value
   });
 
-  if(editIdx>=0){
+  if (editIdx >= 0) {
     params.append("id", events[editIdx].id);
+    // ↓ task 동기화를 위해 taskId도 전송
+    if (events[editIdx].taskId != null) {
+      params.append("taskId", events[editIdx].taskId);
+    }
   }
 
   fetch(contextPath + "/event", {
-    method:"POST",
-    headers:{"Content-Type":"application/x-www-form-urlencoded"},
-    body:params
-  })
-  .then(()=> {
-    closeModal();
-    loadEvents();
-  });
+    method: "POST",
+    headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    body: params
+  }).then(() => { closeModal(); loadEvents(); });
 };
 
 // =====================
-//  삭제
+// 삭제
 // =====================
-document.getElementById('delBtn').onclick=()=>{
-  if(editIdx>=0){
+document.getElementById('delBtn').onclick = () => {
+  if (editIdx >= 0) {
     fetch(contextPath + "/event", {
-      method:"POST",
-      headers:{"Content-Type":"application/x-www-form-urlencoded"},
-      body:new URLSearchParams({
-        action:"delete",
-        id: events[editIdx].id
-      })
-    })
-    .then(()=>{
-      closeModal();
-      loadEvents();
-    });
+      method: "POST",
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: new URLSearchParams({ action: "delete", id: events[editIdx].id })
+    }).then(() => { closeModal(); loadEvents(); });
   }
 };
 
 // =====================
 // 이벤트
 // =====================
-document.getElementById('cancelBtn').onclick=closeModal;
-document.getElementById('modalBg').onclick=e=>{
-  if(e.target.id==='modalBg') closeModal();
+document.getElementById('cancelBtn').onclick = closeModal;
+document.getElementById('modalBg').onclick = e => {
+  if (e.target.id === 'modalBg') closeModal();
 };
+document.getElementById('prevBtn').onclick = () => {
+  curM--; if (curM < 0) { curM = 11; curY--; } loadEvents();
+};
+document.getElementById('nextBtn').onclick = () => {
+  curM++; if (curM > 11) { curM = 0; curY++; } loadEvents();
+};
+document.getElementById('todayBtn').onclick = () => {
+  curY = today.getFullYear(); curM = today.getMonth(); loadEvents();
+};
+monthSel.onchange = () => { curM = parseInt(monthSel.value); loadEvents(); };
+yearSel.onchange  = () => { curY = parseInt(yearSel.value);  loadEvents(); };
 
-document.getElementById('prevBtn').onclick=()=>{
-  curM--; if(curM<0){curM=11;curY--;} loadEvents();
-};
-document.getElementById('nextBtn').onclick=()=>{
-  curM++; if(curM>11){curM=0;curY++;} loadEvents();
-};
-document.getElementById('todayBtn').onclick=()=>{
-  curY=today.getFullYear();
-  curM=today.getMonth();
-  loadEvents();
-};
-
-monthSel.onchange=()=>{ curM=parseInt(monthSel.value); loadEvents(); };
-yearSel.onchange=()=>{ curY=parseInt(yearSel.value); loadEvents(); };
-
-// =====================
-// 최초 실행
-// =====================
 loadEvents();

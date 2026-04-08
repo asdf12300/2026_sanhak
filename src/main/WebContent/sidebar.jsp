@@ -49,7 +49,7 @@
       </svg>
       팀원 관리 <span style="font-size:10px;color:var(--muted);margin-left:4px">(개발 예정)</span>
     </div>
-    <div class="nav-item">
+     <a href="task.jsp<%= projectQuery %>" class="nav-item" style="text-decoration:none;color:inherit">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -57,7 +57,7 @@
         <line x1="3" y1="10" x2="21" y2="10"/>
       </svg>
       업무 관리
-    </div>
+    </a>
     <a href="calendar.jsp<%= projectQuery %>" class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>

@@ -63,5 +63,16 @@
   </div>
 </div>
 
+<!-- +N 더보기 팝업 -->
+<div class="more-popup-bg" id="morePopupBg">
+  <div class="more-popup">
+    <div class="more-popup-header">
+      <span id="morePopupDate"></span>
+      <button id="morePopupClose">✕</button>
+    </div>
+    <div id="morePopupList"></div>
+  </div>
+</div>
+
 </body>
 </html>
