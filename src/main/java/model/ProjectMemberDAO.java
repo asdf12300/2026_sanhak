@@ -120,7 +120,8 @@ public class ProjectMemberDAO {
             return false;
         }
     }
- // 팀원 바로 추가
+
+    // 팀원 바로 추가
     public boolean addMember(int projectId, String memberId) {
         String sql = "INSERT INTO project_member (project_id, member_id, role, status) VALUES (?, ?, '팀원', 'accepted')";
 
@@ -136,6 +137,7 @@ public class ProjectMemberDAO {
             return false;
         }
     }
+
     // 팀원 삭제
     public boolean removeMember(int projectId, String memberId) {
         String sql = "DELETE FROM project_member WHERE project_id = ? AND member_id = ?";

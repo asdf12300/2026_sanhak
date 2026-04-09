@@ -29,8 +29,8 @@ public class CalendarServlet extends HttpServlet {
             PrintWriter out = resp.getWriter();
 
             try (Connection conn = DBConnection.getConnection()) {
-            	   int projectId = Integer.parseInt(req.getParameter("projectId"));
-                   List<CalendarDTO> list = dao.getEventsByProject(conn, projectId);
+                int projectId = Integer.parseInt(req.getParameter("projectId"));
+                List<CalendarDTO> list = dao.getEventsByProject(conn, projectId);
 
                 StringBuilder json = new StringBuilder();
                 json.append("[");
@@ -39,10 +39,10 @@ public class CalendarServlet extends HttpServlet {
                     if (!first) json.append(",");
                     first = false;
 
-                    String title = e.getTitle() == null ? "" :
-                            e.getTitle().replace("\\", "\\\\").replace("\"", "\\\"");
-                    String memo = e.getMemo() == null ? "" :
-                            e.getMemo().replace("\\", "\\\\").replace("\"", "\\\"");
+                    String title = esc(e.getTitle());
+                    String memo = esc(e.getMemo());
+                    String status = esc(e.getTaskStatus());
+                    String assignee = esc(e.getTaskAssignee());
 
                     json.append("{");
                     json.append("\"id\":").append(e.getId()).append(",");
@@ -50,7 +50,10 @@ public class CalendarServlet extends HttpServlet {
                     json.append("\"date\":\"").append(e.getDate()).append("\",");
                     json.append("\"time\":\"").append(e.getTime() == null ? "" : e.getTime()).append("\",");
                     json.append("\"cat\":").append(e.getCategory()).append(",");
-                    json.append("\"memo\":\"").append(memo).append("\"");
+                    json.append("\"memo\":\"").append(memo).append("\",");
+                    json.append("\"taskId\":").append(e.getTaskId() == null ? "null" : e.getTaskId()).append(",");
+                    json.append("\"taskStatus\":\"").append(status).append("\",");
+                    json.append("\"taskAssignee\":\"").append(assignee).append("\"");
                     json.append("}");
                 }
                 json.append("]");
@@ -73,22 +76,22 @@ public class CalendarServlet extends HttpServlet {
         try (Connection conn = DBConnection.getConnection()) {
 
             if ("save".equals(action)) {
-            	
                 String projectIdStr = req.getParameter("project_id");
                 if (projectIdStr == null || projectIdStr.isEmpty() || projectIdStr.equals("null")) {
                     resp.getWriter().print("error");
                     return;
                 }
-            	
+
                 CalendarDTO e = new CalendarDTO();
+                e.setProjectId(Integer.parseInt(projectIdStr));
                 e.setTitle(req.getParameter("title"));
-                e.setProjectId(Integer.parseInt(req.getParameter("project_id")));
                 e.setDate(req.getParameter("date"));
                 e.setTime(req.getParameter("time"));
                 e.setCategory(Integer.parseInt(req.getParameter("cat")));
                 e.setMemo(req.getParameter("memo"));
                 dao.insertEvent(conn, e);
                 conn.commit();
+
             } else if ("update".equals(action)) {
                 CalendarDTO e = new CalendarDTO();
                 e.setId(Integer.parseInt(req.getParameter("id")));
@@ -98,8 +101,15 @@ public class CalendarServlet extends HttpServlet {
                 e.setTime(req.getParameter("time"));
                 e.setCategory(Integer.parseInt(req.getParameter("cat")));
                 e.setMemo(req.getParameter("memo"));
+
+                String taskIdStr = req.getParameter("taskId");
+                if (taskIdStr != null && !taskIdStr.isEmpty() && !taskIdStr.equals("null")) {
+                    e.setTaskId(Integer.parseInt(taskIdStr));
+                }
+
                 dao.updateEvent(conn, e);
                 conn.commit();
+
             } else if ("delete".equals(action)) {
                 int id = Integer.parseInt(req.getParameter("id"));
                 dao.deleteEvent(conn, id);
@@ -112,5 +122,10 @@ public class CalendarServlet extends HttpServlet {
             e.printStackTrace();
             resp.getWriter().print("error");
         }
+    }
+
+    private String esc(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

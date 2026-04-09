@@ -38,40 +38,77 @@ public class TaskDAO {
         }
     }
 
+    // 등록 - deadline 있으면 calendar 자동 등록
     public void insertTask(Connection conn, TaskDTO t) throws Exception {
-        String sql = "INSERT INTO task (project_id, title, content, assignee, status, deadline) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO task (project_id, title, content, assignee, status, deadline) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         System.out.println("DAO.insertTask - projectId=" + t.getProjectId() + ", title=" + t.getTitle() + ", deadline=" + t.getDeadline());
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, t.getProjectId());
             ps.setString(2, t.getTitle());
             ps.setString(3, t.getContent());
-            String assignee = (t.getAssignee() == null || t.getAssignee().trim().isEmpty()) ? null : t.getAssignee().trim();
-            if (assignee == null) ps.setNull(4, java.sql.Types.VARCHAR);
+
+            String assignee = (t.getAssignee() == null || t.getAssignee().trim().isEmpty())
+                            ? null : t.getAssignee().trim();
+            if (assignee == null) ps.setNull(4, Types.VARCHAR);
             else ps.setString(4, assignee);
+
             ps.setString(5, t.getStatus() != null ? t.getStatus() : "To Do");
-            String deadline = (t.getDeadline() == null || t.getDeadline().trim().isEmpty()) ? null : t.getDeadline().trim();
-            if (deadline == null) ps.setNull(6, java.sql.Types.DATE);
+
+            String deadline = (t.getDeadline() == null || t.getDeadline().trim().isEmpty())
+                            ? null : t.getDeadline().trim();
+            if (deadline == null) ps.setNull(6, Types.DATE);
             else ps.setString(6, deadline);
+
             int rows = ps.executeUpdate();
             System.out.println("DAO.insertTask - 영향받은 행: " + rows);
+
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    int generatedId = keys.getInt(1);
+                    t.setId(generatedId);
+
+                    if (deadline != null) {
+                        String calSql = "INSERT INTO calendar (project_id, task_id, event_date, title, category) " +
+                                        "VALUES (?, ?, ?, ?, 3)";
+                        try (PreparedStatement cps = conn.prepareStatement(calSql)) {
+                            cps.setInt(1, t.getProjectId());
+                            cps.setInt(2, generatedId);
+                            cps.setString(3, deadline);
+                            cps.setString(4, t.getTitle());
+                            cps.executeUpdate();
+                        }
+                    }
+                }
+            }
         }
     }
 
+    // 수정 - deadline 바뀌면 calendar도 업데이트
     public void updateTask(Connection conn, TaskDTO t) throws Exception {
         String sql = "UPDATE task SET title=?, content=?, assignee=?, status=?, deadline=? WHERE id=?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, t.getTitle());
             ps.setString(2, t.getContent());
-            String assignee = (t.getAssignee() == null || t.getAssignee().trim().isEmpty()) ? null : t.getAssignee().trim();
-            if (assignee == null) ps.setNull(3, java.sql.Types.VARCHAR);
+
+            String assignee = (t.getAssignee() == null || t.getAssignee().trim().isEmpty())
+                            ? null : t.getAssignee().trim();
+            if (assignee == null) ps.setNull(3, Types.VARCHAR);
             else ps.setString(3, assignee);
+
             ps.setString(4, t.getStatus());
-            String deadline = (t.getDeadline() == null || t.getDeadline().trim().isEmpty()) ? null : t.getDeadline().trim();
-            if (deadline == null) ps.setNull(5, java.sql.Types.DATE);
+
+            String deadline = (t.getDeadline() == null || t.getDeadline().trim().isEmpty())
+                            ? null : t.getDeadline().trim();
+            if (deadline == null) ps.setNull(5, Types.DATE);
             else ps.setString(5, deadline);
+
             ps.setInt(6, t.getId());
             ps.executeUpdate();
         }
+
+        syncCalendarFromTask(conn, t);
     }
 
     public void deleteTask(Connection conn, int id) throws Exception {
@@ -79,6 +116,43 @@ public class TaskDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
+        }
+    }
+
+    private void insertCalendarFromTask(Connection conn, TaskDTO t) throws Exception {
+        String sql = "INSERT INTO calendar (project_id, task_id, event_date, title, category) "
+                   + "VALUES (?, ?, ?, ?, 3)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, t.getProjectId());
+            ps.setInt(2, t.getId());
+            ps.setString(3, t.getDeadline());
+            ps.setString(4, t.getTitle());
+            ps.executeUpdate();
+        }
+    }
+
+    private void syncCalendarFromTask(Connection conn, TaskDTO t) throws Exception {
+        String deadline = (t.getDeadline() == null || t.getDeadline().trim().isEmpty())
+                        ? null : t.getDeadline().trim();
+
+        if (deadline != null) {
+            String checkSql = "SELECT event_id FROM calendar WHERE task_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setInt(1, t.getId());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String updateSql = "UPDATE calendar SET event_date=?, title=? WHERE task_id=?";
+                        try (PreparedStatement ups = conn.prepareStatement(updateSql)) {
+                            ups.setString(1, deadline);
+                            ups.setString(2, t.getTitle());
+                            ups.setInt(3, t.getId());
+                            ups.executeUpdate();
+                        }
+                    } else {
+                        insertCalendarFromTask(conn, t);
+                    }
+                }
+            }
         }
     }
 }

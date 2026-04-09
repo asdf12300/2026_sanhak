@@ -35,6 +35,7 @@ CREATE TABLE project_member (
 );
 
 CREATE TABLE calendar (
+<<<<<<< HEAD
     event_id    INT           NOT NULL AUTO_INCREMENT PRIMARY KEY,
     project_id	int			  not null,
     event_date  DATE          NOT NULL,
@@ -46,11 +47,46 @@ CREATE TABLE calendar (
     FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE
 );
 
+=======
+  event_id   INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  project_id INT NOT NULL,
+  task_id    INT NULL,                          -- ← task 연동 (없으면 NULL)
+  event_date DATE NOT NULL,
+  event_time TIME,
+  title      VARCHAR(100) NOT NULL,
+  category   TINYINT DEFAULT 0,                -- 0:일반 1:중요 2:개인 3:업무
+  memo       VARCHAR(500),
+  created_at DATETIME DEFAULT NOW(),
+  FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
+  FOREIGN KEY (task_id)    REFERENCES task(id)  ON DELETE SET NULL
+);
+
+CREATE TABLE task (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  project_id INT NOT NULL,
+  title      VARCHAR(200) NOT NULL,
+  content    TEXT,
+  assignee   VARCHAR(20),
+  status     ENUM('To Do', 'In Progress', 'Done') NOT NULL DEFAULT 'To Do',
+  deadline   DATE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES board(id)   ON DELETE CASCADE,
+  FOREIGN KEY (assignee)   REFERENCES member(id)  ON DELETE SET NULL
+);
+
+--캘린더&업무 연동 코드--
+ALTER TABLE calendar ADD COLUMN task_id INT NULL;
+ALTER TABLE calendar ADD FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE SET NULL;
+------------------
+>>>>>>> bd1477e21aca789324d0882146debbe4ccd56a67
 
 INSERT INTO calendar (event_date, project_id, event_time, title, category, memo)
 VALUES ('2026-04-06', 1, '14:00:00', '팀 회의', 1, '주간 보고');
 
+<<<<<<< HEAD
 SELECT * FROM calendar
+=======
+>>>>>>> bd1477e21aca789324d0882146debbe4ccd56a67
 WHERE YEAR(event_date) = 2026
 AND MONTH(event_date) = 4
 ORDER BY event_date, event_time;
@@ -68,7 +104,13 @@ CREATE TABLE task (
     FOREIGN KEY (assignee)   REFERENCES member(id) ON DELETE SET NULL
 );
 
+<<<<<<< HEAD
 TRUNCATE TABLE board;
+=======
+truncate table project_member;
+
+
+>>>>>>> bd1477e21aca789324d0882146debbe4ccd56a67
 select * from project_member;
 select * from member;
 select * from board;

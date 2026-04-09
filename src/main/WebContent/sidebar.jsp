@@ -4,9 +4,10 @@
     String path = request.getRequestURI();
     String activeDashboard = path.endsWith("index.jsp") ? "active" : "";
     String activeList      = path.endsWith("list") || path.endsWith("list.jsp") ? "active" : "";
+    String activeTask      = path.endsWith("task.jsp") ? "active" : "";
     String activeCalendar  = path.endsWith("calendar.jsp") ? "active" : "";
     String activeTeam      = path.endsWith("team.jsp") ? "active" : "";
-    String activeTeamMember = path.endsWith("/view") || path.endsWith("/view.jsp") ? "active" : "";
+    String activeTeamMember = path.contains("/teamMemberManage.jsp") ? "active" : "";
     Integer currentProjectId = (Integer) session.getAttribute("currentProjectId");
     String projectParam = request.getParameter("projectId");
     if (projectParam != null && !projectParam.isEmpty()) {
@@ -15,6 +16,7 @@
         } catch (NumberFormatException e) { }
     }
     String projectQuery = (currentProjectId != null) ? "?projectId=" + currentProjectId : "";
+
 %>
 <%
     String projectId = request.getParameter("id");
@@ -30,6 +32,7 @@
         }
     }
 %>
+
 <aside class="sidebar">
   <a href="./index.jsp<%= projectQuery %>" class="logo">
     <div class="logo">
@@ -73,6 +76,7 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
      팀원 관리
     </a>
     <a href="task.jsp<%= projectQuery %>" class="nav-item">
+
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -81,7 +85,7 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
       </svg>
       업무 관리
     </a>
-    <a href="calendar.jsp<%= projectQuery %>" class="nav-item">
+    <a href="calendar.jsp<%= projectQuery %>" class="nav-item <%= activeCalendar %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>

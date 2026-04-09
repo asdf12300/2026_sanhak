@@ -9,15 +9,12 @@ public class CalendarDTO {
     private int category;
     private String memo;
     private int projectId;
+    private Integer taskId;
+    private String taskStatus;
+    private String taskAssignee;
 
-	// =====================
-    // 기본 생성자
-    // =====================
-    public CalendarDTO() {}
-
-    // =====================
-    // Getter / Setter
-    // =====================
+    public CalendarDTO() {
+    }
 
     public int getId() {
         return id;
@@ -68,10 +65,34 @@ public class CalendarDTO {
     }
 
     public int getProjectId() {
-		return projectId;
-	}
+        return projectId;
+    }
 
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
+    }
+
+    public Integer getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Integer taskId) {
+        this.taskId = taskId;
+    }
+
+    public String getTaskStatus() {
+        return taskStatus;
+    }
+
+    public void setTaskStatus(String taskStatus) {
+        this.taskStatus = taskStatus;
+    }
+
+    public String getTaskAssignee() {
+        return taskAssignee;
+    }
+
+    public void setTaskAssignee(String taskAssignee) {
+        this.taskAssignee = taskAssignee;
+    }
 }

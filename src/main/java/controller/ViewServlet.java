@@ -4,13 +4,13 @@ import model.ProjectDAO;
 import model.ProjectDTO;
 import model.ProjectMemberDAO;
 import model.LoginDTO;
+import model.ProjectMemberDTO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
-import model.ProjectMemberDTO;
 
 @WebServlet("/view")
 public class ViewServlet extends HttpServlet {
