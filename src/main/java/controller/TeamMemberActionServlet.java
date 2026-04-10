@@ -72,11 +72,15 @@ public class TeamMemberActionServlet extends HttpServlet {
             int pmNo = Integer.parseInt(pmNoStr);
             boolean result = dao.updateInvitationStatus(pmNo, loginId, "accepted");
             msg = result ? "초대를 수락했습니다." : "초대 수락에 실패했습니다.";
+            response.sendRedirect("projects.jsp");
+            return;
 
         } else if ("reject".equals(action)) {
             int pmNo = Integer.parseInt(pmNoStr);
             boolean result = dao.updateInvitationStatus(pmNo, loginId, "rejected");
             msg = result ? "초대를 거절했습니다." : "초대 거절에 실패했습니다.";
+            response.sendRedirect("projects.jsp");
+            return;
 
         } else if ("remove".equals(action)) {
             boolean result = dao.removeMember(projectId, memberId);

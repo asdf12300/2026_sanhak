@@ -21,23 +21,28 @@ CREATE TABLE board (
 CREATE TABLE project_member (
     id INT AUTO_INCREMENT PRIMARY KEY,
     project_id INT NOT NULL,
-    member_id VARCHAR(20) NOT NULL,
-    status VARCHAR(20) DEFAULT 'invited',
+    member_id VARCHAR(20) NOT NULL,     -- member.id 참조
+    role VARCHAR(20) DEFAULT '팀원',     -- 팀원 역할
+    status VARCHAR(20) DEFAULT 'invited', -- invited / accepted / rejected
     invited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
     FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE
 );
 
+-- 기존 테이블에 role 컬럼이 없다면 추가
+-- ALTER TABLE project_member ADD COLUMN role VARCHAR(20) DEFAULT '팀원' AFTER member_id;
+
 CREATE TABLE calendar (
     event_id    INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     project_id  INT NOT NULL,
-    task_id     INT NULL,
+    task_id     INT NULL,                          -- ← task 연동 (없으면 NULL)
     event_date  DATE NOT NULL,
     event_time  TIME,
     title       VARCHAR(100) NOT NULL,
-    category    TINYINT DEFAULT 0,
+    category    TINYINT DEFAULT 0,                -- 0:일반 1:중요 2:개인 3:업무
     memo        VARCHAR(500),
     created_at  DATETIME DEFAULT NOW(),
+    assignee    VARCHAR(50) NULL,                 -- 담당자
     FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
     FOREIGN KEY (task_id)    REFERENCES task(id)  ON DELETE SET NULL
 );
@@ -55,8 +60,13 @@ CREATE TABLE task (
   FOREIGN KEY (assignee)   REFERENCES member(id)  ON DELETE SET NULL
 );
 
+--캘린더&업무 연동 코드--
 ALTER TABLE calendar ADD COLUMN task_id INT NULL;
 ALTER TABLE calendar ADD FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE SET NULL;
+------------------
+
+--캘린더에 담당자를 지정하는 컬럼입니다. 실행해주세요--
+ALTER TABLE calendar ADD COLUMN assignee VARCHAR(50) NULL;
 
 INSERT INTO calendar (event_date, project_id, event_time, title, category, memo)
 VALUES ('2026-04-06', 1, '14:00:00', '팀 회의', 1, '주간 보고');
@@ -65,9 +75,6 @@ SELECT * FROM calendar
 WHERE YEAR(event_date) = 2026
 AND MONTH(event_date) = 4
 ORDER BY event_date, event_time;
-
---캘린더에 담당자를 지정하는 컬럼입니다. 실행해주세요--
-ALTER TABLE calendar ADD COLUMN assignee VARCHAR(50) NULL;
 
 TRUNCATE TABLE board;
 truncate table project_member;
