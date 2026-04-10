@@ -7,7 +7,7 @@
     String activeTask      = path.endsWith("task.jsp") ? "active" : "";
     String activeCalendar  = path.endsWith("calendar.jsp") ? "active" : "";
     String activeTeam      = path.endsWith("team.jsp") ? "active" : "";
-
+    String activeTeamMember = path.contains("/teamMemberManage.jsp") ? "active" : "";
     Integer currentProjectId = (Integer) session.getAttribute("currentProjectId");
     String projectParam = request.getParameter("projectId");
     if (projectParam != null && !projectParam.isEmpty()) {
@@ -17,7 +17,20 @@
     }
     String projectQuery = (currentProjectId != null) ? "?projectId=" + currentProjectId : "";
 
-	
+%>
+<%
+    String projectId = request.getParameter("id");
+
+    if (projectId == null || projectId.trim().isEmpty()) {
+        projectId = request.getParameter("projectId");
+    }
+
+    if (projectId == null || projectId.trim().isEmpty()) {
+        Object pidObj = request.getAttribute("projectId");
+        if (pidObj != null) {
+            projectId = String.valueOf(pidObj);
+        }
+    }
 %>
 
 <aside class="sidebar">
@@ -43,16 +56,27 @@
       </svg>
       대시보드
     </a>
-    <div class="nav-item <%= activeList %>"class="nav-item <%= activeList %>">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-        <path d="M16 3.13a4 4 0 010 7.75"/>
-      </svg>
-      팀원 관리 <span style="font-size:10px;color:var(--muted);margin-left:4px">(개발 예정)</span>
-    </div>
-     <a href="task.jsp<%= projectQuery %>" class="nav-item <%= activeTask %>">
+<%
+String lastProjectId = (String) session.getAttribute("lastProjectId");
+String teamMemberUrl;
+
+if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
+    teamMemberUrl = request.getContextPath() + "/teamMemberManage.jsp?projectId=" + lastProjectId;
+} else {
+    teamMemberUrl = "javascript:alert('먼저 프로젝트를 선택하세요.')";
+}
+%>
+   <a href="<%= teamMemberUrl %>" class="nav-item <%= activeTeamMember %>">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+       <circle cx="9" cy="7" r="4"/>
+       <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+       <path d="M16 3.13a4 4 0 010 7.75"/>
+     </svg>
+     팀원 관리
+    </a>
+    <a href="task.jsp<%= projectQuery %>" class="nav-item">
+
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>

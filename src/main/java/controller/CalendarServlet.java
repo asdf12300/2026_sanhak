@@ -44,8 +44,8 @@ public class CalendarServlet extends HttpServlet {
                     if (!first) json.append(",");
                     first = false;
 
-                    String title  = esc(e.getTitle());
-                    String memo   = esc(e.getMemo());
+                    String title = esc(e.getTitle());
+                    String memo = esc(e.getMemo());
                     String status = esc(e.getTaskStatus());
                     String assignee = esc(e.getTaskAssignee());
 
@@ -90,6 +90,7 @@ public class CalendarServlet extends HttpServlet {
                     conn.rollback();
                     return;
                 }
+
                 CalendarDTO e = new CalendarDTO();
                 e.setProjectId(Integer.parseInt(projectIdStr));
                 e.setTitle(req.getParameter("title"));
@@ -115,6 +116,7 @@ public class CalendarServlet extends HttpServlet {
                 if (taskIdStr != null && !taskIdStr.isEmpty() && !taskIdStr.equals("null")) {
                     e.setTaskId(Integer.parseInt(taskIdStr));
                 }
+
                 dao.updateEvent(conn, e);
                 conn.commit();
 

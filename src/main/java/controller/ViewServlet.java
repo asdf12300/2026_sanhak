@@ -2,18 +2,23 @@ package controller;
 
 import model.ProjectDAO;
 import model.ProjectDTO;
+import model.ProjectMemberDAO;
+import model.LoginDTO;
+import model.ProjectMemberDTO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/view")
 public class ViewServlet extends HttpServlet {
-	
-	private static final long serialVersionUID = 1L;
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String idStr = request.getParameter("id");
 
         if (idStr == null || idStr.isEmpty()) {
@@ -22,7 +27,7 @@ public class ViewServlet extends HttpServlet {
             return;
         }
 
-        int id = 0;
+        int id;
         try {
             id = Integer.parseInt(idStr);
         } catch (NumberFormatException e) {
@@ -38,6 +43,10 @@ public class ViewServlet extends HttpServlet {
             request.setAttribute("error", "존재하지 않는 글입니다.");
         } else {
             request.setAttribute("dto", dto);
+
+            ProjectMemberDAO pmDao = new ProjectMemberDAO();
+            List<ProjectMemberDTO> members = pmDao.getMembersByProject(id);
+            request.setAttribute("members", members);
         }
 
         request.getRequestDispatcher("view.jsp").forward(request, response);

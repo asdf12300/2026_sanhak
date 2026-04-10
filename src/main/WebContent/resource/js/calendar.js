@@ -27,12 +27,15 @@ const yearSel  = document.getElementById('yearSel');
 
 MONTHS.forEach((m,i) => {
   const o = document.createElement('option');
-  o.value = i; o.textContent = m;
+  o.value = i;
+  o.textContent = m;
   monthSel.appendChild(o);
 });
+
 for (let y = today.getFullYear()-10; y <= today.getFullYear()+10; y++) {
   const o = document.createElement('option');
-  o.value = y; o.textContent = y + '년';
+  o.value = y;
+  o.textContent = y + '년';
   yearSel.appendChild(o);
 }
 
@@ -52,7 +55,7 @@ function renderCal() {
   });
 
   const first = new Date(curY, curM, 1).getDay();
-  const last  = new Date(curY, curM+1, 0).getDate();
+  const last  = new Date(curY, curM + 1, 0).getDate();
 
   for (let i = 0; i < first; i++) {
     const empty = document.createElement('div');
@@ -90,7 +93,7 @@ function renderCal() {
       more.textContent = '+' + (dayEvents.length - 2) + ' 더보기';
       more.onclick = (event) => {
         event.stopPropagation();
-        openMorePopup(dateStr, dayEvents); // ← 팝업 열기
+        openMorePopup(dateStr, dayEvents);
       };
       cell.appendChild(more);
     }
@@ -113,7 +116,6 @@ function openMorePopup(dateStr, dayEvents) {
     const item = document.createElement('div');
     item.className = 'more-popup-item cat-' + e.cat;
 
-    // task 연동된 경우 상태 배지 표시
     const badge = e.taskStatus
       ? `<span class="task-badge status-${e.taskStatus.replace(/ /g,'-')}">${e.taskStatus}</span>`
       : '';
@@ -146,7 +148,7 @@ document.getElementById('morePopupBg').onclick = (e) => {
 // 날짜 포맷
 // =====================
 function formatDate(y,m,d) {
-  return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
 }
 
 // =====================
@@ -241,15 +243,25 @@ document.getElementById('cancelBtn').onclick = closeModal;
 document.getElementById('modalBg').onclick = e => {
   if (e.target.id === 'modalBg') closeModal();
 };
+
 document.getElementById('prevBtn').onclick = () => {
-  curM--; if (curM < 0) { curM = 11; curY--; } loadEvents();
+  curM--;
+  if (curM < 0) { curM = 11; curY--; }
+  loadEvents();
 };
+
 document.getElementById('nextBtn').onclick = () => {
-  curM++; if (curM > 11) { curM = 0; curY++; } loadEvents();
+  curM++;
+  if (curM > 11) { curM = 0; curY++; }
+  loadEvents();
 };
+
 document.getElementById('todayBtn').onclick = () => {
-  curY = today.getFullYear(); curM = today.getMonth(); loadEvents();
+  curY = today.getFullYear();
+  curM = today.getMonth();
+  loadEvents();
 };
+
 monthSel.onchange = () => { curM = parseInt(monthSel.value); loadEvents(); };
 yearSel.onchange = () => { curY = parseInt(yearSel.value); loadEvents(); };
 
@@ -271,4 +283,7 @@ document.getElementById('evtCat').addEventListener('change', function() {
   }
 });
 
+// =====================
+// 최초 실행
+// =====================
 loadEvents();

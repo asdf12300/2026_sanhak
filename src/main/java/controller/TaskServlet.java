@@ -102,7 +102,8 @@ public class TaskServlet extends HttpServlet {
                     t.setProjectId(Integer.parseInt(projectIdStr));
                     t.setTitle(req.getParameter("title"));
                     t.setContent(req.getParameter("content"));
-                    t.setStatus("To Do");
+                    t.setStatus(req.getParameter("status") != null && !req.getParameter("status").isEmpty()
+                            ? req.getParameter("status") : "To Do");
                     t.setDeadline(req.getParameter("deadline"));
                     dao.insertTask(conn, t);
                     conn.commit();

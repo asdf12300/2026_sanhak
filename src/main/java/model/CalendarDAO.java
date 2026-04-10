@@ -1,13 +1,12 @@
 package model;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CalendarDAO {
 
-    // =====================
     // 프로젝트별 조회 (task JOIN)
-    // =====================
     public List<CalendarDTO> getEventsByProject(Connection conn, int projectId) throws Exception {
         List<CalendarDTO> list = new ArrayList<>();
         String sql = "SELECT c.*, t.status AS task_status, t.assignee AS task_assignee " +
@@ -39,15 +38,12 @@ public class CalendarDAO {
         return list;
     }
 
-    // =====================
-    // 등록 - category 1(중요)/3(업무)이면 task 자동 생성
-    // =====================
+    // 등록 - category 3(업무)이면 task 자동 생성
     public void insertEvent(Connection conn, CalendarDTO e) throws Exception {
         Integer finalTaskId = null;
 
-        // category 1(중요) 또는 3(업무)이면 task 먼저 생성
         if (e.getCategory() == 3) {
-        	String taskSql = "INSERT INTO task (project_id, title, status, deadline, assignee) " +
+            String taskSql = "INSERT INTO task (project_id, title, status, deadline, assignee) " +
                     "VALUES (?, ?, 'To Do', ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(taskSql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setInt(1, e.getProjectId());
@@ -62,7 +58,6 @@ public class CalendarDAO {
             }
         }
 
-        // calendar INSERT
         String calSql = "INSERT INTO calendar (project_id, task_id, event_date, event_time, title, category, memo, assignee) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(calSql)) {
@@ -79,12 +74,9 @@ public class CalendarDAO {
         }
     }
 
-    // =====================
     // 수정 - calendar + 연결된 task 동기화
-    // =====================
     public void updateEvent(Connection conn, CalendarDTO e) throws Exception {
-        // calendar 수정
-    	String calSql = "UPDATE calendar SET event_date=?, event_time=?, title=?, category=?, memo=?, assignee=? " +
+        String calSql = "UPDATE calendar SET event_date=?, event_time=?, title=?, category=?, memo=?, assignee=? " +
                 "WHERE event_id=?";
         try (PreparedStatement ps = conn.prepareStatement(calSql)) {
             ps.setString(1, e.getDate());
@@ -97,10 +89,9 @@ public class CalendarDAO {
             ps.executeUpdate();
         }
 
-        // 연결된 task 제목/deadline 동기화
         if (e.getTaskId() != null) {
-        	 String taskSql = "UPDATE task SET title=?, deadline=?, assignee=? WHERE id=?";
-        	    try (PreparedStatement ps = conn.prepareStatement(taskSql)) {
+            String taskSql = "UPDATE task SET title=?, deadline=?, assignee=? WHERE id=?";
+            try (PreparedStatement ps = conn.prepareStatement(taskSql)) {
                 ps.setString(1, e.getTitle());
                 ps.setString(2, e.getDate());
                 ps.setString(3, e.getAssignee());
@@ -110,11 +101,8 @@ public class CalendarDAO {
         }
     }
 
-    // =====================
     // 삭제 - 연결된 task도 함께 삭제
-    // =====================
     public void deleteEvent(Connection conn, int eventId) throws Exception {
-        // task_id 먼저 조회
         Integer taskId = null;
         String selectSql = "SELECT task_id FROM calendar WHERE event_id=?";
         try (PreparedStatement ps = conn.prepareStatement(selectSql)) {
@@ -124,14 +112,12 @@ public class CalendarDAO {
             }
         }
 
-        // calendar 삭제
         String calSql = "DELETE FROM calendar WHERE event_id=?";
         try (PreparedStatement ps = conn.prepareStatement(calSql)) {
             ps.setInt(1, eventId);
             ps.executeUpdate();
         }
 
-        // 연결된 task 삭제
         if (taskId != null) {
             String taskSql = "DELETE FROM task WHERE id=?";
             try (PreparedStatement ps = conn.prepareStatement(taskSql)) {

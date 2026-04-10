@@ -1,6 +1,9 @@
 package controller;
 
+import model.ProjectDAO;
+import model.ProjectDTO;
 import model.ProjectMemberDAO;
+import model.LoginDTO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -31,6 +34,24 @@ public class ProjectMemberServlet extends HttpServlet {
         int projectId = Integer.parseInt(projectIdStr);
         String msg;
 
+        String loginId = null;
+        if (req.getSession().getAttribute("id") != null) {
+            loginId = (String) req.getSession().getAttribute("id");
+        } else if (req.getSession().getAttribute("loginUser") != null) {
+            LoginDTO loginUser = (LoginDTO) req.getSession().getAttribute("loginUser");
+            if (loginUser != null) {
+                loginId = loginUser.getId();
+            }
+        }
+
+        ProjectDAO projectDao = new ProjectDAO();
+        ProjectDTO project = projectDao.getById(projectId);
+
+        boolean amILeader = false;
+        if (project != null && loginId != null && project.getTeam_leader() != null) {
+            amILeader = loginId.equals(project.getTeam_leader());
+        }
+
         if ("add".equals(action)) {
             if (!dao.memberExists(memberId)) {
                 msg = "존재하지 않는 아이디입니다.";
@@ -40,15 +61,30 @@ public class ProjectMemberServlet extends HttpServlet {
                 dao.addMember(projectId, memberId);
                 msg = memberId + " 님을 팀원으로 추가했습니다.";
             }
+
         } else if ("remove".equals(action)) {
-            dao.removeMember(projectId, memberId);
-            msg = memberId + " 님을 팀에서 제외했습니다.";
-        } else if ("setLeader".equals(action)) {
-            if (dao.setLeader(projectId, memberId)) {
-                msg = memberId + " 님을 팀장으로 지정했습니다.";
+            if (!amILeader) {
+                msg = "현재 팀장만 팀원을 제외할 수 있습니다.";
+            } else if (loginId != null && loginId.equals(memberId)) {
+                msg = "현재 팀장은 자기 자신을 제외할 수 없습니다.";
             } else {
-                msg = "팀장 지정에 실패했습니다.";
+                dao.removeMember(projectId, memberId);
+                msg = memberId + " 님을 팀에서 제외했습니다.";
             }
+
+        } else if ("setLeader".equals(action)) {
+            if (!amILeader) {
+                msg = "현재 팀장만 팀장을 변경할 수 있습니다.";
+            } else if (loginId != null && loginId.equals(memberId)) {
+                msg = "이미 현재 팀장입니다.";
+            } else {
+                if (dao.setLeader(projectId, memberId)) {
+                    msg = memberId + " 님을 팀장으로 지정했습니다.";
+                } else {
+                    msg = "팀장 지정에 실패했습니다.";
+                }
+            }
+
         } else {
             msg = "잘못된 요청입니다.";
         }
