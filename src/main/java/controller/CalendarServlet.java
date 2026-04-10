@@ -29,7 +29,12 @@ public class CalendarServlet extends HttpServlet {
             PrintWriter out = resp.getWriter();
 
             try (Connection conn = DBConnection.getConnection()) {
-                int projectId = Integer.parseInt(req.getParameter("projectId"));
+            	String pidStr = req.getParameter("projectId");
+            	if (pidStr == null || pidStr.isEmpty()) {
+            	    out.print("[]");
+            	    return;
+            	}
+            	int projectId = Integer.parseInt(pidStr);
                 List<CalendarDTO> list = dao.getEventsByProject(conn, projectId);
 
                 StringBuilder json = new StringBuilder();
@@ -73,12 +78,16 @@ public class CalendarServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         String action = req.getParameter("action");
 
-        try (Connection conn = DBConnection.getConnection()) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false);
 
             if ("save".equals(action)) {
                 String projectIdStr = req.getParameter("project_id");
                 if (projectIdStr == null || projectIdStr.isEmpty() || projectIdStr.equals("null")) {
                     resp.getWriter().print("error");
+                    conn.rollback();
                     return;
                 }
                 CalendarDTO e = new CalendarDTO();
@@ -88,7 +97,8 @@ public class CalendarServlet extends HttpServlet {
                 e.setTime(req.getParameter("time"));
                 e.setCategory(Integer.parseInt(req.getParameter("cat")));
                 e.setMemo(req.getParameter("memo"));
-                dao.insertEvent(conn, e); // category 보고 task 자동 생성
+                e.setAssignee(req.getParameter("assignee"));
+                dao.insertEvent(conn, e);
                 conn.commit();
 
             } else if ("update".equals(action)) {
@@ -100,7 +110,7 @@ public class CalendarServlet extends HttpServlet {
                 e.setTime(req.getParameter("time"));
                 e.setCategory(Integer.parseInt(req.getParameter("cat")));
                 e.setMemo(req.getParameter("memo"));
-
+                e.setAssignee(req.getParameter("assignee"));
                 String taskIdStr = req.getParameter("taskId");
                 if (taskIdStr != null && !taskIdStr.isEmpty() && !taskIdStr.equals("null")) {
                     e.setTaskId(Integer.parseInt(taskIdStr));
@@ -117,8 +127,11 @@ public class CalendarServlet extends HttpServlet {
             resp.getWriter().print("ok");
 
         } catch (Exception e) {
+            if (conn != null) try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
             e.printStackTrace();
             resp.getWriter().print("error");
+        } finally {
+            if (conn != null) try { conn.close(); } catch (Exception ex) { ex.printStackTrace(); }
         }
     }
 

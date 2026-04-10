@@ -12,6 +12,7 @@ public class CalendarDTO {
 	private Integer taskId;
 	private String taskStatus;
 	private String taskAssignee;
+	private String assignee;
 
 	public CalendarDTO() {
 	}
@@ -94,5 +95,13 @@ public class CalendarDTO {
 
 	public void setTaskAssignee(String taskAssignee) {
 		this.taskAssignee = taskAssignee;
+	}
+	
+	public String getAssignee() {
+		return assignee;
+	}
+
+	public void setAssignee(String assignee) {
+		this.assignee = assignee;
 	}
 }

@@ -21,6 +21,10 @@
       }
     } catch (Exception e) { }
   }
+  
+  String projectQuery = (projectIdParam != null && !projectIdParam.isEmpty())
+		    ? "?projectId=" + projectIdParam
+		    : "";
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -74,16 +78,11 @@
         </div>
       </div>
     </div>
-    <div class="card c5">
-      <div class="card-hd"><div class="card-t">주요 일정</div><span class="badge b-or">5개 예정</span></div>
-      <div class="sched-list">
-        <div class="sched-item urgent"><div class="sdot" style="background:var(--red)"></div><div class="stime">09:00</div><div class="stitle">디자인 시스템 최종 검토 회의</div><div class="swho">UX팀</div></div>
-        <div class="sched-item"><div class="sdot" style="background:var(--blue)"></div><div class="stime">11:30</div><div class="stitle">스프린트 플래닝 세션 #12</div><div class="swho">전체</div></div>
-        <div class="sched-item"><div class="sdot" style="background:var(--violet)"></div><div class="stime">14:00</div><div class="stitle">클라이언트 데모 발표</div><div class="swho">PM팀</div></div>
-        <div class="sched-item"><div class="sdot" style="background:var(--teal)"></div><div class="stime">16:00</div><div class="stitle">API 연동 테스트 완료 체크</div><div class="swho">개발팀</div></div>
-        <div class="sched-item done"><div class="sdot" style="background:var(--muted2)"></div><div class="stime">08:00</div><div class="stitle">데일리 스탠드업</div><div class="swho">전체</div></div>
-      </div>
-    </div>
+   <div class="card c5">
+  <div class="card-hd"><div class="card-t">주요 일정</div><span class="badge b-or" id="schedBadge"></span></div>
+  <div class="sched-list" id="schedList"></div>
+  <a href='calendar.jsp<%= projectQuery %>' style="display:block;margin-top:16px;text-decoration:none;"><span style="padding:7px 12px;border-radius:8px;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:600;">캘린더로 이동</span></a>
+</div>
     <div class="card c4">
       <div class="card-hd"><div class="card-t">업무 현황</div><span class="badge b-bl">이번 주</span></div>
       <div class="ws-list">
@@ -215,6 +214,72 @@ function sendChat() {
   var box = document.getElementById('chat-messages'); box.appendChild(msg); box.scrollTop = box.scrollHeight; inp.value = '';
 }
 document.getElementById('chat-input').addEventListener('keydown', function(e) { if (e.key==='Enter') sendChat(); });
+
+(function() {
+  var projectId = <%= currentProject != null ? currentProject.getId() : 0 %>;
+  if (!projectId) return;
+
+  var today = new Date();
+  var yyyy  = today.getFullYear();
+  var mm    = ('0' + (today.getMonth() + 1)).slice(-2);
+  var dd    = ('0' + today.getDate()).slice(-2);
+  var todayStr = yyyy + '-' + mm + '-' + dd;
+
+  var lastDay = new Date(yyyy, today.getMonth() + 1, 0);
+  var lastDD  = ('0' + lastDay.getDate()).slice(-2);
+  var lastStr = yyyy + '-' + mm + '-' + lastDD;
+
+  var catColor = {
+		  0: 'var(--blue)',    /* 일반 */
+		  1: 'var(--red)',     /* 중요 */
+		  2: 'var(--teal)',    /* 개인 */
+		  3: 'var(--orange)'  /* 업무 */
+		};
+  fetch('<%= request.getContextPath() %>/event?action=list&projectId=' + projectId)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      console.log('전체 데이터:', data);
+
+      var filtered = data.filter(function(e) {
+        return e.date >= todayStr && e.date <= lastStr;
+      }).sort(function(a, b) {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return (a.time || '').localeCompare(b.time || '');
+      }).slice(0, 4);
+
+      console.log('필터 후:', filtered);
+      document.getElementById('schedBadge').textContent = filtered.length + '개 예정';
+
+      if (filtered.length === 0) {
+        document.getElementById('schedList').innerHTML =
+          '<div class="sched-item"><div class="stitle">이번달 남은 일정이 없습니다</div></div>';
+        return;
+      }
+
+      var hh = ('0' + today.getHours()).slice(-2);
+      var mi = ('0' + today.getMinutes()).slice(-2);
+      var nowTime = hh + ':' + mi;
+
+      document.getElementById('schedList').innerHTML = filtered.map(function(e, i) {
+        var timeStr = e.time ? e.time.substring(0, 5) : e.date.substring(5).replace('-', '/');
+        var isPast  = e.date === todayStr && e.time && e.time.substring(0, 5) < nowTime;
+        var cls     = isPast ? 'done' : (i === 0 ? 'urgent' : '');
+        var color   = catColor[e.cat] || 'var(--blue)';
+        return '<div class="sched-item ' + cls + '" style="border-left:3px solid ' + color + ';">'
+        + '<div class="sdot" style="background:' + color + '"></div>'
+        + '<div class="stime">' + timeStr + '</div>'
+        + '<div class="stitle">' + e.title + '</div>'
+        + '<div class="swho">' + (e.taskAssignee || '') + '</div>'
+        + '</div>';
+      }).join('');
+    })
+    .catch(function(err) {
+      console.error('fetch 오류:', err);
+      document.getElementById('schedList').innerHTML =
+        '<div class="sched-item"><div class="stitle">일정을 불러올 수 없습니다</div></div>';
+    });
+})();
+
 </script>
 </body>
 </html>

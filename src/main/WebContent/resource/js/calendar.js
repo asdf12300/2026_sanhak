@@ -155,11 +155,13 @@ function formatDate(y,m,d) {
 function openNew(y,m,d) {
   editIdx = -1;
   document.getElementById('modalTitle').textContent = '일정 등록';
-  document.getElementById('evtTitle').value  = '';
-  document.getElementById('evtDate').value   = formatDate(y,m,d);
-  document.getElementById('evtTime').value   = '';
-  document.getElementById('evtCat').value    = '0';
-  document.getElementById('evtMemo').value   = '';
+  document.getElementById('evtTitle').value = '';
+  document.getElementById('evtDate').value = formatDate(y,m,d);
+  document.getElementById('evtTime').value = '';
+  document.getElementById('evtCat').value = '0';
+  document.getElementById('evtAssignee').value = '';
+  document.getElementById('evtAssignee').disabled = true;
+  document.getElementById('evtMemo').value = '';
   document.getElementById('delBtn').style.display = 'none';
   document.getElementById('modalBg').classList.add('open');
 }
@@ -168,11 +170,17 @@ function openEdit(idx) {
   editIdx = idx;
   const e = events[idx];
   document.getElementById('modalTitle').textContent = '일정 수정';
-  document.getElementById('evtTitle').value  = e.title;
-  document.getElementById('evtDate').value   = e.date;
-  document.getElementById('evtTime').value   = e.time || '';
-  document.getElementById('evtCat').value    = e.cat;
-  document.getElementById('evtMemo').value   = e.memo || '';
+  document.getElementById('evtTitle').value = e.title;
+  document.getElementById('evtDate').value = e.date;
+  document.getElementById('evtTime').value = e.time || '';
+  document.getElementById('evtCat').value = e.cat;
+  const input = document.getElementById('evtAssignee');
+  input.value = e.assignee || e.taskAssignee || '';
+  input.disabled = e.cat != 3;
+  input.style.background = e.cat == 3 ? '' : '#f3f4f6';
+  input.style.color = e.cat == 3 ? '' : '#9ca3af';
+  input.style.cursor = e.cat == 3 ? '' : 'not-allowed';
+  document.getElementById('evtMemo').value = e.memo || '';
   document.getElementById('delBtn').style.display = '';
   document.getElementById('modalBg').classList.add('open');
 }
@@ -190,17 +198,17 @@ document.getElementById('saveBtn').onclick = () => {
 
   const params = new URLSearchParams({
     action: editIdx >= 0 ? "update" : "save",
-    title:      title,
+    title: title,
     project_id: document.getElementById('evtProjectId').value,
-    date:       document.getElementById('evtDate').value,
-    time:       document.getElementById('evtTime').value,
-    cat:        parseInt(document.getElementById('evtCat').value),
-    memo:       document.getElementById('evtMemo').value
+    date: document.getElementById('evtDate').value,
+    time: document.getElementById('evtTime').value,
+    cat: parseInt(document.getElementById('evtCat').value),
+    memo: document.getElementById('evtMemo').value,
+    assignee: document.getElementById('evtAssignee').value || ''
   });
 
   if (editIdx >= 0) {
     params.append("id", events[editIdx].id);
-    // ↓ task 동기화를 위해 taskId도 전송
     if (events[editIdx].taskId != null) {
       params.append("taskId", events[editIdx].taskId);
     }
@@ -243,6 +251,24 @@ document.getElementById('todayBtn').onclick = () => {
   curY = today.getFullYear(); curM = today.getMonth(); loadEvents();
 };
 monthSel.onchange = () => { curM = parseInt(monthSel.value); loadEvents(); };
-yearSel.onchange  = () => { curY = parseInt(yearSel.value);  loadEvents(); };
+yearSel.onchange = () => { curY = parseInt(yearSel.value); loadEvents(); };
+
+document.getElementById('evtCat').addEventListener('change', function() {
+  const input = document.getElementById('evtAssignee');
+  if (this.value === '3') {
+    input.disabled = false;
+    input.style.background = '';
+    input.style.color = '';
+    input.style.cursor = '';
+    input.placeholder = '담당자 아이디 입력';
+  } else {
+    input.disabled = true;
+    input.value = '';
+    input.style.background = '#f3f4f6';
+    input.style.color = '#9ca3af';
+    input.style.cursor = 'not-allowed';
+    input.placeholder = '업무 담당자 아이디';
+  }
+});
 
 loadEvents();

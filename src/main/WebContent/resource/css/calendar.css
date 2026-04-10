@@ -272,3 +272,9 @@ select {
 .task-badge.status-To-Do      { background: #e2e8f0; color: #475569; }
 .task-badge.status-In-Progress { background: #fef3c7; color: #d97706; }
 .task-badge.status-Done        { background: #dcfce7; color: #16a34a; }
+
+/*대시보드 일정 연동*/
+.event-dot.cat-0 { border-left-color: #378ADD; background: #eff6ff; } /* 일반 - 파랑 */
+.event-dot.cat-1 { border-left-color: #ef4444; background: #fee2e2; } /* 중요 - 빨강 */
+.event-dot.cat-2 { border-left-color: #10b981; background: #d1fae5; } /* 개인 - 초록 */
+.event-dot.cat-3 { border-left-color: #f59e0b; background: #fef3c7; } /* 업무 - 노랑 */

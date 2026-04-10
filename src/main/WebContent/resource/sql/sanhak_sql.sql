@@ -6,13 +6,8 @@ email varchar(30) NOT NULL,
 tel varchar(15) NOT NULL
 )
 
-ALTER TABLE member DROP COLUMN tel;
-desc member;
 ALTER TABLE member ADD PRIMARY KEY (id);
-
 INSERT INTO member VALUES ('홍길동', 'hong123', '1234', 'hong@email.com', '010-1234-5678');
-
-select * from member;
 
 CREATE TABLE board (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -69,10 +64,6 @@ ALTER TABLE calendar ADD FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE SET
 INSERT INTO calendar (event_date, project_id, event_time, title, category, memo)
 VALUES ('2026-04-06', 1, '14:00:00', '팀 회의', 1, '주간 보고');
 
-WHERE YEAR(event_date) = 2026
-AND MONTH(event_date) = 4
-ORDER BY event_date, event_time;
-
 CREATE TABLE task (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     project_id  INT NOT NULL,
@@ -86,8 +77,8 @@ CREATE TABLE task (
     FOREIGN KEY (assignee)   REFERENCES member(id) ON DELETE SET NULL
 );
 
-truncate table project_member;
-
+--캘린더에 담당자를 지정하는 컬럼입니다. 실행해주세요--
+ALTER TABLE calendar ADD COLUMN assignee VARCHAR(50) NULL;
 
 select * from project_member;
 select * from member;

@@ -5,6 +5,8 @@
 !**/db.properties.example
 !**/context.xml.example
 !**/DBConnection.java.example
+bin/
+*.jar
 
 # Kiro 개인 작업 공간
 .kiro/
