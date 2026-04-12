@@ -39,6 +39,29 @@ public class TaskServlet extends HttpServlet {
         int projectId = 0;
         try { projectId = Integer.parseInt(req.getParameter("projectId")); } catch (Exception e) {}
 
+        // 팀원 목록 요청
+        if ("members".equals(req.getParameter("type"))) {
+            try (Connection conn = DBConnection.getConnection()) {
+                List<model.ProjectMemberDTO> members = dao.getProjectMembers(conn, projectId);
+                StringBuilder json = new StringBuilder("[");
+                boolean first = true;
+                for (model.ProjectMemberDTO m : members) {
+                    if (!first) json.append(",");
+                    first = false;
+                    json.append("{")
+                        .append("\"id\":\"").append(esc(m.getMemberId())).append("\",")
+                        .append("\"name\":\"").append(esc(m.getName())).append("\"")
+                        .append("}");
+                }
+                json.append("]");
+                out.print(json.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+                out.print("[]");
+            }
+            return;
+        }
+
         try (Connection conn = DBConnection.getConnection()) {
             List<TaskDTO> list = dao.getAllTasks(conn, projectId);
 
@@ -81,6 +104,7 @@ public class TaskServlet extends HttpServlet {
             System.out.println("2. 설정 로드 완료: " + prop.getProperty("url"));
 
             try (Connection conn = DBConnection.getConnection()) {
+            	conn.setAutoCommit(false);
                 System.out.println("3. DB 연결 성공 여부: " + (conn != null));
 
                 if ("save".equals(action)) {

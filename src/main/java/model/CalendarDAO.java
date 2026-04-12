@@ -6,6 +6,28 @@ import java.util.List;
 
 public class CalendarDAO {
 
+    // 프로젝트 팀원 목록 (accepted 상태)
+    public List<model.ProjectMemberDTO> getProjectMembers(Connection conn, int projectId) throws Exception {
+        List<model.ProjectMemberDTO> list = new ArrayList<>();
+        String sql = "SELECT pm.member_id, m.name " +
+                     "FROM project_member pm " +
+                     "LEFT JOIN member m ON pm.member_id = m.id " +
+                     "WHERE pm.project_id = ? AND pm.status = 'accepted' " +
+                     "ORDER BY m.name";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, projectId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    model.ProjectMemberDTO dto = new model.ProjectMemberDTO();
+                    dto.setMemberId(rs.getString("member_id"));
+                    dto.setName(rs.getString("name"));
+                    list.add(dto);
+                }
+            }
+        }
+        return list;
+    }
+
     // 프로젝트별 조회 (task JOIN)
     public List<CalendarDTO> getEventsByProject(Connection conn, int projectId) throws Exception {
         List<CalendarDTO> list = new ArrayList<>();
@@ -41,6 +63,7 @@ public class CalendarDAO {
     // 등록 - category 3(업무)이면 task 자동 생성
     public void insertEvent(Connection conn, CalendarDTO e) throws Exception {
         Integer finalTaskId = null;
+        String assignee = (e.getAssignee() == null || e.getAssignee().trim().isEmpty()) ? null : e.getAssignee().trim();
 
         if (e.getCategory() == 3) {
             String taskSql = "INSERT INTO task (project_id, title, status, deadline, assignee) " +
@@ -49,7 +72,8 @@ public class CalendarDAO {
                 ps.setInt(1, e.getProjectId());
                 ps.setString(2, e.getTitle());
                 ps.setString(3, e.getDate());
-                ps.setString(4, e.getAssignee());
+                if (assignee == null) ps.setNull(4, Types.VARCHAR);
+                else ps.setString(4, assignee);
                 ps.executeUpdate();
                 try (ResultSet keys = ps.getGeneratedKeys()) {
                     if (!keys.next()) throw new SQLException("task 생성 실패");
@@ -69,13 +93,16 @@ public class CalendarDAO {
             ps.setString(5, e.getTitle());
             ps.setInt(6, e.getCategory());
             ps.setString(7, e.getMemo());
-            ps.setString(8, e.getAssignee());
+            if (assignee == null) ps.setNull(8, Types.VARCHAR);
+            else ps.setString(8, assignee);
             ps.executeUpdate();
         }
     }
 
     // 수정 - calendar + 연결된 task 동기화
     public void updateEvent(Connection conn, CalendarDTO e) throws Exception {
+        String assignee = (e.getAssignee() == null || e.getAssignee().trim().isEmpty()) ? null : e.getAssignee().trim();
+
         String calSql = "UPDATE calendar SET event_date=?, event_time=?, title=?, category=?, memo=?, assignee=? " +
                 "WHERE event_id=?";
         try (PreparedStatement ps = conn.prepareStatement(calSql)) {
@@ -84,7 +111,8 @@ public class CalendarDAO {
             ps.setString(3, e.getTitle());
             ps.setInt(4, e.getCategory());
             ps.setString(5, e.getMemo());
-            ps.setString(6, e.getAssignee());
+            if (assignee == null) ps.setNull(6, Types.VARCHAR);
+            else ps.setString(6, assignee);
             ps.setInt(7, e.getId());
             ps.executeUpdate();
         }
@@ -94,7 +122,8 @@ public class CalendarDAO {
             try (PreparedStatement ps = conn.prepareStatement(taskSql)) {
                 ps.setString(1, e.getTitle());
                 ps.setString(2, e.getDate());
-                ps.setString(3, e.getAssignee());
+                if (assignee == null) ps.setNull(3, Types.VARCHAR);
+                else ps.setString(3, assignee);
                 ps.setInt(4, e.getTaskId());
                 ps.executeUpdate();
             }

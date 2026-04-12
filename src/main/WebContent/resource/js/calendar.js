@@ -6,6 +6,7 @@ let curY = today.getFullYear();
 let curM = today.getMonth();
 let events = [];
 let editIdx = -1;
+let currentFilter = 'all';
 
 // =====================
 // 서버에서 데이터 불러오기
@@ -17,6 +18,30 @@ function loadEvents() {
     .then(res => res.json())
     .then(data => { events = data; renderCal(); })
     .catch(() => { events = []; renderCal(); });
+}
+
+let calProjectMembers = [];
+
+function loadCalMembers() {
+  const el = document.getElementById('evtProjectId');
+  const projectId = el ? el.value : '';
+  if (!projectId) return Promise.resolve();
+  return fetch(contextPath + "/event?action=members&projectId=" + projectId)
+    .then(r => r.json())
+    .then(data => { calProjectMembers = data; })
+    .catch(() => { calProjectMembers = []; });
+}
+
+function populateCalAssigneeSelect(selectedId) {
+  const sel = document.getElementById('evtAssignee');
+  sel.innerHTML = '<option value="">-- 담당자 선택 --</option>';
+  calProjectMembers.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.name ? m.name + ' (' + m.id + ')' : m.id;
+    if (m.id === selectedId) opt.selected = true;
+    sel.appendChild(opt);
+  });
 }
 
 // =====================
@@ -161,8 +186,12 @@ function openNew(y,m,d) {
   document.getElementById('evtDate').value = formatDate(y,m,d);
   document.getElementById('evtTime').value = '';
   document.getElementById('evtCat').value = '0';
-  document.getElementById('evtAssignee').value = '';
-  document.getElementById('evtAssignee').disabled = true;
+  const sel = document.getElementById('evtAssignee');
+  sel.value = '';
+  sel.disabled = true;
+  sel.style.background = '#f3f4f6';
+  sel.style.color = '#9ca3af';
+  sel.style.cursor = 'not-allowed';
   document.getElementById('evtMemo').value = '';
   document.getElementById('delBtn').style.display = 'none';
   document.getElementById('modalBg').classList.add('open');
@@ -176,12 +205,21 @@ function openEdit(idx) {
   document.getElementById('evtDate').value = e.date;
   document.getElementById('evtTime').value = e.time || '';
   document.getElementById('evtCat').value = e.cat;
-  const input = document.getElementById('evtAssignee');
-  input.value = e.assignee || e.taskAssignee || '';
-  input.disabled = e.cat != 3;
-  input.style.background = e.cat == 3 ? '' : '#f3f4f6';
-  input.style.color = e.cat == 3 ? '' : '#9ca3af';
-  input.style.cursor = e.cat == 3 ? '' : 'not-allowed';
+  const sel = document.getElementById('evtAssignee');
+  const currentAssignee = e.assignee || e.taskAssignee || '';
+  if (e.cat == 3) {
+    sel.disabled = false;
+    sel.style.background = '';
+    sel.style.color = '';
+    sel.style.cursor = '';
+    populateCalAssigneeSelect(currentAssignee);
+  } else {
+    sel.disabled = true;
+    sel.style.background = '#f3f4f6';
+    sel.style.color = '#9ca3af';
+    sel.style.cursor = 'not-allowed';
+    sel.innerHTML = '<option value="">-- 담당자 선택 --</option>';
+  }
   document.getElementById('evtMemo').value = e.memo || '';
   document.getElementById('delBtn').style.display = '';
   document.getElementById('modalBg').classList.add('open');
@@ -266,24 +304,23 @@ monthSel.onchange = () => { curM = parseInt(monthSel.value); loadEvents(); };
 yearSel.onchange = () => { curY = parseInt(yearSel.value); loadEvents(); };
 
 document.getElementById('evtCat').addEventListener('change', function() {
-  const input = document.getElementById('evtAssignee');
+  const sel = document.getElementById('evtAssignee');
   if (this.value === '3') {
-    input.disabled = false;
-    input.style.background = '';
-    input.style.color = '';
-    input.style.cursor = '';
-    input.placeholder = '담당자 아이디 입력';
+    sel.disabled = false;
+    sel.style.background = '';
+    sel.style.color = '';
+    sel.style.cursor = '';
+    populateCalAssigneeSelect('');
   } else {
-    input.disabled = true;
-    input.value = '';
-    input.style.background = '#f3f4f6';
-    input.style.color = '#9ca3af';
-    input.style.cursor = 'not-allowed';
-    input.placeholder = '업무 담당자 아이디';
+    sel.disabled = true;
+    sel.innerHTML = '<option value="">-- 담당자 선택 --</option>';
+    sel.style.background = '#f3f4f6';
+    sel.style.color = '#9ca3af';
+    sel.style.cursor = 'not-allowed';
   }
 });
 
 // =====================
 // 최초 실행
 // =====================
-loadEvents();
+loadCalMembers().then(() => loadEvents());
