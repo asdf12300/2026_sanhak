@@ -53,7 +53,7 @@ public class CalendarServlet extends HttpServlet {
                     json.append("{");
                     json.append("\"id\":").append(e.getId()).append(",");
                     json.append("\"title\":\"").append(title).append("\",");
-                    json.append("\"date\":\"").append(e.getDate()).append("\",");
+                    json.append("\"date\":\"").append(e.getDate() == null ? "" : e.getDate().substring(0, Math.min(10, e.getDate().length()))).append("\",");
                     json.append("\"time\":\"").append(e.getTime() == null ? "" : e.getTime()).append("\",");
                     json.append("\"cat\":").append(e.getCategory()).append(",");
                     json.append("\"memo\":\"").append(memo).append("\",");

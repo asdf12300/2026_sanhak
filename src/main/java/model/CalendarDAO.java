@@ -31,7 +31,10 @@ public class CalendarDAO {
     // 프로젝트별 조회 (task JOIN)
     public List<CalendarDTO> getEventsByProject(Connection conn, int projectId) throws Exception {
         List<CalendarDTO> list = new ArrayList<>();
-        String sql = "SELECT c.*, t.status AS task_status, t.assignee AS task_assignee " +
+        String sql = "SELECT c.event_id, c.project_id, c.task_id, " +
+                     "DATE_FORMAT(c.event_date, '%Y-%m-%d') AS event_date, " +
+                     "c.event_time, c.title, c.category, c.memo, c.assignee, " +
+                     "t.status AS task_status, t.assignee AS task_assignee " +
                      "FROM calendar c " +
                      "LEFT JOIN task t ON c.task_id = t.id " +
                      "WHERE c.project_id = ? " +

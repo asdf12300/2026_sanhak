@@ -16,7 +16,11 @@ function loadEvents() {
   const projectId = el ? el.value : '';
   fetch(contextPath + "/event?action=list&projectId=" + projectId)
     .then(res => res.json())
-    .then(data => { events = data; renderCal(); })
+    .then(data => {
+      // date 필드를 항상 "YYYY-MM-DD" 10자리로 정규화
+      events = data.map(e => ({ ...e, date: e.date ? e.date.substring(0, 10) : '' }));
+      renderCal();
+    })
     .catch(() => { events = []; renderCal(); });
 }
 
@@ -126,11 +130,69 @@ function renderCal() {
     cell.onclick = () => openNew(curY, curM, d);
     grid.appendChild(cell);
   }
+
+  renderMonthList();
 }
 
 // =====================
-// +N 더보기 팝업
+// 이달의 일정 리스트
 // =====================
+function renderMonthList() {
+  const list = document.getElementById('monthEventList');
+  const sidebarTitle = document.getElementById('sidebarTitle');
+  if (!list) return;
+
+  if (sidebarTitle) {
+    sidebarTitle.textContent = curY + '년 ' + MONTHS[curM] + ' 일정';
+  }
+
+  const CAT_LABELS = ['일반', '중요', '개인', '업무'];
+  const rows = [];
+
+  for (let i = 0; i < events.length; i++) {
+    const e = events[i];
+    if (!e.date || e.date.length < 7) continue;
+    const yy = parseInt(e.date.substring(0, 4), 10);
+    const mm = parseInt(e.date.substring(5, 7), 10) - 1;
+    if (yy === curY && mm === curM) {
+      rows.push({ e: e, idx: i });
+    }
+  }
+
+  rows.sort(function(a, b) {
+    if (a.e.date < b.e.date) return -1;
+    if (a.e.date > b.e.date) return 1;
+    var ta = a.e.time || '';
+    var tb = b.e.time || '';
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
+  });
+
+  if (rows.length === 0) {
+    list.innerHTML = '<div class="month-event-empty">일정이 없습니다.</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < rows.length; i++) {
+    var e = rows[i].e;
+    var idx = rows[i].idx;
+    var parts = e.date.split('-');
+    var dayNum = parseInt(parts[2], 10);
+    var dayName = ['일','월','화','수','목','금','토'][new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, dayNum).getDay()];
+    var catLabel = CAT_LABELS[e.cat] !== undefined ? CAT_LABELS[e.cat] : '';
+    var badge = (e.taskStatus && e.taskStatus !== '')
+      ? '<span class="task-badge status-' + e.taskStatus.replace(/ /g,'-') + '">' + e.taskStatus + '</span>'
+      : '<span class="task-badge" style="background:#f1f5f9;color:#64748b">' + catLabel + '</span>';
+    var timeStr = (e.time && e.time.length >= 5) ? '<span class="month-event-time">' + e.time.substring(0,5) + '</span>' : '';
+    html += '<div class="month-event-item cat-' + e.cat + '" onclick="openEdit(' + idx + ')">'
+          + '<div class="month-event-date">' + dayNum + '일 (' + dayName + ')</div>'
+          + '<div class="month-event-title">' + e.title + '</div>'
+          + '<div class="month-event-meta">' + timeStr + badge + '</div>'
+          + '</div>';
+  }
+  list.innerHTML = html;
+}
+
 function openMorePopup(dateStr, dayEvents) {
   document.getElementById('morePopupDate').textContent = dateStr + ' 일정';
 
