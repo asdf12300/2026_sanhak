@@ -87,3 +87,33 @@ select * from calendar;
 select * from task;
 
 drop table task;
+
+
+-- 회의록 테이블
+CREATE TABLE meeting_minutes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    meeting_date DATE NOT NULL,
+    content TEXT NOT NULL,
+    created_by VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_modified_by VARCHAR(20),
+    last_modified_at TIMESTAMP NULL,
+    
+    FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES member(id) ON DELETE RESTRICT,
+    FOREIGN KEY (last_modified_by) REFERENCES member(id) ON DELETE SET NULL
+);
+
+-- 회의록 수정 이력 테이블
+CREATE TABLE meeting_minutes_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    minutes_id INT NOT NULL,
+    modified_by VARCHAR(20) NOT NULL,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    content_before TEXT,
+    
+    FOREIGN KEY (minutes_id) REFERENCES meeting_minutes(id) ON DELETE CASCADE,
+    FOREIGN KEY (modified_by) REFERENCES member(id) ON DELETE RESTRICT
+);

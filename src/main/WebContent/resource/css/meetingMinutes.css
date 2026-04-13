@@ -1,0 +1,364 @@
+/* 회의록 메인 레이아웃 */
+.main-content {
+    margin-left: 224px;
+    padding: 28px;
+    min-height: 100vh;
+}
+
+.content-container {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 회의록 헤더 */
+.minutes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.minutes-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.btn-create {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37,99,235,.30);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.16s;
+    font-family: inherit;
+}
+
+.btn-create svg {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-create:hover {
+    background: var(--blue-dark);
+    transform: translateY(-1px);
+}
+
+/* 회의록 목록 */
+.minutes-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.minutes-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #667eea;
+    border-radius: 8px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: fadeUp 0.38s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.minutes-card:nth-child(1) { animation-delay: 0s; }
+.minutes-card:nth-child(2) { animation-delay: 0.06s; }
+.minutes-card:nth-child(3) { animation-delay: 0.12s; }
+.minutes-card:nth-child(4) { animation-delay: 0.18s; }
+.minutes-card:nth-child(5) { animation-delay: 0.24s; }
+.minutes-card:nth-child(6) { animation-delay: 0.30s; }
+.minutes-card:nth-child(7) { animation-delay: 0.36s; }
+.minutes-card:nth-child(8) { animation-delay: 0.42s; }
+.minutes-card:nth-child(9) { animation-delay: 0.48s; }
+.minutes-card:nth-child(10) { animation-delay: 0.54s; }
+
+.minutes-card:hover {
+    border-left-color: #764ba2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transform: translateX(4px);
+}
+
+.minutes-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.minutes-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue), #60a5fa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.minutes-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+}
+
+.minutes-card-info {
+    flex: 1;
+}
+
+.minutes-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.minutes-card-date {
+    font-size: 13px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.minutes-card-date svg {
+    width: 14px;
+    height: 14px;
+}
+
+.minutes-card-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #9ca3af;
+    align-items: center;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.meta-item svg {
+    width: 14px;
+    height: 14px;
+    stroke: #9ca3af;
+}
+
+/* 빈 상태 */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.empty-state svg {
+    width: 64px;
+    height: 64px;
+    stroke: var(--muted2);
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+/* 모달 오버레이 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 모달 컨테이너 */
+.modal-container {
+    max-width: 900px;
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+    overflow: hidden;
+    animation: slideUp 0.4s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 모달 헤더 */
+.modal-header {
+    background: linear-gradient(135deg, var(--blue) 0%, #60a5fa 100%);
+    color: white;
+    padding: 32px;
+    text-align: center;
+    position: relative;
+}
+
+.modal-header::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: white;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.modal-header h2 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.modal-header p {
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+/* 모달 바디 */
+.modal-body {
+    padding: 40px;
+}
+
+/* 폼 그룹 */
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group textarea {
+    min-height: 300px;
+    resize: vertical;
+}
+
+/* 모달 버튼 */
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.modal-btn-primary {
+    background: linear-gradient(135deg, var(--blue) 0%, #60a5fa 100%);
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.modal-btn-secondary {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.modal-btn-secondary:hover {
+    background: #e0e0e0;
+}

@@ -195,6 +195,28 @@ public class ProjectMemberDAO {
         }
     }
 
+    // 프로젝트에 실제 참여 중인 멤버인지 확인 (accepted 상태만)
+    public boolean isActiveMember(int projectId, String memberId) {
+        String sql =
+            "SELECT id FROM project_member " +
+            "WHERE project_id = ? AND member_id = ? AND status = 'accepted'";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, projectId);
+            ps.setString(2, memberId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // 팀장 지정
     public boolean setLeader(int projectId, String memberId) {
         String sql = "UPDATE board SET team_leader = ? WHERE id = ?";
