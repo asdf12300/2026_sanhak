@@ -53,10 +53,11 @@
     </select>
     
     <div id="assigneeWrap">
-	  <label>담당자 아이디</label>
-	  <input type="text" id="evtAssignee" placeholder="업무 담당자 아이디" disabled
-	    style="background:#f3f4f6;color:#9ca3af;cursor:not-allowed;">
-	</div>
+      <label>담당자</label>
+      <select id="evtAssignee" disabled style="background:#f3f4f6;color:#9ca3af;cursor:not-allowed;">
+        <option value="">-- 담당자 선택 --</option>
+      </select>
+    </div>
 	
     <label>메모</label>
     <textarea id="evtMemo"></textarea>

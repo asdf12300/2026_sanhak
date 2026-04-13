@@ -48,6 +48,7 @@ public class CalendarServlet extends HttpServlet {
                     String memo = esc(e.getMemo());
                     String status = esc(e.getTaskStatus());
                     String assignee = esc(e.getTaskAssignee());
+                    String calAssignee = esc(e.getAssignee());
 
                     json.append("{");
                     json.append("\"id\":").append(e.getId()).append(",");
@@ -58,12 +59,38 @@ public class CalendarServlet extends HttpServlet {
                     json.append("\"memo\":\"").append(memo).append("\",");
                     json.append("\"taskId\":").append(e.getTaskId() == null ? "null" : e.getTaskId()).append(",");
                     json.append("\"taskStatus\":\"").append(status).append("\",");
-                    json.append("\"taskAssignee\":\"").append(assignee).append("\"");
+                    json.append("\"taskAssignee\":\"").append(assignee).append("\",");
+                    json.append("\"assignee\":\"").append(calAssignee).append("\"");
                     json.append("}");
                 }
                 json.append("]");
                 out.print(json.toString());
 
+            } catch (Exception e) {
+                e.printStackTrace();
+                out.print("[]");
+            }
+
+        } else if ("members".equals(action)) {
+            resp.setContentType("application/json;charset=UTF-8");
+            PrintWriter out = resp.getWriter();
+            String pidStr = req.getParameter("projectId");
+            if (pidStr == null || pidStr.isEmpty()) { out.print("[]"); return; }
+            int projectId = Integer.parseInt(pidStr);
+            try (Connection conn = DBConnection.getConnection()) {
+                List<model.ProjectMemberDTO> members = dao.getProjectMembers(conn, projectId);
+                StringBuilder json = new StringBuilder("[");
+                boolean first = true;
+                for (model.ProjectMemberDTO m : members) {
+                    if (!first) json.append(",");
+                    first = false;
+                    json.append("{")
+                        .append("\"id\":\"").append(esc(m.getMemberId())).append("\",")
+                        .append("\"name\":\"").append(esc(m.getName())).append("\"")
+                        .append("}");
+                }
+                json.append("]");
+                out.print(json.toString());
             } catch (Exception e) {
                 e.printStackTrace();
                 out.print("[]");

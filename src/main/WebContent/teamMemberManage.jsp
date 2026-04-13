@@ -70,6 +70,7 @@ if (project != null) {
     body {
         margin: 0;
         padding: 30px;
+        padding-left: 260px;
         background: #f5f7fb;
         font-family: Arial, sans-serif;
     }
@@ -166,8 +167,9 @@ if (project != null) {
     .btn-green {
         background: #22c55e;
     }
+
     .btn-gray {
-    background: #6b7280;
+        background: #6b7280;
     }
 
     .status-invited {
@@ -199,20 +201,19 @@ if (project != null) {
         color: #94a3b8;
     }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resource/css/index.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resource/css/calendar.css?v=1.0">
 </head>
 <body>
+<jsp:include page="sidebar.jsp"/>
 <div class="wrapper">
 
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 style="margin:0;">팀원 관리</h1>
-
-        <button onclick="location.href='<%=request.getContextPath()%>/index.jsp?projectId=<%= projectId %>'" 
-        class="btn btn-gray">
-         목록으로 돌아가기
-        </button>
+            <h1 style="margin:0;">팀원 관리</h1>
         </div>
-        <p>프로젝트 번호: <strong><%= projectId %></strong></p>
 
         <% if (msg != null && !msg.trim().isEmpty()) { %>
             <div class="message"><%= msg %></div>
@@ -230,7 +231,6 @@ if (project != null) {
         <table>
             <tr>
                 <th>번호</th>
-                <th>프로젝트 번호</th>
                 <th>회원 아이디</th>
                 <th>이름</th>
                 <th>역할</th>
@@ -248,7 +248,6 @@ if (project != null) {
                     %>
                     <tr>
                         <td><%= dto.getPmNo() %></td>
-                        <td><%= dto.getProjectId() %></td>
                         <td><%= dto.getMemberId() %></td>
                         <td><%= dto.getName() != null ? dto.getName() : "-" %></td>
                         <td>
@@ -287,54 +286,7 @@ if (project != null) {
                 <% } %>
             <% } else { %>
                 <tr>
-                    <td colspan="8">등록된 팀원 또는 초대 내역이 없습니다.</td>
-                </tr>
-            <% } %>
-        </table>
-    </div>
-
-    <div class="card">
-        <h2>내가 받은 초대</h2>
-        <table>
-            <tr>
-                <th>번호</th>
-                <th>프로젝트 번호</th>
-                <th>회원 아이디</th>
-                <th>역할</th>
-                <th>상태</th>
-                <th>초대일</th>
-                <th>처리</th>
-            </tr>
-
-            <% if (receivedInviteList != null && !receivedInviteList.isEmpty()) { %>
-                <% for (ProjectMemberDTO dto : receivedInviteList) { %>
-                    <tr>
-                        <td><%= dto.getPmNo() %></td>
-                        <td><%= dto.getProjectId() %></td>
-                        <td><%= dto.getMemberId() %></td>
-                        <td><%= dto.getRole() != null ? dto.getRole() : "팀원" %></td>
-                        <td class="status-<%= dto.getStatus() %>"><%= dto.getStatus() %></td>
-                        <td><%= dto.getInvitedAt() != null ? dto.getInvitedAt() : "-" %></td>
-                        <td>
-                            <form action="<%=request.getContextPath()%>/teamMemberAction" method="post" class="inline-form">
-                                <input type="hidden" name="action" value="accept">
-                                <input type="hidden" name="projectId" value="<%= dto.getProjectId() %>">
-                                <input type="hidden" name="pmNo" value="<%= dto.getPmNo() %>">
-                                <button type="submit" class="btn btn-green">수락</button>
-                            </form>
-
-                            <form action="<%=request.getContextPath()%>/teamMemberAction" method="post" class="inline-form">
-                                <input type="hidden" name="action" value="reject">
-                                <input type="hidden" name="projectId" value="<%= dto.getProjectId() %>">
-                                <input type="hidden" name="pmNo" value="<%= dto.getPmNo() %>">
-                                <button type="submit" class="btn btn-red">거절</button>
-                            </form>
-                        </td>
-                    </tr>
-                <% } %>
-            <% } else { %>
-                <tr>
-                    <td colspan="7">받은 초대가 없습니다.</td>
+                    <td colspan="7">등록된 팀원 또는 초대 내역이 없습니다.</td>
                 </tr>
             <% } %>
         </table>

@@ -1,6 +1,28 @@
 let tasks = [];
 let editId = -1;
 let currentFilter = 'all';
+let projectMembers = []; // 프로젝트 팀원 캐시
+
+// ── 팀원 목록 로드 ──
+function loadMembers() {
+  return fetch("taskApi?projectId=" + PROJECT_ID + "&type=members")
+    .then(r => r.json())
+    .then(data => { projectMembers = data; })
+    .catch(() => { projectMembers = []; });
+}
+
+// ── 담당자 드롭다운 채우기 ──
+function populateAssigneeSelect(selectedId) {
+  const sel = document.getElementById('taskAssignee');
+  sel.innerHTML = '<option value="">-- 담당자 선택 --</option>';
+  projectMembers.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.name ? m.name + ' (' + m.id + ')' : m.id;
+    if (m.id === selectedId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
 
 // ── 데이터 로드 ──
 function loadTasks() {
@@ -49,11 +71,11 @@ function openNew() {
   editId = -1;
   document.getElementById('modalTitle').textContent = '업무 추가';
   document.getElementById('taskTitle').value = '';
-  document.getElementById('taskAssignee').value = '';
   document.getElementById('taskStatus').value = 'To Do';
   document.getElementById('taskDeadline').value = '';
   document.getElementById('taskContent').value = '';
   document.getElementById('delBtn').style.display = 'none';
+  populateAssigneeSelect('');
   document.getElementById('modalBg').classList.add('open');
 }
 
@@ -63,11 +85,11 @@ function openEdit(id) {
   editId = id;
   document.getElementById('modalTitle').textContent = '업무 수정';
   document.getElementById('taskTitle').value    = t.title;
-  document.getElementById('taskAssignee').value = t.assignee || '';
   document.getElementById('taskStatus').value   = t.status;
   document.getElementById('taskDeadline').value = t.deadline || '';
   document.getElementById('taskContent').value  = t.content || '';
   document.getElementById('delBtn').style.display = '';
+  populateAssigneeSelect(t.assignee || '');
   document.getElementById('modalBg').classList.add('open');
 }
 
@@ -143,5 +165,5 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('modalBg').onclick = e => {
     if (e.target.id === 'modalBg') closeModal();
   };
-  loadTasks();
+  loadMembers().then(() => loadTasks());
 });

@@ -88,8 +88,10 @@
     <label>제목</label>
     <input type="text" id="taskTitle">
 
-    <label>담당자 아이디</label>
-    <input type="text" id="taskAssignee" placeholder="담당자 아이디">
+    <label>담당자</label>
+    <select id="taskAssignee">
+      <option value="">-- 담당자 선택 --</option>
+    </select>
 
     <label>상태</label>
     <select id="taskStatus">
