@@ -27,6 +27,7 @@ CREATE TABLE project_member (
     FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
     FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE
 );
+alter table project_member add column role varchar(50) default '팀원';
 
 CREATE TABLE calendar (
     event_id    INT NOT NULL AUTO_INCREMENT PRIMARY KEY,

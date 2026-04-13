@@ -43,13 +43,14 @@ public class CalendarDAO {
         Integer finalTaskId = null;
 
         if (e.getCategory() == 3) {
-            String taskSql = "INSERT INTO task (project_id, title, status, deadline, assignee) " +
-                    "VALUES (?, ?, 'To Do', ?, ?)";
-            try (PreparedStatement ps = conn.prepareStatement(taskSql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(1, e.getProjectId());
-                ps.setString(2, e.getTitle());
-                ps.setString(3, e.getDate());
-                ps.setString(4, e.getAssignee());
+        	String taskSql = "INSERT INTO task (project_id, title, content, status, deadline, assignee) " +
+        	        "VALUES (?, ?, ?, 'To Do', ?, ?)";
+        	try (PreparedStatement ps = conn.prepareStatement(taskSql, Statement.RETURN_GENERATED_KEYS)) {
+        	    ps.setInt(1, e.getProjectId());
+        	    ps.setString(2, e.getTitle());
+        	    ps.setString(3, e.getMemo());
+        	    ps.setString(4, e.getDate());
+        	    ps.setString(5, e.getAssignee());
                 ps.executeUpdate();
                 try (ResultSet keys = ps.getGeneratedKeys()) {
                     if (!keys.next()) throw new SQLException("task 생성 실패");
@@ -90,12 +91,13 @@ public class CalendarDAO {
         }
 
         if (e.getTaskId() != null) {
-            String taskSql = "UPDATE task SET title=?, deadline=?, assignee=? WHERE id=?";
-            try (PreparedStatement ps = conn.prepareStatement(taskSql)) {
-                ps.setString(1, e.getTitle());
-                ps.setString(2, e.getDate());
-                ps.setString(3, e.getAssignee());
-                ps.setInt(4, e.getTaskId());
+        	String taskSql = "UPDATE task SET title=?, deadline=?, assignee=?, content=? WHERE id=?";
+        	try (PreparedStatement ps = conn.prepareStatement(taskSql)) {
+        	    ps.setString(1, e.getTitle());
+        	    ps.setString(2, e.getDate());
+        	    ps.setString(3, e.getAssignee());
+        	    ps.setString(4, e.getMemo());
+        	    ps.setInt(5, e.getTaskId());
                 ps.executeUpdate();
             }
         }

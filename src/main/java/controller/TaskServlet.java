@@ -81,6 +81,7 @@ public class TaskServlet extends HttpServlet {
             System.out.println("2. 설정 로드 완료: " + prop.getProperty("url"));
 
             try (Connection conn = DBConnection.getConnection()) {
+            	conn.setAutoCommit(false);
                 System.out.println("3. DB 연결 성공 여부: " + (conn != null));
 
                 if ("save".equals(action)) {

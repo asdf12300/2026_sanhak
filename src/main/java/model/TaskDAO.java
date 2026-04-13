@@ -120,13 +120,15 @@ public class TaskDAO {
     }
 
     private void insertCalendarFromTask(Connection conn, TaskDTO t) throws Exception {
-        String sql = "INSERT INTO calendar (project_id, task_id, event_date, title, category) "
-                   + "VALUES (?, ?, ?, ?, 3)";
+        String sql = "INSERT INTO calendar (project_id, task_id, event_date, title, category, assignee, memo) "
+                   + "VALUES (?, ?, ?, ?, 3, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, t.getProjectId());
             ps.setInt(2, t.getId());
             ps.setString(3, t.getDeadline());
             ps.setString(4, t.getTitle());
+            ps.setString(5, t.getAssignee());
+            ps.setString(6, t.getContent());
             ps.executeUpdate();
         }
     }
@@ -141,11 +143,13 @@ public class TaskDAO {
                 ps.setInt(1, t.getId());
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        String updateSql = "UPDATE calendar SET event_date=?, title=? WHERE task_id=?";
+                        String updateSql = "UPDATE calendar SET event_date=?, title=?, assignee=?, memo=? WHERE task_id=?";
                         try (PreparedStatement ups = conn.prepareStatement(updateSql)) {
                             ups.setString(1, deadline);
                             ups.setString(2, t.getTitle());
-                            ups.setInt(3, t.getId());
+                            ups.setString(3, t.getAssignee());
+                            ups.setString(4, t.getContent());
+                            ups.setInt(5, t.getId());
                             ups.executeUpdate();
                         }
                     } else {
