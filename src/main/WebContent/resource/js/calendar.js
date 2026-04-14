@@ -1,71 +1,83 @@
-const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-const DAYS = ['일','월','화','수','목','금','토'];
+var MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+var DAYS = ['일','월','화','수','목','금','토'];
 
-let today = new Date();
-let curY = today.getFullYear();
-let curM = today.getMonth();
-let events = [];
-let editIdx = -1;
-let currentFilter = 'all';
+var today = new Date();
+var curY = today.getFullYear();
+var curM = today.getMonth();
+var events = [];
+var editIdx = -1;
+var calProjectMembers = [];
 
 // =====================
 // 서버에서 데이터 불러오기
 // =====================
 function loadEvents() {
-  const el = document.getElementById('evtProjectId');
-  const projectId = el ? el.value : '';
+  var el = document.getElementById('evtProjectId');
+  var projectId = el ? el.value : '';
   fetch(contextPath + "/event?action=list&projectId=" + projectId)
-    .then(res => res.json())
-    .then(data => {
-      // date 필드를 항상 "YYYY-MM-DD" 10자리로 정규화
-      events = data.map(e => ({ ...e, date: e.date ? e.date.substring(0, 10) : '' }));
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      events = data.map(function(e) {
+        return {
+          id: e.id, title: e.title,
+          date: e.date ? e.date.substring(0, 10) : '',
+          time: e.time, cat: e.cat, memo: e.memo,
+          taskId: e.taskId, taskStatus: e.taskStatus,
+          taskAssignee: e.taskAssignee, assignee: e.assignee
+        };
+      });
       renderCal();
     })
-    .catch(() => { events = []; renderCal(); });
+    .catch(function() { events = []; renderCal(); });
 }
 
-let calProjectMembers = [];
-
 function loadCalMembers() {
-  const el = document.getElementById('evtProjectId');
-  const projectId = el ? el.value : '';
+  var el = document.getElementById('evtProjectId');
+  var projectId = el ? el.value : '';
   if (!projectId) return Promise.resolve();
   return fetch(contextPath + "/event?action=members&projectId=" + projectId)
-    .then(r => r.json())
-    .then(data => { calProjectMembers = data; })
-    .catch(() => { calProjectMembers = []; });
+    .then(function(r) { return r.json(); })
+    .then(function(data) { calProjectMembers = data; })
+    .catch(function() { calProjectMembers = []; });
 }
 
 function populateCalAssigneeSelect(selectedId) {
-  const sel = document.getElementById('evtAssignee');
+  var sel = document.getElementById('evtAssignee');
   sel.innerHTML = '<option value="">-- 담당자 선택 --</option>';
-  calProjectMembers.forEach(m => {
-    const opt = document.createElement('option');
+  for (var i = 0; i < calProjectMembers.length; i++) {
+    var m = calProjectMembers[i];
+    var opt = document.createElement('option');
     opt.value = m.id;
     opt.textContent = m.name ? m.name + ' (' + m.id + ')' : m.id;
     if (m.id === selectedId) opt.selected = true;
     sel.appendChild(opt);
-  });
+  }
 }
 
 // =====================
 // 캘린더 렌더링
 // =====================
-const monthSel = document.getElementById('monthSel');
-const yearSel  = document.getElementById('yearSel');
+var monthSel = document.getElementById('monthSel');
+var yearSel  = document.getElementById('yearSel');
 
-MONTHS.forEach((m,i) => {
-  const o = document.createElement('option');
-  o.value = i;
-  o.textContent = m;
-  monthSel.appendChild(o);
-});
+for (var mi = 0; mi < MONTHS.length; mi++) {
+  var mo = document.createElement('option');
+  mo.value = mi;
+  mo.textContent = MONTHS[mi];
+  monthSel.appendChild(mo);
+}
 
-for (let y = today.getFullYear()-10; y <= today.getFullYear()+10; y++) {
-  const o = document.createElement('option');
-  o.value = y;
-  o.textContent = y + '년';
-  yearSel.appendChild(o);
+for (var y = today.getFullYear() - 10; y <= today.getFullYear() + 10; y++) {
+  var yo = document.createElement('option');
+  yo.value = y;
+  yo.textContent = y + '년';
+  yearSel.appendChild(yo);
+}
+
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function formatDate(y, m, d) {
+  return y + '-' + pad2(m + 1) + '-' + pad2(d);
 }
 
 function renderCal() {
@@ -73,62 +85,68 @@ function renderCal() {
   yearSel.value  = curY;
   document.getElementById('calTitle').textContent = curY + '년 ' + MONTHS[curM];
 
-  const grid = document.getElementById('calGrid');
+  var grid = document.getElementById('calGrid');
   grid.innerHTML = '';
 
-  DAYS.forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'day-label';
-    el.textContent = d;
-    grid.appendChild(el);
-  });
+  for (var di = 0; di < DAYS.length; di++) {
+    var dl = document.createElement('div');
+    dl.className = 'day-label';
+    dl.textContent = DAYS[di];
+    grid.appendChild(dl);
+  }
 
-  const first = new Date(curY, curM, 1).getDay();
-  const last  = new Date(curY, curM + 1, 0).getDate();
+  var first = new Date(curY, curM, 1).getDay();
+  var last  = new Date(curY, curM + 1, 0).getDate();
 
-  for (let i = 0; i < first; i++) {
-    const empty = document.createElement('div');
+  for (var ei = 0; ei < first; ei++) {
+    var empty = document.createElement('div');
     empty.className = 'day-cell';
     grid.appendChild(empty);
   }
 
-  for (let d = 1; d <= last; d++) {
-    const cell = document.createElement('div');
-    cell.className = 'day-cell';
+  for (var d = 1; d <= last; d++) {
+    (function(day) {
+      var cell = document.createElement('div');
+      cell.className = 'day-cell';
 
-    const num = document.createElement('div');
-    num.textContent = d;
-    cell.appendChild(num);
+      var num = document.createElement('div');
+      num.textContent = day;
+      cell.appendChild(num);
 
-    const dateStr   = formatDate(curY, curM, d);
-    const dayEvents = events.filter(e => e.date === dateStr);
+      var dateStr = formatDate(curY, curM, day);
+      var dayEvents = [];
+      for (var i = 0; i < events.length; i++) {
+        if (events[i].date === dateStr) dayEvents.push(events[i]);
+      }
 
-    // 최대 2개만 표시
-    dayEvents.slice(0, 2).forEach(e => {
-      const ev = document.createElement('div');
-      ev.className = 'event-dot cat-' + e.cat;
-      ev.textContent = (e.time ? e.time.substring(0,5) + ' ' : '') + e.title;
-      ev.onclick = (event) => {
-        event.stopPropagation();
-        openEdit(events.indexOf(e));
-      };
-      cell.appendChild(ev);
-    });
+      var shown = dayEvents.slice(0, 2);
+      for (var si = 0; si < shown.length; si++) {
+        (function(ev, evIdx) {
+          var dot = document.createElement('div');
+          dot.className = 'event-dot cat-' + ev.cat;
+          dot.textContent = (ev.time ? ev.time.substring(0, 5) + ' ' : '') + ev.title;
+          dot.onclick = function(e) {
+            e.stopPropagation();
+            openEdit(evIdx);
+          };
+          cell.appendChild(dot);
+        })(shown[si], events.indexOf(shown[si]));
+      }
 
-    // +N 더보기 버튼
-    if (dayEvents.length > 2) {
-      const more = document.createElement('div');
-      more.className = 'more-btn';
-      more.textContent = '+' + (dayEvents.length - 2) + ' 더보기';
-      more.onclick = (event) => {
-        event.stopPropagation();
-        openMorePopup(dateStr, dayEvents);
-      };
-      cell.appendChild(more);
-    }
+      if (dayEvents.length > 2) {
+        var more = document.createElement('div');
+        more.className = 'more-btn';
+        more.textContent = '+' + (dayEvents.length - 2) + ' 더보기';
+        more.onclick = function(e) {
+          e.stopPropagation();
+          openMorePopup(dateStr, dayEvents);
+        };
+        cell.appendChild(more);
+      }
 
-    cell.onclick = () => openNew(curY, curM, d);
-    grid.appendChild(cell);
+      cell.onclick = function() { openNew(curY, curM, day); };
+      grid.appendChild(cell);
+    })(d);
   }
 
   renderMonthList();
@@ -138,22 +156,22 @@ function renderCal() {
 // 이달의 일정 리스트
 // =====================
 function renderMonthList() {
-  const list = document.getElementById('monthEventList');
-  const sidebarTitle = document.getElementById('sidebarTitle');
+  var list = document.getElementById('monthEventList');
+  var sidebarTitle = document.getElementById('sidebarTitle');
   if (!list) return;
 
   if (sidebarTitle) {
     sidebarTitle.textContent = curY + '년 ' + MONTHS[curM] + ' 일정';
   }
 
-  const CAT_LABELS = ['일반', '중요', '개인', '업무'];
-  const rows = [];
+  var CAT_LABELS = ['일반', '중요', '개인', '업무'];
+  var rows = [];
 
-  for (let i = 0; i < events.length; i++) {
-    const e = events[i];
+  for (var i = 0; i < events.length; i++) {
+    var e = events[i];
     if (!e.date || e.date.length < 7) continue;
-    const yy = parseInt(e.date.substring(0, 4), 10);
-    const mm = parseInt(e.date.substring(5, 7), 10) - 1;
+    var yy = parseInt(e.date.substring(0, 4), 10);
+    var mm = parseInt(e.date.substring(5, 7), 10) - 1;
     if (yy === curY && mm === curM) {
       rows.push({ e: e, idx: i });
     }
@@ -173,51 +191,55 @@ function renderMonthList() {
   }
 
   var html = '';
-  for (var i = 0; i < rows.length; i++) {
-    var e = rows[i].e;
-    var idx = rows[i].idx;
-    var parts = e.date.split('-');
+  for (var ri = 0; ri < rows.length; ri++) {
+    var row = rows[ri];
+    var ev = row.e;
+    var idx = row.idx;
+    var parts = ev.date.split('-');
     var dayNum = parseInt(parts[2], 10);
     var dayName = ['일','월','화','수','목','금','토'][new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, dayNum).getDay()];
-    var catLabel = CAT_LABELS[e.cat] !== undefined ? CAT_LABELS[e.cat] : '';
-    var badge = (e.taskStatus && e.taskStatus !== '')
-      ? '<span class="task-badge status-' + e.taskStatus.replace(/ /g,'-') + '">' + e.taskStatus + '</span>'
+    var catLabel = CAT_LABELS[ev.cat] !== undefined ? CAT_LABELS[ev.cat] : '';
+    var badge = (ev.taskStatus && ev.taskStatus !== '')
+      ? '<span class="task-badge status-' + ev.taskStatus.replace(/ /g,'-') + '">' + ev.taskStatus + '</span>'
       : '<span class="task-badge" style="background:#f1f5f9;color:#64748b">' + catLabel + '</span>';
-    var timeStr = (e.time && e.time.length >= 5) ? '<span class="month-event-time">' + e.time.substring(0,5) + '</span>' : '';
-    html += '<div class="month-event-item cat-' + e.cat + '" onclick="openEdit(' + idx + ')">'
+    var timeStr = (ev.time && ev.time.length >= 5) ? '<span class="month-event-time">' + ev.time.substring(0,5) + '</span>' : '';
+    html += '<div class="month-event-item cat-' + ev.cat + '" onclick="openEdit(' + idx + ')">'
           + '<div class="month-event-date">' + dayNum + '일 (' + dayName + ')</div>'
-          + '<div class="month-event-title">' + e.title + '</div>'
+          + '<div class="month-event-title">' + ev.title + '</div>'
           + '<div class="month-event-meta">' + timeStr + badge + '</div>'
           + '</div>';
   }
   list.innerHTML = html;
 }
 
+// =====================
+// +N 더보기 팝업
+// =====================
 function openMorePopup(dateStr, dayEvents) {
   document.getElementById('morePopupDate').textContent = dateStr + ' 일정';
 
-  const list = document.getElementById('morePopupList');
+  var list = document.getElementById('morePopupList');
   list.innerHTML = '';
 
-  dayEvents.forEach(e => {
-    const item = document.createElement('div');
-    item.className = 'more-popup-item cat-' + e.cat;
+  for (var i = 0; i < dayEvents.length; i++) {
+    (function(ev) {
+      var item = document.createElement('div');
+      item.className = 'more-popup-item cat-' + ev.cat;
 
-    const badge = e.taskStatus
-      ? `<span class="task-badge status-${e.taskStatus.replace(/ /g,'-')}">${e.taskStatus}</span>`
-      : '';
+      var badge = (ev.taskStatus && ev.taskStatus !== '')
+        ? '<span class="task-badge status-' + ev.taskStatus.replace(/ /g,'-') + '">' + ev.taskStatus + '</span>'
+        : '';
 
-    item.innerHTML = `
-      <span class="more-item-time">${e.time ? e.time.substring(0,5) : ''}</span>
-      <span class="more-item-title">${e.title}</span>
-      ${badge}
-    `;
-    item.onclick = () => {
-      closeMorePopup();
-      openEdit(events.indexOf(e));
-    };
-    list.appendChild(item);
-  });
+      item.innerHTML = '<span class="more-item-time">' + (ev.time ? ev.time.substring(0,5) : '') + '</span>'
+                     + '<span class="more-item-title">' + ev.title + '</span>'
+                     + badge;
+      item.onclick = function() {
+        closeMorePopup();
+        openEdit(events.indexOf(ev));
+      };
+      list.appendChild(item);
+    })(dayEvents[i]);
+  }
 
   document.getElementById('morePopupBg').classList.add('open');
 }
@@ -227,28 +249,21 @@ function closeMorePopup() {
 }
 
 document.getElementById('morePopupClose').onclick = closeMorePopup;
-document.getElementById('morePopupBg').onclick = (e) => {
+document.getElementById('morePopupBg').onclick = function(e) {
   if (e.target.id === 'morePopupBg') closeMorePopup();
 };
 
 // =====================
-// 날짜 포맷
-// =====================
-function formatDate(y,m,d) {
-  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-}
-
-// =====================
 // 모달
 // =====================
-function openNew(y,m,d) {
+function openNew(y, m, d) {
   editIdx = -1;
   document.getElementById('modalTitle').textContent = '일정 등록';
   document.getElementById('evtTitle').value = '';
-  document.getElementById('evtDate').value = formatDate(y,m,d);
+  document.getElementById('evtDate').value = formatDate(y, m, d);
   document.getElementById('evtTime').value = '';
   document.getElementById('evtCat').value = '0';
-  const sel = document.getElementById('evtAssignee');
+  var sel = document.getElementById('evtAssignee');
   sel.value = '';
   sel.disabled = true;
   sel.style.background = '#f3f4f6';
@@ -261,14 +276,14 @@ function openNew(y,m,d) {
 
 function openEdit(idx) {
   editIdx = idx;
-  const e = events[idx];
+  var e = events[idx];
   document.getElementById('modalTitle').textContent = '일정 수정';
   document.getElementById('evtTitle').value = e.title;
   document.getElementById('evtDate').value = e.date;
   document.getElementById('evtTime').value = e.time || '';
   document.getElementById('evtCat').value = e.cat;
-  const sel = document.getElementById('evtAssignee');
-  const currentAssignee = e.assignee || e.taskAssignee || '';
+  var sel = document.getElementById('evtAssignee');
+  var currentAssignee = e.assignee || e.taskAssignee || '';
   if (e.cat == 3) {
     sel.disabled = false;
     sel.style.background = '';
@@ -294,45 +309,47 @@ function closeModal() {
 // =====================
 // 저장 / 수정
 // =====================
-document.getElementById('saveBtn').onclick = () => {
-  const title = document.getElementById('evtTitle').value.trim();
+document.getElementById('saveBtn').onclick = function() {
+  var title = document.getElementById('evtTitle').value.trim();
   if (!title) return;
 
-  const params = new URLSearchParams({
-    action: editIdx >= 0 ? "update" : "save",
-    title: title,
-    project_id: document.getElementById('evtProjectId').value,
-    date: document.getElementById('evtDate').value,
-    time: document.getElementById('evtTime').value,
-    cat: parseInt(document.getElementById('evtCat').value),
-    memo: document.getElementById('evtMemo').value,
-    assignee: document.getElementById('evtAssignee').value || ''
-  });
+  var params = new URLSearchParams();
+  params.append('action', editIdx >= 0 ? 'update' : 'save');
+  params.append('title', title);
+  params.append('project_id', document.getElementById('evtProjectId').value);
+  params.append('date', document.getElementById('evtDate').value);
+  params.append('time', document.getElementById('evtTime').value);
+  params.append('cat', parseInt(document.getElementById('evtCat').value, 10));
+  params.append('memo', document.getElementById('evtMemo').value);
+  params.append('assignee', document.getElementById('evtAssignee').value || '');
 
   if (editIdx >= 0) {
-    params.append("id", events[editIdx].id);
+    params.append('id', events[editIdx].id);
     if (events[editIdx].taskId != null) {
-      params.append("taskId", events[editIdx].taskId);
+      params.append('taskId', events[editIdx].taskId);
     }
   }
 
   fetch(contextPath + "/event", {
-    method: "POST",
-    headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
     body: params
-  }).then(() => { closeModal(); loadEvents(); });
+  }).then(function() { closeModal(); loadEvents(); });
 };
 
 // =====================
 // 삭제
 // =====================
-document.getElementById('delBtn').onclick = () => {
+document.getElementById('delBtn').onclick = function() {
   if (editIdx >= 0) {
+    var params = new URLSearchParams();
+    params.append('action', 'delete');
+    params.append('id', events[editIdx].id);
     fetch(contextPath + "/event", {
-      method: "POST",
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
-      body: new URLSearchParams({ action: "delete", id: events[editIdx].id })
-    }).then(() => { closeModal(); loadEvents(); });
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: params
+    }).then(function() { closeModal(); loadEvents(); });
   }
 };
 
@@ -340,33 +357,33 @@ document.getElementById('delBtn').onclick = () => {
 // 이벤트
 // =====================
 document.getElementById('cancelBtn').onclick = closeModal;
-document.getElementById('modalBg').onclick = e => {
+document.getElementById('modalBg').onclick = function(e) {
   if (e.target.id === 'modalBg') closeModal();
 };
 
-document.getElementById('prevBtn').onclick = () => {
+document.getElementById('prevBtn').onclick = function() {
   curM--;
   if (curM < 0) { curM = 11; curY--; }
   loadEvents();
 };
 
-document.getElementById('nextBtn').onclick = () => {
+document.getElementById('nextBtn').onclick = function() {
   curM++;
   if (curM > 11) { curM = 0; curY++; }
   loadEvents();
 };
 
-document.getElementById('todayBtn').onclick = () => {
+document.getElementById('todayBtn').onclick = function() {
   curY = today.getFullYear();
   curM = today.getMonth();
   loadEvents();
 };
 
-monthSel.onchange = () => { curM = parseInt(monthSel.value); loadEvents(); };
-yearSel.onchange = () => { curY = parseInt(yearSel.value); loadEvents(); };
+monthSel.onchange = function() { curM = parseInt(monthSel.value, 10); loadEvents(); };
+yearSel.onchange  = function() { curY = parseInt(yearSel.value, 10);  loadEvents(); };
 
 document.getElementById('evtCat').addEventListener('change', function() {
-  const sel = document.getElementById('evtAssignee');
+  var sel = document.getElementById('evtAssignee');
   if (this.value === '3') {
     sel.disabled = false;
     sel.style.background = '';
@@ -385,4 +402,4 @@ document.getElementById('evtCat').addEventListener('change', function() {
 // =====================
 // 최초 실행
 // =====================
-loadCalMembers().then(() => loadEvents());
+loadCalMembers().then(function() { loadEvents(); });
