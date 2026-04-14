@@ -92,15 +92,7 @@ public class TaskDAO {
                     t.setId(generatedId);
 
                     if (deadline != null) {
-                        String calSql = "INSERT INTO calendar (project_id, task_id, event_date, title, category) " +
-                                        "VALUES (?, ?, ?, ?, 3)";
-                        try (PreparedStatement cps = conn.prepareStatement(calSql)) {
-                            cps.setInt(1, t.getProjectId());
-                            cps.setInt(2, generatedId);
-                            cps.setString(3, deadline);
-                            cps.setString(4, t.getTitle());
-                            cps.executeUpdate();
-                        }
+                    	 insertCalendarFromTask(conn, t);
                     }
                 }
             }

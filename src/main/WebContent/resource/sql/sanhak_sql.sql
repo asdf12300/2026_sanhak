@@ -61,12 +61,9 @@ CREATE TABLE task (
   FOREIGN KEY (assignee)   REFERENCES member(id)  ON DELETE SET NULL
 );
 
---캘린더&업무 연동 코드--
 ALTER TABLE calendar ADD COLUMN task_id INT NULL;
 ALTER TABLE calendar ADD FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE SET NULL;
-------------------
 
---캘린더에 담당자를 지정하는 컬럼입니다. 실행해주세요--
 ALTER TABLE calendar ADD COLUMN assignee VARCHAR(50) NULL;
 
 INSERT INTO calendar (event_date, project_id, event_time, title, category, memo)
@@ -85,9 +82,8 @@ select * from member;
 select * from board;
 select * from calendar;
 select * from task;
-
-drop table task;
-
+truncate table calendar;
+DELETE FROM task;
 
 -- 회의록 테이블
 CREATE TABLE meeting_minutes (

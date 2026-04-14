@@ -13,6 +13,7 @@ import javax.servlet.http.*;
 
 import model.TaskDAO;
 import model.TaskDTO;
+import model.CalendarDAO;
 import model.DBConnection;
 
 @WebServlet("/taskApi")
@@ -104,8 +105,10 @@ public class TaskServlet extends HttpServlet {
             System.out.println("2. 설정 로드 완료: " + prop.getProperty("url"));
 
             try (Connection conn = DBConnection.getConnection()) {
-            	conn.setAutoCommit(false);
+                conn.setAutoCommit(false);
                 System.out.println("3. DB 연결 성공 여부: " + (conn != null));
+
+                CalendarDAO calDao = new CalendarDAO();
 
                 if ("save".equals(action)) {
                     TaskDTO t = new TaskDTO();
@@ -145,12 +148,20 @@ public class TaskServlet extends HttpServlet {
                     t.setStatus(req.getParameter("status"));
                     t.setDeadline(req.getParameter("deadline"));
                     dao.updateTask(conn, t);
+
+                    // 캘린더 연동 이벤트 메모/담당자 동기화
+                    calDao.syncByTaskId(conn, t.getId(), t.getTitle(), t.getContent(), t.getAssignee(), t.getDeadline());
                     conn.commit();
                     System.out.println("5. 수정 완료");
 
                 } else if ("delete".equals(action)) {
                     System.out.println("4. 업무 삭제 - id: " + req.getParameter("id"));
-                    dao.deleteTask(conn, Integer.parseInt(req.getParameter("id")));
+                    int taskId = Integer.parseInt(req.getParameter("id"));
+
+                    // 캘린더 연동 이벤트 먼저 삭제
+                    calDao.deleteEventByTaskId(conn, taskId);
+
+                    dao.deleteTask(conn, taskId);
                     conn.commit();
                     System.out.println("5. 삭제 완료");
                 }

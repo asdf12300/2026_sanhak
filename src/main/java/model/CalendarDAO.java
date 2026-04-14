@@ -68,7 +68,6 @@ public class CalendarDAO {
         Integer finalTaskId = null;
         String assignee = (e.getAssignee() == null || e.getAssignee().trim().isEmpty()) ? null : e.getAssignee().trim();
 
-        if (e.getCategory() == 3) {
             String taskSql = "INSERT INTO task (project_id, title, content, status, deadline, assignee) " +
                              "VALUES (?, ?, ?, 'To Do', ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(taskSql, Statement.RETURN_GENERATED_KEYS)) {
@@ -76,15 +75,14 @@ public class CalendarDAO {
                 ps.setString(2, e.getTitle());
                 ps.setString(3, e.getMemo());
                 ps.setString(4, e.getDate());
-                if (e.getAssignee() == null) ps.setNull(5, Types.VARCHAR);
-                else ps.setString(5, e.getAssignee());
+                if (assignee == null) ps.setNull(5, Types.VARCHAR);
+                else ps.setString(5, assignee);
                 ps.executeUpdate();
                 try (ResultSet keys = ps.getGeneratedKeys()) {
                     if (!keys.next()) throw new SQLException("task 생성 실패");
                     finalTaskId = keys.getInt(1);
                 }
             }
-        }
 
         String calSql = "INSERT INTO calendar (project_id, task_id, event_date, event_time, title, category, memo, assignee) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -126,8 +124,8 @@ public class CalendarDAO {
             try (PreparedStatement ps = conn.prepareStatement(taskSql)) {
                 ps.setString(1, e.getTitle());
                 ps.setString(2, e.getDate());
-                if (e.getAssignee() == null) ps.setNull(3, Types.VARCHAR);
-                else ps.setString(3, e.getAssignee());
+                if (assignee == null) ps.setNull(3, Types.VARCHAR);
+                else ps.setString(3, assignee);
                 ps.setString(4, e.getMemo());
                 ps.setInt(5, e.getTaskId());
                 ps.executeUpdate();
@@ -158,6 +156,30 @@ public class CalendarDAO {
                 ps.setInt(1, taskId);
                 ps.executeUpdate();
             }
+        }
+    }
+
+    // ↓ TaskServlet 연동용 추가 메서드 2개 ↓
+
+    // 태스크 삭제 시 연동된 캘린더 이벤트 삭제
+    public void deleteEventByTaskId(Connection conn, int taskId) throws Exception {
+        String sql = "DELETE FROM calendar WHERE task_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            ps.executeUpdate();
+        }
+    }
+
+    // 태스크 수정 시 연동된 캘린더 이벤트 메모/담당자 동기화
+    public void syncByTaskId(Connection conn, int taskId, String title, String memo, String assignee, String deadline) throws Exception {
+        String sql = "UPDATE calendar SET title=?, memo=?, assignee=?, event_date=? WHERE task_id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, title);
+            ps.setString(2, memo);
+            ps.setString(3, assignee);
+            ps.setString(4, deadline);
+            ps.setInt(5, taskId);
+            ps.executeUpdate();
         }
     }
 }

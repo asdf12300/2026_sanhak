@@ -3,7 +3,6 @@ package controller;
 import model.ProjectDAO;
 import model.ProjectDTO;
 import model.ProjectMemberDAO;
-import model.LoginDTO;
 import model.ProjectMemberDTO;
 
 import javax.servlet.ServletException;
@@ -25,7 +24,7 @@ public class ViewServlet extends HttpServlet {
             request.setAttribute("error", "잘못된 접근입니다.");
             request.getRequestDispatcher("view.jsp").forward(request, response);
             return;
-        }
+        }	
 
         int id;
         try {
