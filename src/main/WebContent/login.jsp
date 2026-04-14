@@ -20,7 +20,7 @@
   /* ── 좌측 소개 패널 ── */
   .intro-panel {
     flex: 1;
-    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 60%, #93c5fd 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
     display: flex;
     flex-direction: column;
     padding: 2.5rem 3rem;
