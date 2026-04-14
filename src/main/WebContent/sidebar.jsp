@@ -9,6 +9,8 @@
     String activeMeetingMinutes = path.contains("meetingMinutes") ? "active" : "";
     String activeTeam      = path.endsWith("team.jsp") ? "active" : "";
     String activeTeamMember = path.contains("/teamMemberManage.jsp") ? "active" : "";
+    String activeBookRecommend = path.contains("bookRecommend") ? "active" : "";
+    
     Integer currentProjectId = (Integer) session.getAttribute("currentProjectId");
     String projectParam = request.getParameter("projectId");
     if (projectParam != null && !projectParam.isEmpty()) {
@@ -102,6 +104,13 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
       </svg>
       회의록
     </a>
+    <a href="bookRecommend" class="nav-item <%= activeBookRecommend %>">
+	  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+	    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+	  </svg>
+	  도서 추천
+	</a>
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
