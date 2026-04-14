@@ -68,6 +68,7 @@ public class CalendarDAO {
         Integer finalTaskId = null;
         String assignee = (e.getAssignee() == null || e.getAssignee().trim().isEmpty()) ? null : e.getAssignee().trim();
 
+        if (e.getCategory() == 3) {
             String taskSql = "INSERT INTO task (project_id, title, content, status, deadline, assignee) " +
                              "VALUES (?, ?, ?, 'To Do', ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(taskSql, Statement.RETURN_GENERATED_KEYS)) {
@@ -83,6 +84,7 @@ public class CalendarDAO {
                     finalTaskId = keys.getInt(1);
                 }
             }
+        }
 
         String calSql = "INSERT INTO calendar (project_id, task_id, event_date, event_time, title, category, memo, assignee) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";

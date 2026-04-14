@@ -74,16 +74,11 @@ WHERE YEAR(event_date) = 2026
 AND MONTH(event_date) = 4
 ORDER BY event_date, event_time;
 
-TRUNCATE TABLE board;
-truncate table project_member;
-
 select * from project_member;
 select * from member;
 select * from board;
 select * from calendar;
 select * from task;
-truncate table calendar;
-DELETE FROM task;
 
 -- 회의록 테이블
 CREATE TABLE meeting_minutes (
