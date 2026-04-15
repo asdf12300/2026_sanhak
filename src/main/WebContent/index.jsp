@@ -1,12 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="model.*" %>
-
-<%
-String selectedProjectId = request.getParameter("projectId");
-if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".equals(selectedProjectId)) {
-    session.setAttribute("lastProjectId", selectedProjectId);
-}
-%>
 <%
   model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
   String userName = (loginUser != null) ? loginUser.getName() : "게스트";
@@ -28,10 +21,6 @@ if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".
       }
     } catch (Exception e) { }
   }
-  
-  String projectQuery = (projectIdParam != null && !projectIdParam.isEmpty())
-		    ? "?projectId=" + projectIdParam
-		    : "";
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -85,54 +74,35 @@ if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".
         </div>
       </div>
     </div>
-   <div class="card c5">
-  <div class="card-hd"><div class="card-t">주요 일정</div><span class="badge b-or" id="schedBadge"></span></div>
-  <div class="sched-list" id="schedList"></div>
-  <a href='calendar.jsp<%= projectQuery %>' style="display:block;margin-top:16px;text-decoration:none;"><span style="padding:7px 12px;border-radius:8px;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:600;">캘린더로 이동</span></a>
-</div>
+    <div class="card c5">
+      <div class="card-hd"><div class="card-t">주요 일정</div><span class="badge b-or" id="schedBadge"></span></div>
+      <div class="sched-list" id="schedList"><div style="color:var(--muted2);font-size:12px;">불러오는 중...</div></div>
+    </div>
     <div class="card c4">
-      <div class="card-hd"><div class="card-t">업무 현황</div><span class="badge b-bl">이번 주</span></div>
-      <div class="ws-list">
-        <div><div class="ws-row"><span class="ws-name">프론트엔드 개발</span><span class="ws-pct" style="color:var(--blue)">88%</span></div><div class="ws-bar"><div class="ws-fill" style="width:88%;background:linear-gradient(90deg,var(--blue),#60a5fa)"></div></div></div>
-        <div><div class="ws-row"><span class="ws-name">백엔드 API</span><span class="ws-pct" style="color:var(--teal)">72%</span></div><div class="ws-bar"><div class="ws-fill" style="width:72%;background:linear-gradient(90deg,var(--teal),#2dd4bf)"></div></div></div>
-        <div><div class="ws-row"><span class="ws-name">QA 테스트</span><span class="ws-pct" style="color:var(--orange)">55%</span></div><div class="ws-bar"><div class="ws-fill" style="width:55%;background:linear-gradient(90deg,var(--orange),#fbbf24)"></div></div></div>
-        <div><div class="ws-row"><span class="ws-name">UI 디자인</span><span class="ws-pct" style="color:var(--violet)">34%</span></div><div class="ws-bar"><div class="ws-fill" style="width:34%;background:linear-gradient(90deg,var(--violet),#a78bfa)"></div></div></div>
-        <div><div class="ws-row"><span class="ws-name">배포 준비</span><span class="ws-pct" style="color:var(--muted)">20%</span></div><div class="ws-bar"><div class="ws-fill" style="width:20%;background:var(--muted2)"></div></div></div>
+      <div class="cal-top">
+        <div class="cal-m" id="dashCalTitle"></div>
+        <div class="cal-btns">
+          <div class="cal-btn" id="dashPrev">&#8249;</div>
+          <div class="cal-btn" id="dashNext">&#8250;</div>
+        </div>
       </div>
+      <div class="cal-grid" id="dashCalGrid"></div>
     </div>
   </div>
   <div class="card" style="margin-bottom:16px">
-    <div class="card-hd"><div class="card-t">칸반 보드</div><div style="display:flex;gap:6px"><span class="badge b-rd">TODO 5</span><span class="badge b-or">IN PROGRESS 4</span><span class="badge b-tl">DONE 6</span></div></div>
+    <div class="card-hd"><div class="card-t">칸반 보드</div><div style="display:flex;gap:6px"><span class="badge b-rd" id="kb-badge-todo">TODO 0</span><span class="badge b-or" id="kb-badge-inprogress">IN PROGRESS 0</span><span class="badge b-tl" id="kb-badge-done">DONE 0</span></div></div>
     <div class="kanban">
       <div class="kb-col">
-        <div class="kb-hd"><div class="kb-t" style="color:var(--red)">📋 Todo</div><div class="kb-cnt">5</div></div>
-        <div class="kb-cards">
-          <div class="kb-card"><div class="kb-card-t">로그인 페이지 반응형 수정</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-rd">긴급</span><span class="kb-tag b-bl">FE</span></div><div class="kb-avs"><div class="kav" style="background:var(--blue)">KJ</div><div class="kav" style="background:var(--orange)">PH</div></div></div></div>
-          <div class="kb-card"><div class="kb-card-t">결제 모듈 오류 수정 (#FIX-204)</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-or">보통</span><span class="kb-tag b-tl">BE</span></div><div class="kb-avs"><div class="kav" style="background:var(--teal)">LM</div></div></div></div>
-          <div class="kb-card"><div class="kb-card-t">다국어(i18n) 지원 계획 수립</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-bl">낮음</span></div><div class="kb-avs"><div class="kav" style="background:var(--violet)">JS</div></div></div></div>
-          <div class="kb-card"><div class="kb-card-t">알림 푸시 서비스 연동</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-or">보통</span></div><div class="kb-avs"><div class="kav" style="background:var(--blue)">KJ</div></div></div></div>
-          <div class="kb-card"><div class="kb-card-t">사용자 대시보드 UI 개선안</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-bl">낮음</span></div><div class="kb-avs"><div class="kav" style="background:var(--orange)">PH</div></div></div></div>
-        </div>
+        <div class="kb-hd"><div class="kb-t" style="color:var(--red)">📋 Todo</div><div class="kb-cnt" id="kb-cnt-todo">0</div></div>
+        <div class="kb-cards" id="kb-col-todo"></div>
       </div>
       <div class="kb-col">
-        <div class="kb-hd"><div class="kb-t" style="color:var(--orange)">⚡ In Progress</div><div class="kb-cnt">4</div></div>
-        <div class="kb-cards">
-          <div class="kb-card" style="border-top:3px solid var(--orange)"><div class="kb-card-t">메인 대시보드 개발 (index.jsp)</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-rd">긴급</span><span class="kb-tag b-bl">FE</span></div><div class="kb-avs"><div class="kav" style="background:var(--blue)">KJ</div><div class="kav" style="background:var(--teal)">LM</div></div></div></div>
-          <div class="kb-card" style="border-top:3px solid var(--orange)"><div class="kb-card-t">REST API 최적화 및 캐시 적용</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-or">보통</span></div><div class="kb-avs"><div class="kav" style="background:var(--teal)">LM</div></div></div></div>
-          <div class="kb-card" style="border-top:3px solid var(--orange)"><div class="kb-card-t">사용자 권한 관리 시스템</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-tl">정상</span></div><div class="kb-avs"><div class="kav" style="background:var(--violet)">JS</div><div class="kav" style="background:var(--blue)">KJ</div></div></div></div>
-          <div class="kb-card" style="border-top:3px solid var(--orange)"><div class="kb-card-t">테스트 자동화 스크립트 작성</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-bl">낮음</span></div><div class="kb-avs"><div class="kav" style="background:var(--orange)">PH</div></div></div></div>
-        </div>
+        <div class="kb-hd"><div class="kb-t" style="color:var(--orange)">⚡ In Progress</div><div class="kb-cnt" id="kb-cnt-inprogress">0</div></div>
+        <div class="kb-cards" id="kb-col-inprogress"></div>
       </div>
       <div class="kb-col">
-        <div class="kb-hd"><div class="kb-t" style="color:var(--teal)">✅ Done</div><div class="kb-cnt">6</div></div>
-        <div class="kb-cards">
-          <div class="kb-card" style="opacity:.5"><div class="kb-card-t" style="text-decoration:line-through;color:var(--muted2)">DB 스키마 설계 완료</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-tl">완료</span></div><div class="kb-avs"><div class="kav" style="background:var(--teal)">LM</div></div></div></div>
-          <div class="kb-card" style="opacity:.5"><div class="kb-card-t" style="text-decoration:line-through;color:var(--muted2)">로그인·회원가입 구현</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-tl">완료</span></div><div class="kb-avs"><div class="kav" style="background:var(--blue)">KJ</div></div></div></div>
-          <div class="kb-card" style="opacity:.5"><div class="kb-card-t" style="text-decoration:line-through;color:var(--muted2)">Git 브랜치 전략 정의</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-tl">완료</span></div><div class="kb-avs"><div class="kav" style="background:var(--violet)">JS</div></div></div></div>
-          <div class="kb-card" style="opacity:.5"><div class="kb-card-t" style="text-decoration:line-through;color:var(--muted2)">와이어프레임 최종 확정</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-tl">완료</span></div><div class="kb-avs"><div class="kav" style="background:var(--orange)">PH</div></div></div></div>
-          <div class="kb-card" style="opacity:.5"><div class="kb-card-t" style="text-decoration:line-through;color:var(--muted2)">CI/CD 파이프라인 구축</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-tl">완료</span></div><div class="kb-avs"><div class="kav" style="background:var(--teal)">LM</div></div></div></div>
-          <div class="kb-card" style="opacity:.5"><div class="kb-card-t" style="text-decoration:line-through;color:var(--muted2)">요구사항 명세서 작성</div><div class="kb-card-m"><div class="kb-tags"><span class="kb-tag b-tl">완료</span></div><div class="kb-avs"><div class="kav" style="background:var(--blue)">KJ</div></div></div></div>
-        </div>
+        <div class="kb-hd"><div class="kb-t" style="color:var(--teal)">✅ Done</div><div class="kb-cnt" id="kb-cnt-done">0</div></div>
+        <div class="kb-cards" id="kb-col-done"></div>
       </div>
     </div>
   </div>
@@ -157,22 +127,6 @@ if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".
         <div class="cal-day tod ev">29</div><div class="cal-day">30</div><div class="cal-day">31</div>
       </div>
     </div>
-    <div class="card c4">
-      <div class="card-hd"><div class="card-t">나의 할 일</div><span class="badge b-or" id="todo-cnt">3개 남음</span></div>
-      <div class="todo-add">
-        <input class="todo-inp" id="todo-input" placeholder="새 할 일 입력 후 Enter...">
-        <button class="btn btn-p" onclick="addTodo()" style="padding:8px 14px;font-size:16px;line-height:1">+</button>
-      </div>
-      <div class="todo-list" id="todo-list">
-        <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-chk"></div><div class="todo-txt">index.jsp 대시보드 완성</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
-        <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-chk"></div><div class="todo-txt">클라이언트 발표 자료 준비</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
-        <div class="todo-item done" onclick="toggleTodo(this)"><div class="todo-chk">✓</div><div class="todo-txt">스프린트 회고 문서 작성</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
-        <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-chk"></div><div class="todo-txt">API 문서 업데이트</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="grid" style="margin-bottom:16px">
-    <div class="card c7">
       <div class="card-hd"><div class="card-t">팀 채팅</div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></div><span style="font-size:11px;color:var(--teal);font-weight:600">4명 접속 중</span></div></div>
       <div class="chat-msgs" id="chat-messages">
         <div class="chat-msg"><div class="chat-av" style="background:var(--teal)">LM</div><div class="chat-in"><div class="chat-nm">이민준 · 오전 9:02</div><div class="chat-bbl">안녕하세요! 오늘 스프린트 플래닝 준비됐나요?</div></div></div>
@@ -221,72 +175,6 @@ function sendChat() {
   var box = document.getElementById('chat-messages'); box.appendChild(msg); box.scrollTop = box.scrollHeight; inp.value = '';
 }
 document.getElementById('chat-input').addEventListener('keydown', function(e) { if (e.key==='Enter') sendChat(); });
-
-(function() {
-  var projectId = <%= currentProject != null ? currentProject.getId() : 0 %>;
-  if (!projectId) return;
-
-  var today = new Date();
-  var yyyy  = today.getFullYear();
-  var mm    = ('0' + (today.getMonth() + 1)).slice(-2);
-  var dd    = ('0' + today.getDate()).slice(-2);
-  var todayStr = yyyy + '-' + mm + '-' + dd;
-
-  var lastDay = new Date(yyyy, today.getMonth() + 1, 0);
-  var lastDD  = ('0' + lastDay.getDate()).slice(-2);
-  var lastStr = yyyy + '-' + mm + '-' + lastDD;
-
-  var catColor = {
-		  0: 'var(--blue)',    /* 일반 */
-		  1: 'var(--red)',     /* 중요 */
-		  2: 'var(--teal)',    /* 개인 */
-		  3: 'var(--orange)'  /* 업무 */
-		};
-  fetch('<%= request.getContextPath() %>/event?action=list&projectId=' + projectId)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      console.log('전체 데이터:', data);
-
-      var filtered = data.filter(function(e) {
-        return e.date >= todayStr && e.date <= lastStr;
-      }).sort(function(a, b) {
-        if (a.date !== b.date) return a.date.localeCompare(b.date);
-        return (a.time || '').localeCompare(b.time || '');
-      }).slice(0, 4);
-
-      console.log('필터 후:', filtered);
-      document.getElementById('schedBadge').textContent = filtered.length + '개 예정';
-
-      if (filtered.length === 0) {
-        document.getElementById('schedList').innerHTML =
-          '<div class="sched-item"><div class="stitle">이번달 남은 일정이 없습니다</div></div>';
-        return;
-      }
-
-      var hh = ('0' + today.getHours()).slice(-2);
-      var mi = ('0' + today.getMinutes()).slice(-2);
-      var nowTime = hh + ':' + mi;
-
-      document.getElementById('schedList').innerHTML = filtered.map(function(e, i) {
-        var timeStr = e.time ? e.time.substring(0, 5) : e.date.substring(5).replace('-', '/');
-        var isPast  = e.date === todayStr && e.time && e.time.substring(0, 5) < nowTime;
-        var cls     = isPast ? 'done' : (i === 0 ? 'urgent' : '');
-        var color   = catColor[e.cat] || 'var(--blue)';
-        return '<div class="sched-item ' + cls + '" style="border-left:3px solid ' + color + ';">'
-        + '<div class="sdot" style="background:' + color + '"></div>'
-        + '<div class="stime">' + timeStr + '</div>'
-        + '<div class="stitle">' + e.title + '</div>'
-        + '<div class="swho">' + (e.taskAssignee || '') + '</div>'
-        + '</div>';
-      }).join('');
-    })
-    .catch(function(err) {
-      console.error('fetch 오류:', err);
-      document.getElementById('schedList').innerHTML =
-        '<div class="sched-item"><div class="stitle">일정을 불러올 수 없습니다</div></div>';
-    });
-})();
-
 </script>
 </body>
 </html>
