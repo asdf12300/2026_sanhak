@@ -258,6 +258,19 @@
     z-index: 2;
   }
   
+  .project-edit-btn {
+  position: absolute; top: 12px; right: 48px;
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s; opacity: 0; z-index: 2;
+  padding: 0;
+}
+.project-card:hover .project-edit-btn { opacity: 1; }
+.project-edit-btn svg { width: 14px; height: 14px; stroke: var(--muted); }
+.project-edit-btn:hover { background: var(--blue-soft); border-color: var(--blue); }
+.project-edit-btn:hover svg { stroke: var(--blue); }
+  
   .project-card:hover .project-delete-btn {
     opacity: 1;
   }
@@ -570,6 +583,31 @@
     height: 20px;
     stroke: #fff;
   }
+  
+  .edit-modal-bg {
+  display:none; position:fixed; inset:0;
+  background:rgba(15,23,42,.45); z-index:999;
+  align-items:center; justify-content:center;
+}
+.edit-modal-bg.open { display:flex; }
+.edit-modal {
+  background:#fff; border-radius:14px; padding:28px;
+  width:440px; box-shadow:0 16px 48px rgba(0,0,0,.18);
+  display:flex; flex-direction:column; gap:14px;
+}
+.edit-modal h2 { font-size:17px; font-weight:700; color:var(--text); }
+.edit-modal label { font-size:12px; font-weight:600; color:var(--muted); margin-bottom:4px; display:block; }
+.edit-modal input, .edit-modal textarea {
+  width:100%; padding:9px 12px; border:1px solid var(--border);
+  border-radius:8px; font-size:13px; font-family:inherit;
+  background:var(--surface2); color:var(--text); outline:none;
+}
+.edit-modal input:focus, .edit-modal textarea:focus { border-color:var(--blue); background:#fff; }
+.edit-modal textarea { resize:vertical; min-height:80px; }
+.edit-modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+.edit-btn-save { background:var(--blue); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
+.edit-btn-cancel { background:var(--surface2); color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:13px; cursor:pointer; }
+  
 </style>
 </head>
 <body style="background: var(--bg);">
@@ -733,6 +771,13 @@
       </button>
       <% } %>
       
+      <button class="project-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); openEditModal(<%= project.getId() %>, '<%= project.getTitle().replace("'", "\\'") %>', '<%= project.getContent() != null ? project.getContent().replace("'", "\\'") : "" %>', '<%= project.getDeadline() != null ? project.getDeadline() : "" %>');">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+</button>
+      
       <div class="project-card-header">
         <div class="project-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -792,7 +837,66 @@
   <% } %>
 </div>
 
+<div class="edit-modal-bg" id="editModalBg">
+  <div class="edit-modal">
+    <h2>프로젝트 수정</h2>
+    <input type="hidden" id="editProjectId">
+    <div>
+      <label>제목</label>
+      <input type="text" id="editTitle">
+    </div>
+    <div>
+      <label>설명</label>
+      <textarea id="editContent"></textarea>
+    </div>
+    <div>
+      <label>마감일</label>
+      <input type="date" id="editDeadline">
+    </div>
+    <div class="edit-modal-actions">
+      <button class="edit-btn-cancel" onclick="closeEditModal()">취소</button>
+      <button class="edit-btn-save" onclick="saveEdit()">저장</button>
+    </div>
+  </div>
+</div>
+
 <script>
+function openEditModal(id, title, content, deadline) {
+	  document.getElementById('editProjectId').value = id;
+	  document.getElementById('editTitle').value = title;
+	  document.getElementById('editContent').value = content;
+	  document.getElementById('editDeadline').value = deadline;
+	  document.getElementById('editModalBg').classList.add('open');
+	}
+	function closeEditModal() {
+	  document.getElementById('editModalBg').classList.remove('open');
+	}
+	document.getElementById('editModalBg').onclick = function(e) {
+	  if (e.target.id === 'editModalBg') closeEditModal();
+	};
+	function saveEdit() {
+	  var id       = document.getElementById('editProjectId').value;
+	  var title    = document.getElementById('editTitle').value.trim();
+	  var content  = document.getElementById('editContent').value.trim();
+	  var deadline = document.getElementById('editDeadline').value;
+	  if (!title) { alert('제목을 입력하세요.'); return; }
+	  var form = new FormData();
+	  form.append('id', id);
+	  form.append('title', title);
+	  form.append('content', content);
+	  form.append('deadline', deadline);
+	  var params = new URLSearchParams();
+	  params.append('id', id);
+	  params.append('title', title);
+	  params.append('content', content);
+	  params.append('deadline', deadline);
+	  fetch('editProject', {
+	    method: 'POST',
+	    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+	    body: params
+	  }).then(function() { closeEditModal(); location.reload(); });
+	}
+
 function toggleNotifications() {
   const dropdown = document.getElementById('notificationDropdown');
   dropdown.classList.toggle('show');
