@@ -173,4 +173,37 @@ public class TaskDAO {
             }
         }
     }
+    public List<TaskDTO> getDeadlineAlerts(String userId) {
+        List<TaskDTO> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM task " +
+                     "WHERE assignee = ? " +
+                     "AND deadline BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY) " +
+                     "AND status <> 'Done' " +
+                     "ORDER BY deadline ASC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                TaskDTO dto = new TaskDTO();
+                dto.setId(rs.getInt("id"));
+                dto.setProjectId(rs.getInt("project_id"));
+                dto.setTitle(rs.getString("title"));
+                dto.setAssignee(rs.getString("assignee"));
+                dto.setStatus(rs.getString("status"));
+                dto.setDeadline(rs.getString("deadline"));
+                dto.setContent(rs.getString("content"));
+                list.add(dto);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }

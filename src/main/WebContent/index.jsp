@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="model.*" %>
+<%@ page import="java.util.List" %>
 <%
 String selectedProjectId = request.getParameter("projectId");
 if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".equals(selectedProjectId)) {
@@ -31,6 +32,15 @@ if (projectIdParam != null && !projectIdParam.isEmpty()) {
 String projectQuery = (projectIdParam != null && !projectIdParam.isEmpty())
   ? "?projectId=" + projectIdParam
   : "";
+%>
+<%
+
+List<TaskDTO> alertList = null;
+
+if (loginUser != null) {
+    TaskDAO taskDAO = new TaskDAO();
+    alertList = taskDAO.getDeadlineAlerts(loginUser.getId());
+}
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -111,11 +121,102 @@ String projectQuery = (projectIdParam != null && !projectIdParam.isEmpty())
 .dash-popup-evt-time { font-size:12px; color:var(--muted); width:44px; flex-shrink:0; }
 .dash-popup-evt-title { font-size:14px; color:var(--text2); }
 .dash-popup-empty { font-size:13px; color:var(--muted2); padding:8px 0; text-align:center; }
+/* 전체 위치 */
+.alarm-wrapper {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+}
+
+/* 🔔 아이콘 */
+.alarm-icon {
+    position: relative;
+    cursor: pointer;
+    font-size: 22px;
+}
+
+/* 🔴 알림 개수 */
+.alarm-count {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: red;
+    color: white;
+    font-size: 12px;
+    border-radius: 50%;
+    padding: 2px 6px;
+}
+
+/* 📦 팝업 */
+.alarm-popup {
+    display: none;
+    position: absolute;
+    top: 35px;
+    right: 0;
+
+    width: 260px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 999;
+}
+
+/* 헤더 */
+.alarm-header {
+    padding: 10px;
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+}
+
+/* 항목 */
+.alarm-item {
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+
+.alarm-item:hover {
+    background: #f7f9fc;
+}
+
+/* 비어있을 때 */
+.alarm-empty {
+    padding: 15px;
+    text-align: center;
+    color: #999;
+}
+.main {
+    position: relative;
+}
 </style>
 </head>
 <body>
 <jsp:include page="sidebar.jsp"/>
 <main class="main">
+<div class="alarm-wrapper">
+    
+    <div class="alarm-icon" onclick="toggleAlarm()">
+        🔔
+        <span class="alarm-count"><%= alertList != null ? alertList.size() : 0 %></span>
+    </div>
+
+    <div id="alarmPopup" class="alarm-popup">
+        <div class="alarm-header">⏰ 마감일 알림</div>
+
+        <% if (alertList != null && !alertList.isEmpty()) { %>
+            <% for (TaskDTO task : alertList) { %>
+                <div class="alarm-item">
+                    <b><%= task.getTitle() %></b>
+                    <div>마감일: <%= task.getDeadline() %></div>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div class="alarm-empty">알림 없음</div>
+        <% } %>
+    </div>
+
+</div>
   <% if (currentProject != null) { %>
   <div style="padding:20px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
     <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin:0;line-height:1.2;letter-spacing:-0.5px;white-space:nowrap"><%= currentProject.getTitle() %></h1>
@@ -132,6 +233,7 @@ String projectQuery = (projectIdParam != null && !projectIdParam.isEmpty())
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <%= isLeader ? "팀장" : "팀원" %>
     </span>
+    
   </div>
   <div style="height:1px;background:var(--border);margin:0 0 0 0"></div>
   <% } %>
@@ -457,6 +559,19 @@ document.getElementById('chat-input').addEventListener('keydown',function(e){ if
 dashLoadEvents();
 loadKanban();
 </script>
+<script>
+function toggleAlarm() {
+    const popup = document.getElementById("alarmPopup");
+    popup.style.display = (popup.style.display === "block") ? "none" : "block";
+}
 
+/* 바깥 클릭 시 닫기 */
+document.addEventListener("click", function(e) {
+    const wrapper = document.querySelector(".alarm-wrapper");
+    if (!wrapper.contains(e.target)) {
+        document.getElementById("alarmPopup").style.display = "none";
+    }
+});
+</script>
 </body>
 </html>
