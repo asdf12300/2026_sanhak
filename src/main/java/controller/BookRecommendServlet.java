@@ -62,8 +62,8 @@ public class BookRecommendServlet extends HttpServlet {
                 "반드시 아래 JSON 배열 형식으로만 답해줘:\n" +
                 "[{\"title\":\"제목\",\"titleEn\":\"English Title\",\"author\":\"저자\",\"desc\":\"한줄소개\"}]",
                 category
-            	);
-                request.setAttribute("category", category);
+            );
+            request.setAttribute("category", category);
         } else {
             request.getRequestDispatcher("/bookRecommend.jsp").forward(request, response);
             return;
@@ -86,33 +86,34 @@ public class BookRecommendServlet extends HttpServlet {
         String requestBody = gson.toJson(requestJson);
 
         try {
-            HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newBuilder().build();
 
-            // Groq API 호출
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.groq.com/openai/v1/chat/completions"))
                     .header("Authorization", "Bearer " + API_KEY)
                     .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
                     .build();
 
             long start = System.currentTimeMillis();
-            
-            HttpResponse<String> apiResponse = client.send(req, HttpResponse.BodyHandlers.ofString());
-
+            HttpResponse<byte[]> apiResponse = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
+            String body = new String(apiResponse.body(), StandardCharsets.UTF_8);
             System.out.println("Groq 응답 시간: " + (System.currentTimeMillis() - start) + "ms");
-            
-            JsonObject json = JsonParser.parseString(apiResponse.body()).getAsJsonObject();
+            System.out.println("Groq status code: " + apiResponse.statusCode());
+            System.out.println("Groq 응답 body: " + body);
+
+            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
             String content = json.getAsJsonArray("choices")
                     .get(0).getAsJsonObject()
                     .getAsJsonObject("message")
                     .get("content").getAsString();
 
-            // 마크다운 코드블록 제거
             content = content.replaceAll("```json", "").replaceAll("```", "").trim();
+            System.out.println("파싱된 content: " + content);
 
-            // 병렬로 이미지 조회
             JsonArray books = JsonParser.parseString(content).getAsJsonArray();
+            System.out.println("books 파싱 결과 수: " + books.size());
+
             ExecutorService executor = Executors.newFixedThreadPool(12);
             List<CompletableFuture<JsonObject>> futures = new ArrayList<>();
 
@@ -125,31 +126,39 @@ public class BookRecommendServlet extends HttpServlet {
                     String imageUrl = getBookImageUrl(client, title, titleEn, author);
                     if (!imageUrl.isEmpty()) {
                         book.addProperty("image", imageUrl);
-                        return book;
                     }
-                    return null;
+                    return book;
                 }, executor);
                 futures.add(future);
             }
-            
+
             long imageStart = System.currentTimeMillis();
-            
-            // 이미지 있는 것만 6개 수집
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            System.out.println("이미지 조회 시간: " + (System.currentTimeMillis() - imageStart) + "ms");
 
             JsonArray filteredBooks = new JsonArray();
+            List<JsonObject> noImageBooks = new ArrayList<>();
+
             for (CompletableFuture<JsonObject> future : futures) {
-                if (filteredBooks.size() >= 6) break;
                 try {
                     JsonObject book = future.getNow(null);
-                    if (book != null) filteredBooks.add(book);
+                    if (book == null) continue;
+                    if (book.has("image")) {
+                        if (filteredBooks.size() < 6) filteredBooks.add(book);
+                    } else {
+                        noImageBooks.add(book);
+                    }
                 } catch (Exception e) {
                     System.out.println("병렬 처리 오류: " + e.getMessage());
                 }
             }
 
-            System.out.println("이미지 조회 시간: " + (System.currentTimeMillis() - imageStart) + "ms");
-            
+            for (JsonObject book : noImageBooks) {
+                if (filteredBooks.size() >= 6) break;
+                filteredBooks.add(book);
+            }
+
+            System.out.println("최종 표시 책 수: " + filteredBooks.size());
             executor.shutdown();
 
             request.setAttribute("books", filteredBooks.toString());
@@ -162,17 +171,14 @@ public class BookRecommendServlet extends HttpServlet {
     }
 
     private String getBookImageUrl(HttpClient client, String title, String titleEn, String author) {
-        // 1차: 한국어 제목 + 저자로 검색
         String result = searchBookImage(client, title + " " + author);
         if (!result.isEmpty()) return result;
 
-        // 2차: 영어 제목 + 저자로 검색
         if (!titleEn.isEmpty()) {
             result = searchBookImage(client, titleEn + " " + author);
             if (!result.isEmpty()) return result;
         }
 
-        // 3차: 영어 제목만으로 검색
         result = searchBookImage(client, titleEn.isEmpty() ? title : titleEn);
         return result;
     }
@@ -187,8 +193,9 @@ public class BookRecommendServlet extends HttpServlet {
                     .GET()
                     .build();
 
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
+            HttpResponse<byte[]> res = client.send(req, HttpResponse.BodyHandlers.ofByteArray());
+            String body = new String(res.body(), StandardCharsets.UTF_8);
+            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
 
             JsonArray items = json.getAsJsonArray("items");
             if (items != null && items.size() > 0) {
@@ -196,7 +203,9 @@ public class BookRecommendServlet extends HttpServlet {
                         .getAsJsonObject("volumeInfo");
                 JsonObject imageLinks = volumeInfo.getAsJsonObject("imageLinks");
                 if (imageLinks != null && imageLinks.has("thumbnail")) {
-                    return imageLinks.get("thumbnail").getAsString();
+                    String url2 = imageLinks.get("thumbnail").getAsString().replace("http://", "https://");
+                    System.out.println("이미지 URL: " + url2);
+                    return url2;
                 }
             }
         } catch (Exception e) {
