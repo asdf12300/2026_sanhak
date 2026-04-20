@@ -105,6 +105,12 @@ CREATE TABLE meeting_minutes_history (
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     content_before TEXT,
     
+    INSERT INTO member VALUES ('김유경', 'yk123', '1234', 'yk123@gmail.com', '010-1234-5678');
+	INSERT INTO member VALUES ('최대로', 'dr123', '1234', 'dr123@gmail.com', '010-1234-5678');
+	INSERT INTO member VALUES ('차소희', 'sh123', '1234', 'sh123@gmail.com', '010-1234-5678');
+	INSERT INTO member VALUES ('김채연', 'cy123', '1234', 'cy123@gmail.com', '010-1234-5678');
+
+    
     FOREIGN KEY (minutes_id) REFERENCES meeting_minutes(id) ON DELETE CASCADE,
     FOREIGN KEY (modified_by) REFERENCES member(id) ON DELETE RESTRICT
 );
