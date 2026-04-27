@@ -2,8 +2,7 @@ create table member(
 name varchar(20) NOT NULL,
 id varchar(20) NOT NULL,
 pw varchar(20) NOT NULL,
-email varchar(30) NOT NULL,
-tel varchar(15) NOT NULL
+email varchar(30) NOT NULL
 )
 
 ALTER TABLE member ADD PRIMARY KEY (id);
@@ -117,4 +116,5 @@ CREATE TABLE meeting_minutes_history (
 	INSERT INTO member VALUES ('이민제', 'mj123', '1234', 'mj123@gmail.com');
 	
 	desc member;
+	select * from member;
     
