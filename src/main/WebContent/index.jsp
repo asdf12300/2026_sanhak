@@ -245,15 +245,15 @@ if (loginUser != null) {
         <div class="donut-svg">
           <svg width="148" height="148" viewBox="0 0 148 148">
             <circle cx="74" cy="74" r="56" fill="none" stroke="#e6edf8" stroke-width="14"/>
-            <circle cx="74" cy="74" r="56" fill="none" stroke="url(#dg)" stroke-width="14" stroke-dasharray="351.9" stroke-dashoffset="87.97" stroke-linecap="round" transform="rotate(-90 74 74)" style="transition:stroke-dashoffset 1.2s ease"/>
+            <circle cx="74" cy="74" r="56" fill="none" stroke="url(#dg)" stroke-width="14" stroke-dasharray="351.9" stroke-dashoffset="351.9" stroke-linecap="round" transform="rotate(-90 74 74)" style="transition:stroke-dashoffset 1.2s ease"/>
             <defs><linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#60a5fa"/></linearGradient></defs>
           </svg>
-          <div class="donut-label"><div class="donut-pct">75%</div><div class="donut-sub">완료율</div></div>
+          <div class="donut-label"><div class="donut-pct">0%</div><div class="donut-sub">완료율</div></div>
         </div>
         <div class="donut-leg">
-          <div class="leg-row"><div class="leg-l"><div class="leg-dot" style="background:var(--blue)"></div><span class="leg-name">완료</span></div><span class="leg-val">27건</span></div>
-          <div class="leg-row"><div class="leg-l"><div class="leg-dot" style="background:var(--orange)"></div><span class="leg-name">진행 중</span></div><span class="leg-val">11건</span></div>
-          <div class="leg-row"><div class="leg-l"><div class="leg-dot" style="background:var(--red)"></div><span class="leg-name">지연</span></div><span class="leg-val">4건</span></div>
+          <div class="leg-row"><div class="leg-l"><div class="leg-dot" style="background:var(--blue)"></div><span class="leg-name">완료</span></div><span class="leg-val">0건</span></div>
+          <div class="leg-row"><div class="leg-l"><div class="leg-dot" style="background:var(--orange)"></div><span class="leg-name">진행 중</span></div><span class="leg-val">0건</span></div>
+          <div class="leg-row"><div class="leg-l"><div class="leg-dot" style="background:var(--red)"></div><span class="leg-name">지연</span></div><span class="leg-val">0건</span></div>
         </div>
       </div>
     </div>
