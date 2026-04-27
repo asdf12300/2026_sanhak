@@ -2,7 +2,7 @@
 driver=com.mysql.cj.jdbc.Driver
 url=jdbc:mysql://localhost:3306/db이름?useSSL=false
 username=계정
-password=암호
+password=비밀번호
 
 # Connection Pool Settings
 db.maxTotal=20
