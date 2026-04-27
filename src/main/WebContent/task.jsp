@@ -13,7 +13,8 @@
 .task-wrap {
   padding: 1.5rem;
   max-width: 860px;
-  margin: 20px auto;
+  width: 100%;
+  margin: 20px 0;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -50,6 +51,7 @@
 <body>
 <jsp:include page="sidebar.jsp"/>
 
+<div class="main" style="display:flex; align-items:flex-start; justify-content:center;">
 <div class="task-wrap">
   <div class="task-header">
     <span class="task-title">업무 관리</span>
@@ -78,6 +80,7 @@
     </thead>
     <tbody id="taskBody"></tbody>
   </table>
+  </div>
 </div>
 
 <!-- 모달 -->
