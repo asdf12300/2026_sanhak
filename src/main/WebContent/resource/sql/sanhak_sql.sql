@@ -113,6 +113,8 @@ INSERT INTO member VALUES ('차소희', 'sh123', '1234', 'sh123@gmail.com');
 INSERT INTO member VALUES ('김채연', 'cy123', '1234', 'cy123@gmail.com');
 INSERT INTO member VALUES ('이민제', 'mj123', '1234', 'mj123@gmail.com');
 
+desc member;
+select * from member;
 
 -- role에 교수 추가 // 기존에 있던 db 멤버들 기본값을 student로
 ALTER TABLE member ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'student';
