@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
   <Resource
-    name="jdbc/sanhak"
+    name="jdbc/프로젝트이름"
     auth="Container"
     type="javax.sql.DataSource"
     driverClassName="com.mysql.cj.jdbc.Driver"
-    url="jdbc:mysql://localhost:3306/teamproject?useSSL=false&amp;serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true"
-    username="root"
-    password="1234"
+    url="jdbc:mysql://localhost:3306/DB이름?useSSL=false&amp;serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true"
+    username="계정"
+    password="비밀번호"
     maxTotal="20"
     maxIdle="10"
     minIdle="2"

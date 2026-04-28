@@ -28,15 +28,22 @@ public class JoinServlet extends HttpServlet {
         String pw = request.getParameter("pw");
         String pw_check = request.getParameter("pw_check");
         String email = request.getParameter("email");
+        String role = request.getParameter("role");
 
-        if (name == null || id == null || pw == null || pw_check == null || email == null ||
-            name.isEmpty() || id.isEmpty() || pw.isEmpty() || pw_check.isEmpty() || email.isEmpty()) {
+        if (name == null || id == null || pw == null || pw_check == null || email == null || role == null ||
+            name.isEmpty() || id.isEmpty() || pw.isEmpty() || pw_check.isEmpty() || email.isEmpty() || role.isEmpty()) {
             response.sendRedirect("join.jsp?error=empty");
             return;
         }
 
         if (!pw.equals(pw_check)) {
             response.sendRedirect("join.jsp?error=pw_mismatch");
+            return;
+        }
+
+        // role 값 검증 (student 또는 professor만 허용)
+        if (!role.equals("student") && !role.equals("professor")) {
+            response.sendRedirect("join.jsp?error=invalid_role");
             return;
         }
 
@@ -52,12 +59,13 @@ public class JoinServlet extends HttpServlet {
                 }
             }
 
-            String sql = "INSERT INTO member (name, id, pw, email) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO member (name, id, pw, email, role) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, name);
                 pstmt.setString(2, id);
                 pstmt.setString(3, pw);
                 pstmt.setString(4, email);
+                pstmt.setString(5, role);
                 pstmt.executeUpdate();
             }
 

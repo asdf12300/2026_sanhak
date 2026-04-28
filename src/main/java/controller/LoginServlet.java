@@ -18,18 +18,26 @@ public class LoginServlet extends HttpServlet {
 
         String userid = request.getParameter("userid");
         String password = request.getParameter("password");
+        String role = request.getParameter("role");
+
+        // role 값 검증
+        if (role == null || (!role.equals("student") && !role.equals("professor"))) {
+            request.setAttribute("error", "역할을 올바르게 선택해주세요.");
+            request.getRequestDispatcher("login.jsp").forward(request, response);
+            return;
+        }
 
         LoginDAO dao = new LoginDAO();
 
         try {
-            LoginDTO member = dao.authenticate(userid, password);
+            LoginDTO member = dao.authenticate(userid, password, role);
 
             if (member != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("loginUser", member);
                 response.sendRedirect(request.getContextPath() + "/projects.jsp");
             } else {
-                request.setAttribute("error", "아이디 또는 비밀번호가 일치하지 않습니다.");
+                request.setAttribute("error", "아이디, 비밀번호 또는 역할이 일치하지 않습니다.");
                 request.getRequestDispatcher("login.jsp").forward(request, response);
             }
         } catch (Exception e) {
