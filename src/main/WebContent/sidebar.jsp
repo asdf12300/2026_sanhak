@@ -154,7 +154,10 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
       </div>
     </div>
     <% if (loginUser != null) { %>
-      <a href="projects.jsp" style="text-decoration:none">
+      <%
+        String projectListUrl = "professor".equals(loginUser.getRole()) ? "professorProject.jsp" : "projects.jsp";
+      %>
+      <a href="<%= projectListUrl %>" style="text-decoration:none">
         <div class="nav-item" style="margin-top:8px;color:#2563eb">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
