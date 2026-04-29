@@ -336,6 +336,7 @@ if (loginUser != null) {
   </div>
 
   <div class="grid" style="margin-bottom:16px">
+  <% if (!isProfessor) { %>
      <div class="card c12">
       <div class="card-hd"><div class="card-t">팀 채팅</div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></div><span style="font-size:11px;color:var(--teal);font-weight:600">4명 접속 중</span></div></div>
       <div class="chat-msgs" id="chat-messages">
@@ -350,6 +351,7 @@ if (loginUser != null) {
       </div>
     </div>
   </div>
+  <% } %>
 </main>
 <div class="dash-popup-bg" id="dashPopupBg">
   <div class="dash-popup">
@@ -548,14 +550,17 @@ function updateTodoCount(){
   document.getElementById('todo-cnt').textContent=(all-done)+'개 남음';
 }
 function sendChat(){
-  var inp=document.getElementById('chat-input'), val=inp.value.trim();
+  var inp=document.getElementById('chat-input');
+  if(!inp) return;
+  var val=inp.value.trim();
   if(!val)return;
   var now=new Date(), time='오후 '+now.getHours()+':'+('0'+now.getMinutes()).slice(-2);
   var msg=document.createElement('div'); msg.className='chat-msg me';
   msg.innerHTML='<div class="chat-av" style="background:var(--blue)">나</div><div class="chat-in"><div class="chat-nm">나 · '+time+'</div><div class="chat-bbl">'+val+'</div></div>';
   var box=document.getElementById('chat-messages'); box.appendChild(msg); box.scrollTop=box.scrollHeight; inp.value='';
 }
-document.getElementById('chat-input').addEventListener('keydown',function(e){ if(e.key==='Enter')sendChat(); });
+var chatInput=document.getElementById('chat-input');
+if(chatInput) chatInput.addEventListener('keydown',function(e){ if(e.key==='Enter')sendChat(); });
 
 dashLoadEvents();
 loadKanban();
