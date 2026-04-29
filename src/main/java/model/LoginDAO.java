@@ -11,10 +11,10 @@ public class LoginDAO {
         return DBConnection.getConnection();
     }
 
-    // 로그인 인증 메서드
-    public LoginDTO authenticate(String userid, String password) {
+    // 로그인 인증 메서드 (role 검증 포함)
+    public LoginDTO authenticate(String userid, String password, String role) {
 
-        String sql = "SELECT id, name FROM member WHERE id = ? AND pw = ?";
+        String sql = "SELECT id, name, role FROM member WHERE id = ? AND pw = ? AND role = ?";
 
         try (
             Connection conn = getConnection();
@@ -23,12 +23,14 @@ public class LoginDAO {
 
             ps.setString(1, userid);
             ps.setString(2, password);
+            ps.setString(3, role);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     LoginDTO member = new LoginDTO();
                     member.setId(rs.getString("id"));
                     member.setName(rs.getString("name"));
+                    member.setRole(rs.getString("role"));
                     return member;
                 }
             }

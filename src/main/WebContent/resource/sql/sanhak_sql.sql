@@ -6,7 +6,7 @@ email varchar(30) NOT NULL
 )
 
 ALTER TABLE member ADD PRIMARY KEY (id);
-INSERT INTO member VALUES ('홍길동', 'hong123', '1234', 'hong@email.com', '010-1234-5678');
+INSERT INTO member VALUES ('홍길동', 'hong123', '1234', 'hong@email.com');
 
 CREATE TABLE board (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -16,7 +16,6 @@ CREATE TABLE board (
     team_leader varchar(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE project_member (
     id INT AUTO_INCREMENT PRIMARY KEY,
     project_id INT NOT NULL,
@@ -104,20 +103,53 @@ CREATE TABLE meeting_minutes_history (
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     content_before TEXT,
     
-    
     FOREIGN KEY (minutes_id) REFERENCES meeting_minutes(id) ON DELETE CASCADE,
     FOREIGN KEY (modified_by) REFERENCES member(id) ON DELETE RESTRICT
 );
 
-	INSERT INTO member VALUES ('김유경', 'yk123', '1234', 'yk123@gmail.com');
-	INSERT INTO member VALUES ('최대로', 'dr123', '1234', 'dr123@gmail.com');
-	INSERT INTO member VALUES ('차소희', 'sh123', '1234', 'sh123@gmail.com');
-	INSERT INTO member VALUES ('김채연', 'cy123', '1234', 'cy123@gmail.com');
-	INSERT INTO member VALUES ('이민제', 'mj123', '1234', 'mj123@gmail.com');
-	
-	desc member;
-	select * from member;
-    
+
+INSERT INTO member VALUES ('김유경', 'yk123', '1234', 'yk123@gmail.com');
+INSERT INTO member VALUES ('최대로', 'dr123', '1234', 'dr123@gmail.com');
+INSERT INTO member VALUES ('차소희', 'sh123', '1234', 'sh123@gmail.com');
+INSERT INTO member VALUES ('김채연', 'cy123', '1234', 'cy123@gmail.com');
+INSERT INTO member VALUES ('이민제', 'mj123', '1234', 'mj123@gmail.com');
+
+-- role에 교수 추가 // 기존에 있던 db 멤버들 기본값을 student로
+ALTER TABLE member ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'student';
+-- role 검증하는 거 추가 (제약조건을 넣어서 학생하고 교수만 확인할 수 있게 했음, 그 외에 다른 role이 들어오면 안됨)
+ALTER TABLE member ADD CONSTRAINT chk_member_role CHECK (role IN ('student', 'professor'));
+-- role 기반으로 조회할 때 인덱스 최적화 넣기 (지금은 몇개 회원만 있으면 금방 찾으르 수 있지만 천,만 단위로 검색시에 느려짐)
+CREATE INDEX idx_member_role ON member(role);
+
+-- =============================================
+-- 피드백 기능
+-- =============================================
+
+-- 피드백 테이블 (교수가 작성)
+CREATE TABLE feedback (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    project_id  INT NOT NULL,
+    author_id   VARCHAR(20) NOT NULL,
+    title       VARCHAR(200) NOT NULL,
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id)  REFERENCES member(id) ON DELETE CASCADE
+);
+
+-- 피드백 댓글 테이블 (팀원/팀장이 작성)
+CREATE TABLE feedback_comment (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    feedback_id INT NOT NULL,
+    author_id   VARCHAR(20) NOT NULL,
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (feedback_id) REFERENCES feedback(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id)   REFERENCES member(id)   ON DELETE CASCADE
+);
+   
+--폴더 생성
 	CREATE TABLE folder (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -128,3 +160,5 @@ CREATE TABLE meeting_minutes_history (
 
 ALTER TABLE board ADD COLUMN folder_id INT NULL;
 ALTER TABLE board ADD FOREIGN KEY (folder_id) REFERENCES folder(id) ON DELETE SET NULL;
+
+show tables;

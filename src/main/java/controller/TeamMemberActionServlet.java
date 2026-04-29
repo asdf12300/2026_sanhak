@@ -64,10 +64,36 @@ public class TeamMemberActionServlet extends HttpServlet {
             } else if (dao.isMember(projectId, memberId)) {
                 msg = "이미 초대되었거나 팀원으로 등록된 사용자입니다.";
             } else {
-                boolean result = dao.inviteMember(projectId, memberId, "팀원");
-                msg = result ? "팀원 초대가 완료되었습니다." : "팀원 초대에 실패했습니다.";
+                // 학생만 팀원 초대 가능
+                String targetRole = dao.getMemberRole(memberId);
+                if (!"student".equals(targetRole)) {
+                    msg = "학생 계정만 팀원으로 초대할 수 있습니다. 교수 초대는 아래 교수 초대 항목을 이용하세요.";
+                } else {
+                    boolean result = dao.inviteMember(projectId, memberId, "팀원");
+                    msg = result ? "팀원 초대가 완료되었습니다." : "팀원 초대에 실패했습니다.";
+                }
             }
 
+        } else if ("inviteProfessor".equals(action)) {
+            // 팀장만 교수 초대 가능
+            String profMsg = "";
+            if (teamLeaderId == null || !teamLeaderId.equals(loginId)) {
+                profMsg = "팀장만 교수를 초대할 수 있습니다.";
+            } else if (!dao.memberExists(memberId)) {
+                profMsg = "존재하지 않는 아이디입니다.";
+            } else if (dao.isMember(projectId, memberId)) {
+                profMsg = "이미 초대되었거나 등록된 사용자입니다.";
+            } else {
+                String targetRole = dao.getMemberRole(memberId);
+                if (!"professor".equals(targetRole)) {
+                    profMsg = "교수 계정만 초대할 수 있습니다.";
+                } else {
+                    boolean result = dao.inviteMember(projectId, memberId, "교수");
+                    profMsg = result ? "교수 초대가 완료되었습니다." : "교수 초대에 실패했습니다.";
+                }
+            }
+            response.sendRedirect("teamMemberManage.jsp?projectId=" + projectId + "&profMsg=" + URLEncoder.encode(profMsg, "UTF-8"));
+            return;
         } else if ("accept".equals(action)) {
             int pmNo = Integer.parseInt(pmNoStr);
             boolean result = dao.updateInvitationStatus(pmNo, loginId, "accepted");

@@ -104,6 +104,14 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
       </svg>
       회의록
     </a>
+    <a href="feedback<%= projectQuery %>" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        <line x1="9" y1="10" x2="15" y2="10"/>
+        <line x1="9" y1="14" x2="13" y2="14"/>
+      </svg>
+      피드백
+    </a>
     <a href="bookRecommend" class="nav-item <%= activeBookRecommend %>">
 	  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 	    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>

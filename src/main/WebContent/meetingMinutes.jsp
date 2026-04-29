@@ -128,8 +128,115 @@
                 
                 <div class="form-group">
                     <label for="content">회의 내용</label>
-                    <textarea id="content" name="content" required 
-                              placeholder="회의 내용을 자유롭게 작성하세요..."></textarea>
+                    
+                    <!-- 텍스트 에디터 툴바 -->
+                    <div class="editor-toolbar">
+                        <!-- 글씨 크기 (11~40) -->
+                        <select id="fontSize" onchange="changeFontSize(this.value)">
+                            <option value="15" selected>15</option>
+                            <option value="11">11</option>
+                            <option value="13">13</option>
+                            <option value="16">16</option>
+                            <option value="19">19</option>
+                            <option value="24">24</option>
+                            <option value="28">28</option>
+                            <option value="30">30</option>
+                            <option value="34">34</option>
+                            <option value="38">38</option>
+                        </select>
+                        
+                        <div class="toolbar-divider"></div>
+                        
+                        <!-- 굵게 -->
+                        <button type="button" onclick="formatDoc('bold')" title="굵게 (Ctrl+B)">
+                            <strong style="font-size: 16px;">B</strong>
+                        </button>
+                        
+                        <!-- 기울임 -->
+                        <button type="button" onclick="formatDoc('italic')" title="기울임 (Ctrl+I)">
+                            <em style="font-size: 16px; font-style: italic;">I</em>
+                        </button>
+                        
+                        <!-- 밑줄 -->
+                        <button type="button" onclick="formatDoc('underline')" title="밑줄 (Ctrl+U)">
+                            <span style="text-decoration: underline; font-size: 16px;">U</span>
+                        </button>
+                        
+                        <!-- 취소선 -->
+                        <button type="button" onclick="formatDoc('strikeThrough')" title="취소선">
+                            <span style="text-decoration: line-through; font-size: 16px;">S</span>
+                        </button>
+                        
+                        <div class="toolbar-divider"></div>
+                        
+                        <!-- 왼쪽 정렬 -->
+                        <button type="button" onclick="formatDoc('justifyLeft')" title="왼쪽 정렬">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <line x1="3" y1="12" x2="15" y2="12"/>
+                                <line x1="3" y1="18" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- 가운데 정렬 -->
+                        <button type="button" onclick="formatDoc('justifyCenter')" title="가운데 정렬">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <line x1="6" y1="12" x2="18" y2="12"/>
+                                <line x1="4" y1="18" x2="20" y2="18"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- 오른쪽 정렬 -->
+                        <button type="button" onclick="formatDoc('justifyRight')" title="오른쪽 정렬">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <line x1="9" y1="12" x2="21" y2="12"/>
+                                <line x1="6" y1="18" x2="21" y2="18"/>
+                            </svg>
+                        </button>
+                        
+                        <div class="toolbar-divider"></div>
+                        
+                        <!-- 글자 색 -->
+                        <div class="color-picker-wrapper">
+                            <button type="button" class="color-btn" onclick="toggleColorPalette('textColor')" title="글자 색">
+                                <span style="font-size: 16px; font-weight: bold;">A</span>
+                                <span class="color-icon" id="textColorIcon" style="background: #000000; border-bottom: 3px solid #000000;"></span>
+                            </button>
+                            <div class="color-palette" id="textColorPalette">
+                                <div class="color-grid" id="textColorGrid"></div>
+                                <div class="color-more">
+                                    <label>더보기</label>
+                                    <input type="color" id="textColorPicker" value="#000000" onchange="applyCustomColor('text', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 배경 색 -->
+                        <div class="color-picker-wrapper">
+                            <button type="button" class="color-btn" onclick="toggleColorPalette('bgColor')" title="배경 색">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                                </svg>
+                                <span class="color-icon" id="bgColorIcon" style="background: #ffff00;"></span>
+                            </button>
+                            <div class="color-palette" id="bgColorPalette">
+                                <div class="color-grid" id="bgColorGrid"></div>
+                                <div class="color-more">
+                                    <label>더보기</label>
+                                    <input type="color" id="bgColorPicker" value="#ffff00" onchange="applyCustomColor('bg', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 에디터 영역 -->
+                    <div id="editor" class="editor-content" contenteditable="true" 
+                         data-placeholder="회의 내용을 자유롭게 작성하세요..."></div>
+                    
+                    <!-- 숨겨진 textarea (폼 제출용) - required 제거 -->
+                    <textarea id="content" name="content" style="display: none;"></textarea>
                 </div>
                 
                 <div class="modal-buttons">

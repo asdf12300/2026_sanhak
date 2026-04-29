@@ -275,7 +275,7 @@
           </svg>
         </div>
         <div class="feature-text">
-          <strong>회의록 자동 정리</strong>
+          <strong>회의록 정리</strong>
           <span>회의 내용을 기록하고 팀원과 즉시 공유</span>
         </div>
       </div>
@@ -316,7 +316,7 @@
 <!-- ── 우측: 로그인 폼 ── -->
 <div class="login-panel">
   <div class="login-card">
-    <h2>다시 오셨군요 👋</h2>
+    <h2>환영합니다 👋</h2>
     <p class="welcome-sub">계정에 로그인하여 팀과 함께 시작하세요.</p>
 
     <% String error = (String) request.getAttribute("error"); %>
@@ -325,6 +325,18 @@
     <% } %>
 
     <form action="login" method="post">
+    <div class="mb-3">
+        <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="role" value="student" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <span style="font-size: 0.95rem; color: #374151;">학생</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="role" value="professor" style="width: 18px; height: 18px; cursor: pointer;">
+            <span style="font-size: 0.95rem; color: #374151;">교수</span>
+          </label>
+        </div>
+      </div>
       <div class="mb-3">
         <label class="form-label">아이디</label>
         <input type="text" name="userid" class="form-control" placeholder="아이디를 입력하세요" required>
@@ -333,6 +345,7 @@
         <label class="form-label">비밀번호</label>
         <input type="password" name="password" class="form-control" placeholder="비밀번호를 입력하세요" required>
       </div>
+      
       <button type="submit" class="btn-login mt-1">로그인</button>
     </form>
 

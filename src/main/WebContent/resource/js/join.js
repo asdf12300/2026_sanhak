@@ -4,7 +4,7 @@ function joinCheck() {
     const pw = document.getElementById('pw').value.trim();
     const pw_check = document.getElementById('pw_check').value.trim();
     const email = document.getElementById('email').value.trim();
-    const tel = document.getElementById('tel').value.trim();
+    const role = document.querySelector('input[name="role"]:checked');
 
     if (name === "") {
         alert("이름을 입력해주세요.");
@@ -31,8 +31,8 @@ function joinCheck() {
         return false;
     }
 
-    if (tel === "") {
-        alert("전화번호를 입력해주세요.");
+    if (!role) {
+        alert("역할을 선택해주세요.");
         return false;
     }
 
