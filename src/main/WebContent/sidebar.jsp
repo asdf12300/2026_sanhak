@@ -119,12 +119,14 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
 	  </svg>
 	  도서 추천
 	</a>
+    <% if (loginUser == null || !"professor".equals(loginUser.getRole())) { %>
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
       </svg>
       팀 채팅 <span class="nav-badge red">2</span>
     </div>
+    <% } %>
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
