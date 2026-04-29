@@ -118,3 +118,13 @@ CREATE TABLE meeting_minutes_history (
 	desc member;
 	select * from member;
     
+	CREATE TABLE folder (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    owner_id VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES member(id) ON DELETE CASCADE
+);
+
+ALTER TABLE board ADD COLUMN folder_id INT NULL;
+ALTER TABLE board ADD FOREIGN KEY (folder_id) REFERENCES folder(id) ON DELETE SET NULL;

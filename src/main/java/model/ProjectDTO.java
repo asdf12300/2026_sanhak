@@ -12,6 +12,7 @@ public class ProjectDTO {
 	private Timestamp created_at;
 	private String deadline;
 	private String team_leader;
+	private int folderId;
 
 	
 	public ProjectDTO() {
@@ -83,4 +84,6 @@ public class ProjectDTO {
 		return sdf.format(created_at);
 	}
 
+	public int getFolderId() { return folderId; }
+	public void setFolderId(int folderId) { this.folderId = folderId; }
 }
