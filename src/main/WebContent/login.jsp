@@ -325,16 +325,7 @@
     <% } %>
 
     <form action="login" method="post">
-      <div class="mb-3">
-        <label class="form-label">아이디</label>
-        <input type="text" name="userid" class="form-control" placeholder="아이디를 입력하세요" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">비밀번호</label>
-        <input type="password" name="password" class="form-control" placeholder="비밀번호를 입력하세요" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">사용자 유형</label>
+    <div class="mb-3">
         <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
           <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
             <input type="radio" name="role" value="student" checked style="width: 18px; height: 18px; cursor: pointer;">
@@ -346,6 +337,15 @@
           </label>
         </div>
       </div>
+      <div class="mb-3">
+        <label class="form-label">아이디</label>
+        <input type="text" name="userid" class="form-control" placeholder="아이디를 입력하세요" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">비밀번호</label>
+        <input type="password" name="password" class="form-control" placeholder="비밀번호를 입력하세요" required>
+      </div>
+      
       <button type="submit" class="btn-login mt-1">로그인</button>
     </form>
 

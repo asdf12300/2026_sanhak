@@ -285,6 +285,19 @@
     <p class="welcome-sub">아래 정보를 입력하여 계정을 만드세요.</p>
 
     <form action="JoinServlet" method="post" onsubmit="return joinCheck()">
+    <div class="mb-3">
+        <label class="form-label">사용자 유형</label>
+        <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="role" value="student" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <span style="font-size: 0.95rem; color: #374151;">학생</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="role" value="professor" style="width: 18px; height: 18px; cursor: pointer;">
+            <span style="font-size: 0.95rem; color: #374151;">교수</span>
+          </label>
+        </div>
+      </div>
       <div class="mb-3">
         <label class="form-label" for="name">이름</label>
         <input type="text" name="name" id="name" class="form-control" placeholder="이름을 입력하세요">
@@ -305,19 +318,7 @@
         <label class="form-label" for="email">이메일</label>
         <input type="email" name="email" id="email" class="form-control" placeholder="이메일을 입력하세요">
       </div>
-      <div class="mb-3">
-        <label class="form-label">사용자 유형</label>
-        <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
-          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-            <input type="radio" name="role" value="student" checked style="width: 18px; height: 18px; cursor: pointer;">
-            <span style="font-size: 0.95rem; color: #374151;">학생</span>
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-            <input type="radio" name="role" value="professor" style="width: 18px; height: 18px; cursor: pointer;">
-            <span style="font-size: 0.95rem; color: #374151;">교수</span>
-          </label>
-        </div>
-      </div>
+      
       <button type="submit" class="btn-join">회원가입</button>
     </form>
 
