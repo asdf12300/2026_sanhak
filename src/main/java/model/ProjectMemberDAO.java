@@ -173,6 +173,85 @@ public class ProjectMemberDAO {
         }
     }
 
+    // 멤버의 role 조회 (student / professor)
+    public String getMemberRole(String memberId) {
+        String sql = "SELECT role FROM member WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("role");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "student";
+    }
+
+    // 프로젝트에 초대된 교수 목록 조회
+    public List<ProjectMemberDTO> getProfessorsByProject(int projectId) {
+        List<ProjectMemberDTO> list = new ArrayList<>();
+        String sql =
+            "SELECT pm.id, pm.project_id, pm.member_id, pm.role, pm.status, pm.invited_at, m.name " +
+            "FROM project_member pm " +
+            "LEFT JOIN member m ON pm.member_id = m.id " +
+            "WHERE pm.project_id = ? AND m.role = 'professor' " +
+            "ORDER BY pm.id DESC";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, projectId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProjectMemberDTO dto = new ProjectMemberDTO();
+                    dto.setPmNo(rs.getInt("id"));
+                    dto.setProjectId(rs.getInt("project_id"));
+                    dto.setMemberId(rs.getString("member_id"));
+                    dto.setName(rs.getString("name"));
+                    dto.setRole(rs.getString("role"));
+                    dto.setStatus(rs.getString("status"));
+                    Timestamp ts = rs.getTimestamp("invited_at");
+                    dto.setInvitedAt(ts != null ? ts.toString() : "");
+                    list.add(dto);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // 학생만 조회 (student role)
+    public List<ProjectMemberDTO> getStudentsByProject(int projectId) {
+        List<ProjectMemberDTO> list = new ArrayList<>();
+        String sql =
+            "SELECT pm.id, pm.project_id, pm.member_id, pm.role, pm.status, pm.invited_at, m.name " +
+            "FROM project_member pm " +
+            "LEFT JOIN member m ON pm.member_id = m.id " +
+            "WHERE pm.project_id = ? AND (m.role = 'student' OR m.role IS NULL) " +
+            "ORDER BY pm.id DESC";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, projectId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProjectMemberDTO dto = new ProjectMemberDTO();
+                    dto.setPmNo(rs.getInt("id"));
+                    dto.setProjectId(rs.getInt("project_id"));
+                    dto.setMemberId(rs.getString("member_id"));
+                    dto.setName(rs.getString("name"));
+                    dto.setRole(rs.getString("role"));
+                    dto.setStatus(rs.getString("status"));
+                    Timestamp ts = rs.getTimestamp("invited_at");
+                    dto.setInvitedAt(ts != null ? ts.toString() : "");
+                    list.add(dto);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // 이미 초대/참여 상태인지 확인
     public boolean isMember(int projectId, String memberId) {
         String sql =
