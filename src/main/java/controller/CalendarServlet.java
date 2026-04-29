@@ -105,6 +105,16 @@ public class CalendarServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         String action = req.getParameter("action");
 
+        // 교수는 일정 등록/수정/삭제 불가
+        HttpSession calSession = req.getSession(false);
+        if (calSession != null && ("save".equals(action) || "update".equals(action) || "delete".equals(action))) {
+            model.LoginDTO calLoginUser = (model.LoginDTO) calSession.getAttribute("loginUser");
+            if (calLoginUser != null && "professor".equals(calLoginUser.getRole())) {
+                resp.getWriter().print("error");
+                return;
+            }
+        }
+
         Connection conn = null;
         try {
             conn = DBConnection.getConnection();

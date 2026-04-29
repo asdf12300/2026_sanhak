@@ -257,6 +257,7 @@ document.getElementById('morePopupBg').onclick = function(e) {
 // 모달
 // =====================
 function openNew(y, m, d) {
+  if (typeof IS_PROFESSOR !== 'undefined' && IS_PROFESSOR) return;
   editIdx = -1;
   document.getElementById('modalTitle').textContent = '일정 등록';
   document.getElementById('evtTitle').value = '';
@@ -275,6 +276,7 @@ function openNew(y, m, d) {
 }
 
 function openEdit(idx) {
+  if (typeof IS_PROFESSOR !== 'undefined' && IS_PROFESSOR) return;
   editIdx = idx;
   var e = events[idx];
   document.getElementById('modalTitle').textContent = '일정 수정';

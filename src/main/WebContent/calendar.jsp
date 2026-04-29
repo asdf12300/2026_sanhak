@@ -1,6 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%String projectIdParam = request.getParameter("projectId"); %>
+<%
+String projectIdParam = request.getParameter("projectId");
+model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
+boolean isProfessor = loginUser != null && "professor".equals(loginUser.getRole());
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,6 +16,7 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resource/css/calendar.css?v=2.0">
 <script>
   const contextPath = "${pageContext.request.contextPath}";
+  const IS_PROFESSOR = <%= isProfessor %>;
 </script>
 <script src="resource/js/calendar.js?v=3" defer></script>
 </head>
