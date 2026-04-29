@@ -122,3 +122,31 @@ ALTER TABLE member ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'student';
 ALTER TABLE member ADD CONSTRAINT chk_member_role CHECK (role IN ('student', 'professor'));
 -- role 기반으로 조회할 때 인덱스 최적화 넣기 (지금은 몇개 회원만 있으면 금방 찾으르 수 있지만 천,만 단위로 검색시에 느려짐)
 CREATE INDEX idx_member_role ON member(role);
+
+-- =============================================
+-- 피드백 기능
+-- =============================================
+
+-- 피드백 테이블 (교수가 작성)
+CREATE TABLE feedback (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    project_id  INT NOT NULL,
+    author_id   VARCHAR(20) NOT NULL,
+    title       VARCHAR(200) NOT NULL,
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id)  REFERENCES member(id) ON DELETE CASCADE
+);
+
+-- 피드백 댓글 테이블 (팀원/팀장이 작성)
+CREATE TABLE feedback_comment (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    feedback_id INT NOT NULL,
+    author_id   VARCHAR(20) NOT NULL,
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (feedback_id) REFERENCES feedback(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id)   REFERENCES member(id)   ON DELETE CASCADE
+);
