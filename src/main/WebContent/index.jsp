@@ -16,6 +16,7 @@ String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
 String projectIdParam = request.getParameter("projectId");
 ProjectDTO currentProject = null;
 boolean isLeader = false;
+boolean isProfessor = "professor".equals(loginUser != null ? loginUser.getRole() : "");
 
 if (projectIdParam != null && !projectIdParam.isEmpty()) {
   try {
@@ -229,9 +230,9 @@ if (loginUser != null) {
       마감일: <%= (currentProject.getDeadline() != null && !currentProject.getDeadline().isEmpty()) ? currentProject.getDeadline() : "미정" %>
     </span>
     <span style="color:var(--border)">·</span>
-    <span style="display:flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;border-radius:12px;<%= isLeader ? "background:var(--blue-soft);color:var(--blue);font-weight:600" : "background:var(--surface2);color:var(--muted)" %>">
+    <span style="display:flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;border-radius:12px;<%= isLeader ? "background:var(--blue-soft);color:var(--blue);font-weight:600" : isProfessor ? "background:#faf5ff;color:#7c3aed;font-weight:600" : "background:var(--surface2);color:var(--muted)" %>">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <%= isLeader ? "팀장" : "팀원" %>
+      <%= isLeader ? "팀장" : isProfessor ? "교수" : "팀원" %>
     </span>
     
   </div>
