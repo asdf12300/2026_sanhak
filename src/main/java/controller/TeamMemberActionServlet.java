@@ -112,6 +112,13 @@ public class TeamMemberActionServlet extends HttpServlet {
             boolean result = dao.removeMember(projectId, memberId);
             msg = result ? "팀원을 제외했습니다." : "팀원 제외에 실패했습니다.";
 
+        } else if ("removeProfessor".equals(action)) {
+            String profMsg = "";
+            boolean result = dao.removeMember(projectId, memberId);
+            profMsg = result ? "교수를 제외했습니다." : "교수 제외에 실패했습니다.";
+            response.sendRedirect("teamMemberManage.jsp?projectId=" + projectId + "&profMsg=" + URLEncoder.encode(profMsg, "UTF-8"));
+            return;
+
         } else if ("setLeader".equals(action)) {
             boolean result = dao.setLeader(projectId, memberId);
             msg = result ? "팀장을 지정했습니다." : "팀장 지정에 실패했습니다.";

@@ -305,7 +305,7 @@ boolean amILeader = loginId != null && loginId.equals(teamLeaderId);
           <td>
             <form action="<%= request.getContextPath() %>/teamMemberAction" method="post" class="inline-form"
                   onsubmit="return confirm('교수를 제외하시겠습니까?')">
-              <input type="hidden" name="action" value="remove">
+              <input type="hidden" name="action" value="removeProfessor">
               <input type="hidden" name="projectId" value="<%= dto.getProjectId() %>">
               <input type="hidden" name="memberId" value="<%= dto.getMemberId() %>">
               <button type="submit" class="btn-sm btn-red">제외</button>
