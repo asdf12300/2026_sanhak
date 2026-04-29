@@ -98,6 +98,16 @@ public class TaskServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/plain;charset=UTF-8");
         String action = req.getParameter("action");
+
+        // 교수는 업무 추가/수정/삭제 불가
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
+            if (loginUser != null && "professor".equals(loginUser.getRole())) {
+                resp.getWriter().print("error:교수는 업무를 추가/수정/삭제할 수 없습니다.");
+                return;
+            }
+        }
         System.out.println("1. 요청 도착 - Action: " + action);
 
         try {

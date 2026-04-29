@@ -1,4 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+  model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
+  boolean isProfessor = loginUser != null && "professor".equals(loginUser.getRole());
+%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -55,7 +59,9 @@
 <div class="task-wrap">
   <div class="task-header">
     <span class="task-title">업무 관리</span>
+    <% if (!isProfessor) { %>
     <button class="btn-new" onclick="openNew()">+ 업무 추가</button>
+    <% } %>
   </div>
 
   <!-- 상태 필터 -->
@@ -119,6 +125,7 @@
 
 <script>
 const PROJECT_ID = <%= request.getParameter("projectId") != null ? request.getParameter("projectId") : "1" %>;
+const IS_PROFESSOR = <%= isProfessor %>;
 </script>
 <script src="resource/js/task.js"></script>
 </body>

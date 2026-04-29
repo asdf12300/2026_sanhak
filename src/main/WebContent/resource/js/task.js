@@ -51,8 +51,8 @@ function renderTable() {
       <td>${t.deadline || '-'}</td>
       <td style="color:#94a3b8;font-size:12px">${t.content || ''}</td>
       <td><div class="btn-row">
-        <button class="btn-edit" onclick="openEdit(${t.id})">수정</button>
-        <button class="btn-del" onclick="confirmDelete(${t.id})">삭제</button>
+        ${IS_PROFESSOR ? '' : `<button class="btn-edit" onclick="openEdit(${t.id})">수정</button>
+        <button class="btn-del" onclick="confirmDelete(${t.id})">삭제</button>`}
       </div></td>
     </tr>`;
   }).join('');
