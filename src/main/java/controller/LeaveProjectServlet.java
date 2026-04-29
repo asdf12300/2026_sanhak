@@ -28,8 +28,16 @@ public class LeaveProjectServlet extends HttpServlet {
             int projectId = Integer.parseInt(projectIdStr);
             ProjectMemberDAO dao = new ProjectMemberDAO();
             dao.removeMember(projectId, userId);
+
+            // role에 따라 리다이렉트 분기
+            String myRole = dao.getMemberRole(userId);
+            if ("professor".equals(myRole)) {
+                response.sendRedirect("professorProject.jsp");
+            } else {
+                response.sendRedirect("projects.jsp");
+            }
+        } else {
+            response.sendRedirect("projects.jsp");
         }
-        
-        response.sendRedirect("projects.jsp");
     }
 }
