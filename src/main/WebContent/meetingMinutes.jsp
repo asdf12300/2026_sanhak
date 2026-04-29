@@ -13,6 +13,9 @@
     
     int projectId = project.getId();
     session.setAttribute("currentProjectId", projectId);
+    
+    model.LoginDTO mmLoginUser = (model.LoginDTO) session.getAttribute("loginUser");
+    boolean isProfessor = mmLoginUser != null && "professor".equals(mmLoginUser.getRole());
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -30,6 +33,7 @@
 <div class="main-content">
     <div class="minutes-header">
         <h1 class="minutes-title">📝 회의록</h1>
+        <% if (!isProfessor) { %>
         <button class="btn-create" onclick="openCreateModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19"/>
@@ -37,6 +41,7 @@
             </svg>
             새 회의록 작성
         </button>
+        <% } %>
     </div>
     
     <div class="content-container">

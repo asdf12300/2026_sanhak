@@ -63,6 +63,12 @@ public class CreateMeetingMinutesServlet extends HttpServlet {
             return;
         }
         
+        // 교수는 회의록 작성 불가
+        if ("professor".equals(loginUser.getRole())) {
+            response.sendRedirect("meetingMinutes?projectId=" + request.getParameter("projectId") + "&error=access_denied");
+            return;
+        }
+        
         try {
             int projectId = Integer.parseInt(request.getParameter("projectId"));
             

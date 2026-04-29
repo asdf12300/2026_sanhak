@@ -27,6 +27,12 @@ public class DeleteMeetingMinutesServlet extends HttpServlet {
             return;
         }
         
+        // 교수는 회의록 삭제 불가
+        if ("professor".equals(loginUser.getRole())) {
+            response.sendRedirect("projects.jsp?error=access_denied");
+            return;
+        }
+        
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             int projectId = Integer.parseInt(request.getParameter("projectId"));

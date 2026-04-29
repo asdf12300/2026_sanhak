@@ -39,6 +39,7 @@
     }
     
     boolean isEditing = "true".equals(request.getParameter("edit"));
+    boolean isProfessor = loginUser != null && "professor".equals(loginUser.getRole());
 %>
 <!DOCTYPE html>
 <html>
@@ -470,6 +471,7 @@
                     ← 목록으로
                 </button>
                 <div class="header-actions">
+                    <% if (!isProfessor) { %>
                     <button class="btn-icon" onclick="toggleEdit()" id="editBtn" title="수정">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -482,6 +484,7 @@
                             <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
                         </svg>
                     </button>
+                    <% } %>
                 </div>
             </div>
             
