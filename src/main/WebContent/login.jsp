@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.Properties, java.io.InputStream" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -207,7 +208,6 @@
   }
   .divider::before { left: 0; }
   .divider::after { right: 0; }
-
   .join-link {
     text-align: center;
     font-size: 0.85rem;
@@ -225,9 +225,97 @@
     .intro-panel { display: none; }
     .login-panel { width: 100%; min-width: unset; background: #f8fafc; }
   }
+  .btn-kakao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: #FEE500;
+  color: rgba(0,0,0,0.85);
+  border: none;
+  border-radius: 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-kakao:hover { background: #f0d900; }
+.btn-naver {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: #03C75A;
+  color: #fff;
+  border: none;
+  border-radius: 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.8rem;
+  cursor: pointer;
+  margin-top: 0.6rem;
+  transition: background 0.15s;
+}
+.btn-naver:hover { background: #02b351; }
 </style>
+<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body>
+
+<%
+    Properties prop = new Properties();
+    InputStream is = application.getResourceAsStream("/WEB-INF/classes/secret.properties");
+    prop.load(is);
+    String kakaoJsKey = prop.getProperty("kakao.js.key");
+    String naverClientId = prop.getProperty("naver.client.id");
+%>
+
+<script>
+  Kakao.init('<%= kakaoJsKey %>');
+
+  function kakaoLogin() {
+    Kakao.Auth.login({
+      success: function(res) {
+        var userId = res.id;
+        var nickname = res.kakao_account.profile.nickname;
+
+        fetch('/kakao/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: userId,
+            nickname: nickname
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          window.location.href = '/projects.jsp';
+        });
+      },                   
+      fail: function(err) {
+        console.error(err);
+      }                     
+    });                    
+  }                        
+
+  function naverLogin() {
+	  var CLIENT_ID = '<%= naverClientId %>';
+	  var REDIRECT_URI = 'http://localhost:8080/naver/login';
+	  var STATE = Math.random().toString(36).substring(2); // 보안용 랜덤값
+
+	  var url = 'https://nid.naver.com/oauth2.0/authorize'
+	    + '?response_type=code'
+	    + '&client_id=' + CLIENT_ID
+	    + '&redirect_uri=' + encodeURIComponent(REDIRECT_URI)
+	    + '&state=' + STATE;
+
+	  window.location.href = url;
+	}
+
+  </script>
 
 <!-- ── 좌측: 플랫폼 소개 ── -->
 <div class="intro-panel">
@@ -351,7 +439,19 @@
 
     <div class="divider">또는</div>
 
-    <div class="join-link">
+	<button class="btn-kakao" onclick="kakaoLogin()">
+	  <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+	    <path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.67 1.69 5.02 4.26 6.37l-1.08 3.97 4.64-3.06c.37.05.75.07 1.18.07 4.97 0 9-3.36 9-7.5S16.97 3 12 3z" fill="rgba(0,0,0,0.85)"/>
+	  </svg>
+	  카카오 로그인
+	</button>
+	<button class="btn-naver" onclick="naverLogin()">
+	  <svg viewBox="0 0 24 24" width="20" height="20">
+	    <path d="M13.5 12.3L10.2 7H7v10h3.5V11.7L13.8 17H17V7h-3.5z" fill="#fff"/>
+	  </svg>
+	  네이버 로그인
+	</button>
+    <br><div class="join-link">
       계정이 없으신가요? <a href="join.jsp">회원가입</a>
     </div>
   </div>

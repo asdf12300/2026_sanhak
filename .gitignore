@@ -8,6 +8,7 @@
 bin/
 *.jar
 **/config.properties
+**/secret.properties
 
 # Kiro 개인 작업 공간
 .kiro/
