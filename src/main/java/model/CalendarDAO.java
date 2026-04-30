@@ -6,13 +6,14 @@ import java.util.List;
 
 public class CalendarDAO {
 
-    // 프로젝트 팀원 목록 (accepted 상태)
+    // 프로젝트 팀원 목록 (accepted 상태, 학생만)
     public List<model.ProjectMemberDTO> getProjectMembers(Connection conn, int projectId) throws Exception {
         List<model.ProjectMemberDTO> list = new ArrayList<>();
         String sql = "SELECT pm.member_id, m.name " +
                      "FROM project_member pm " +
                      "LEFT JOIN member m ON pm.member_id = m.id " +
                      "WHERE pm.project_id = ? AND pm.status = 'accepted' " +
+                     "AND (m.role = 'student' OR m.role IS NULL) " +
                      "ORDER BY m.name";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, projectId);
