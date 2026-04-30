@@ -31,7 +31,7 @@
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
 }
-.projects-logo-icon svg { width: 18px; height: 18px; stroke: #fff; }
+.projects-logo-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; }
 
 .top-bar-right {
   display: flex;
@@ -57,7 +57,7 @@
   display: flex; align-items: center; gap: 4px;
 }
 .btn-logout-header:hover { background: var(--red-light); color: var(--red); border-color: var(--red); }
-.btn-logout-header svg { width: 13px; height: 13px; }
+.btn-logout-header svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
 
 /* 알림 */
 .notification-wrapper { position: relative; }
@@ -66,7 +66,7 @@
   cursor: pointer; padding: 8px; border-radius: 8px; transition: background 0.2s;
 }
 .notification-btn:hover { background: rgba(37,99,235,0.08); }
-.notification-btn svg { width: 20px; height: 20px; stroke: var(--text); }
+.notification-btn svg { width: 20px; height: 20px; stroke: var(--text); fill: none; }
 .notification-badge {
   position: absolute; top: 4px; right: 4px;
   background: #ef4444; color: white; font-size: 10px; font-weight: 700;
@@ -148,7 +148,7 @@
   transition: opacity .15s;
 }
 .btn-new-folder:hover { opacity: .85; }
-.btn-new-folder svg { width: 14px; height: 14px; stroke: #fff; }
+.btn-new-folder svg { width: 14px; height: 14px; stroke: #fff; fill: none; }
 
 /* ── 공통 그리드 ── */
 .project-grid {
@@ -168,123 +168,182 @@
 }
 .section-label:first-child { margin-top: 0; }
 
-/* ── 폴더 카드 ── */
-.folder-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  cursor: pointer;
-  transition: all .2s;
-  box-shadow: var(--shadow-sm);
+/* ══════════════════════════════════════
+   폴더 목록 (expand/collapse 트리 구조)
+   ══════════════════════════════════════ */
+
+/* 폴더 전체 목록 컨테이너 */
+.folder-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-height: 120px;
-  position: relative;
-}
-.folder-card:hover {
-  border-color: #a78bfa;
-  box-shadow: var(--shadow);
-  transform: translateY(-3px);
+  gap: 6px;
 }
 
-/* 드래그 오버 시 강조 */
-.folder-card.drag-over {
+/* 폴더 행 — 헤더 + 자식 묶음 */
+.folder-row {
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.folder-row:hover,
+.folder-row.expanded {
+  border-color: #a78bfa;
+  box-shadow: 0 2px 12px rgba(124,58,237,.08);
+}
+.folder-row.drag-over {
   border-color: #7c3aed;
   background: #f5f3ff;
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
-  transform: translateY(-3px);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
 }
 
-.folder-card-icon {
-  width: 40px; height: 40px;
+/* 폴더 헤더 (클릭 영역) */
+.folder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s;
+}
+.folder-header:hover { background: rgba(124,58,237,.04); }
+
+.folder-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* chevron 화살표 */
+.folder-chevron {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+.folder-chevron svg {
+  width: 18px; height: 18px;
+  stroke: var(--muted);
+  fill: none;
+}
+.folder-chevron.expanded { transform: rotate(90deg); }
+
+/* 폴더 아이콘 박스 */
+.folder-icon-wrap {
+  width: 42px; height: 42px;
   border-radius: 10px;
   background: linear-gradient(135deg, #8b5cf6, #a78bfa);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.folder-card-icon svg { width: 20px; height: 20px; stroke: #fff; }
+.folder-icon-wrap svg {
+  width: 22px; height: 22px;
+  stroke: #fff;
+  fill: none;
+}
 
-.folder-card-name {
+/* 폴더 이름 */
+.folder-name {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
 }
 
-.folder-card-meta {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.folder-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-  margin-top: auto;
-}
-
-.folder-card-count {
-  font-size: 12px;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.folder-delete-btn {
-  opacity: 0;
-  position: absolute; top: 12px; right: 12px;
-  width: 26px; height: 26px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all .15s; z-index: 2;
-  font-size: 12px;
-}
-.folder-card:hover .folder-delete-btn { opacity: 1; }
-.folder-delete-btn:hover { background: var(--red-light); border-color: var(--red); }
-
-/* 폴더 프로젝트 펼치기 */
-.folder-projects {
-  display: none;
-  grid-column: 1 / -1;
-  margin-top: 8px;
-}
-.folder-projects.open {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-/* 폴더 추가 카드 */
-.folder-add-card {
-  border: 2px dashed var(--border) !important;
-  background: var(--bg) !important;
-  box-shadow: none !important;
-  display: flex;
+/* 프로젝트 수 뱃지 */
+.folder-badge {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 120px;
-  cursor: pointer;
-  border-radius: var(--radius);
-  transition: all .2s;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-}
-.folder-add-card:hover {
-  border-color: #7c3aed !important;
+  height: 24px;
+  padding: 0 10px;
+  background: #ede9fe;
   color: #7c3aed;
-  background: #f5f3ff !important;
-  transform: translateY(-2px);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 20px;
+  white-space: nowrap;
 }
-.folder-add-card svg { width: 24px; height: 24px; }
+
+.folder-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.folder-drag-hint {
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+/* 폴더 삭제 버튼 */
+.folder-delete-btn {
+  width: 28px; height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+  opacity: 0;
+}
+.folder-header:hover .folder-delete-btn { opacity: 1; }
+.folder-delete-btn svg {
+  width: 14px; height: 14px;
+  stroke: var(--muted);
+  fill: none;
+}
+.folder-delete-btn:hover {
+  background: var(--red-light);
+  border-color: var(--red);
+}
+.folder-delete-btn:hover svg { stroke: var(--red); }
+
+/* 폴더 자식 영역 — 기본 숨김 */
+.folder-children {
+  display: none;
+  padding: 0 20px 16px 20px;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;;
+}
+.folder-children.open { display: block; }
+
+/* 자식 프로젝트 행 (들여쓰기 라인 + 카드) */
+.folder-child-row {
+  display: flex;
+  align-items: stretch;
+  margin-top: 12px;
+}
+
+/* 보라색 세로 들여쓰기 라인 */
+.child-indent-line {
+  width: 2px;
+  flex-shrink: 0;
+  margin-right: 16px;
+  background: linear-gradient(to bottom, #a78bfa, #c4b5fd);
+  border-radius: 2px;
+}
+
+/* 폴더 내부 프로젝트 카드 */
+.child-project-card {
+  flex: 1;
+  cursor: pointer !important;
+  border-color: #e5e7eb !important;
+  background: #fff !important;
+}
+.child-project-card:hover {
+  border-color: #a78bfa !important;
+}
+
+/* 빈 폴더 힌트 */
+.folder-empty-hint {
+  padding: 20px 0 4px;
+  font-size: 13px;
+  color: var(--muted2);
+  text-align: center;
+}
 
 /* ── 프로젝트 카드 ── */
 .project-card {
@@ -304,8 +363,6 @@
   box-shadow: var(--shadow);
   transform: translateY(-3px);
 }
-
-/* 드래그 중인 카드 */
 .project-card.dragging {
   opacity: 0.4;
   cursor: grabbing;
@@ -316,12 +373,18 @@
   display: flex; align-items: flex-start;
   justify-content: space-between; gap: 12px;
 }
+
 .project-icon {
   width: 44px; height: 44px; border-radius: 10px;
   background: linear-gradient(135deg, var(--blue), #60a5fa);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.project-icon svg { width: 22px; height: 22px; stroke: #fff; }
+.project-icon svg {
+  width: 22px; height: 22px;
+  stroke: #fff;
+  fill: none;
+}
+
 .project-card-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 16px; font-weight: 700; color: var(--text);
@@ -336,18 +399,24 @@
   display: flex; align-items: center; justify-content: space-between;
   padding-top: 12px; border-top: 1px solid var(--border); margin-top: auto;
 }
+
 .project-deadline {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; color: var(--muted);
 }
-.project-deadline svg { width: 13px; height: 13px; }
+.project-deadline svg {
+  width: 13px; height: 13px;
+  stroke: var(--muted);
+  fill: none;
+}
+
 .project-role {
   font-size: 11px; padding: 3px 10px;
   border-radius: 20px; font-weight: 600;
 }
 .role-prof { background: #f3e8ff; color: #7c3aed; }
 
-/* 삭제 버튼 */
+/* 나가기 버튼 */
 .project-delete-btn {
   position: absolute; top: 12px; right: 12px;
   width: 28px; height: 28px; border-radius: 6px;
@@ -356,19 +425,21 @@
   cursor: pointer; transition: all .15s; opacity: 0; z-index: 2;
 }
 .project-card:hover .project-delete-btn { opacity: 1; }
+.project-delete-btn svg {
+  width: 14px; height: 14px;
+  stroke: var(--muted);
+  fill: none;
+}
 .project-delete-btn:hover { background: var(--red-light); border-color: var(--red); }
-.project-delete-btn svg { width: 14px; height: 14px; stroke: var(--muted); }
 .project-delete-btn:hover svg { stroke: var(--red); }
 
 /* 꺼내기 버튼 */
 .project-folder-out-btn {
   position: absolute; top: 12px; right: 46px;
-  height: 28px;
-  padding: 0 10px;
+  height: 28px; padding: 0 10px;
   background: var(--surface2); border: 1px solid var(--border);
   border-radius: 6px;
-  font-size: 11px; font-weight: 600;
-  color: var(--muted);
+  font-size: 11px; font-weight: 600; color: var(--muted);
   cursor: pointer; transition: all .15s;
   opacity: 0; z-index: 3;
 }
@@ -388,12 +459,19 @@
   justify-content: center;
   gap: 4px;
 }
+.drag-hint svg { stroke: var(--muted2); fill: none; }
 
 /* 빈 상태 */
 .empty-projects {
   text-align: center; padding: 60px 20px;
 }
-.empty-projects svg { width: 56px; height: 56px; stroke: var(--muted2); margin-bottom: 16px; opacity: 0.4; }
+.empty-projects svg {
+  width: 56px; height: 56px;
+  stroke: var(--muted2);
+  fill: none;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
 .empty-projects h3 { font-size: 18px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
 .empty-projects p { font-size: 14px; color: var(--muted); }
 
@@ -427,20 +505,3 @@
   border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
 }
 .btn-modal-ok:hover { opacity: .9; }
-
-/* 폴더 섹션 전체 그리드 */
-.folder-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-/* 폴더 wrapper */
-.folder-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.folder-wrapper:has(.folder-projects.open) {
-  grid-column: 1 / -1;
-}

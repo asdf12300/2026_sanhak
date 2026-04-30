@@ -27,9 +27,9 @@ function onProjectDragStart(event, projectId) {
 
 function onProjectDragEnd(event) {
   event.currentTarget.classList.remove('dragging');
-  // 모든 폴더 카드 강조 제거
-  document.querySelectorAll('.folder-card').forEach(function(card) {
-    card.classList.remove('drag-over');
+  // 모든 폴더 행 강조 제거
+  document.querySelectorAll('.folder-row').forEach(function(row) {
+    row.classList.remove('drag-over');
   });
 }
 
@@ -74,6 +74,12 @@ function onFolderDrop(event, folderId) {
 }
 
 function toggleFolderProjects(folderId) {
-  const el = document.getElementById('fp-' + folderId);
-  if (el) el.classList.toggle('open');
+  const children = document.getElementById('fp-' + folderId);
+  const chevron  = document.getElementById('chevron-' + folderId);
+  const row      = document.getElementById('folder-row-' + folderId);
+  if (!children) return;
+
+  const isOpen = children.classList.toggle('open');
+  if (chevron) chevron.classList.toggle('expanded', isOpen);
+  if (row)     row.classList.toggle('expanded', isOpen);
 }
