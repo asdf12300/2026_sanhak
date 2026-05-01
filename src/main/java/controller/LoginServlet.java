@@ -41,6 +41,10 @@ public class LoginServlet extends HttpServlet {
                 } else {
                     response.sendRedirect(request.getContextPath() + "/projects.jsp");
                 }
+            } else {
+                // 로그인 실패: 아이디/비밀번호/역할 불일치
+                request.setAttribute("error", "아이디, 비밀번호 또는 사용자 유형이 일치하지 않습니다.");
+                request.getRequestDispatcher("login.jsp").forward(request, response);
             }
         } catch (Exception e) {
             request.setAttribute("error", "예외 발생: " + e.getMessage());
