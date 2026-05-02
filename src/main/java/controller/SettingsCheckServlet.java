@@ -1,5 +1,5 @@
 package controller;
-
+import model.*;
 import model.UserSettingDAO;
 
 import javax.servlet.ServletException;
@@ -37,7 +37,8 @@ public class SettingsCheckServlet extends HttpServlet {
             return;
         }
 
-        String userId = (String) session.getAttribute("userId");
+        LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
+        String userId = loginUser.getId();
         String currentPw = request.getParameter("currentPw");
 
         UserSettingDAO dao = new UserSettingDAO();
