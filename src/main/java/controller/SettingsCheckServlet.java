@@ -1,5 +1,6 @@
 package controller;
-import model.*;
+
+import model.LoginDTO;
 import model.UserSettingDAO;
 
 import javax.servlet.ServletException;
@@ -10,13 +11,25 @@ import java.io.IOException;
 @WebServlet("/settings/check")
 public class SettingsCheckServlet extends HttpServlet {
 
+    private LoginDTO getLoginUser(HttpSession session) {
+        if (session == null) return null;
+
+        Object obj = session.getAttribute("loginUser");
+        if (obj instanceof LoginDTO) {
+            return (LoginDTO) obj;
+        }
+
+        return null;
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        HttpSession session = request.getSession(false);
 
-        if (session == null || session.getAttribute("loginUser") == null) {
+        HttpSession session = request.getSession(false);
+        LoginDTO loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -27,26 +40,25 @@ public class SettingsCheckServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
 
         HttpSession session = request.getSession(false);
+        LoginDTO loginUser = getLoginUser(session);
 
-        if (session == null || session.getAttribute("loginUser") == null) {
+        if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
-        LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
         String userId = loginUser.getId();
         String currentPw = request.getParameter("currentPw");
 
         UserSettingDAO dao = new UserSettingDAO();
-
         boolean valid = dao.checkPassword(userId, currentPw);
 
         if (valid) {
-            session.setAttribute("settingsAuth", true);
+            session.setAttribute("settingsAuthUserId", userId);
             response.sendRedirect(request.getContextPath() + "/settings.jsp");
         } else {
             request.setAttribute("error", "비밀번호가 일치하지 않습니다.");

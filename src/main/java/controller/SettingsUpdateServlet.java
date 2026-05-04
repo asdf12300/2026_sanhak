@@ -11,6 +11,17 @@ import java.io.IOException;
 @WebServlet("/settings/update")
 public class SettingsUpdateServlet extends HttpServlet {
 
+    private LoginDTO getLoginUser(HttpSession session) {
+        if (session == null) return null;
+
+        Object obj = session.getAttribute("loginUser");
+        if (obj instanceof LoginDTO) {
+            return (LoginDTO) obj;
+        }
+
+        return null;
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -18,20 +29,7 @@ public class SettingsUpdateServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         HttpSession session = request.getSession(false);
-
-        if (session == null || session.getAttribute("loginUser") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
-            return;
-        }
-
-        Boolean settingsAuth = (Boolean) session.getAttribute("settingsAuth");
-
-        if (settingsAuth == null || !settingsAuth) {
-            response.sendRedirect(request.getContextPath() + "/settings/check");
-            return;
-        }
-
-        LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
+        LoginDTO loginUser = getLoginUser(session);
 
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
@@ -39,6 +37,13 @@ public class SettingsUpdateServlet extends HttpServlet {
         }
 
         String userId = loginUser.getId();
+
+        String authUserId = (String) session.getAttribute("settingsAuthUserId");
+        if (authUserId == null || !authUserId.equals(userId)) {
+            response.sendRedirect(request.getContextPath() + "/settings/check");
+            return;
+        }
+
         String email = request.getParameter("email");
         String newPw = request.getParameter("newPw");
         String newPwCheck = request.getParameter("newPwCheck");
@@ -60,12 +65,10 @@ public class SettingsUpdateServlet extends HttpServlet {
         boolean result = dao.updateUserInfo(userId, email, newPw);
 
         if (result) {
-            session.removeAttribute("settingsAuth");
+            session.removeAttribute("settingsAuthUserId");
             response.sendRedirect(request.getContextPath() + "/settings.jsp?success=1");
-            return;
         } else {
             response.sendRedirect(request.getContextPath() + "/settings.jsp?error=fail");
-            return;
         }
     }
 }
