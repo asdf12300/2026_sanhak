@@ -1,5 +1,6 @@
 package controller;
 
+import model.LoginDTO;
 import model.UserSettingDAO;
 
 import javax.servlet.ServletException;
@@ -18,7 +19,7 @@ public class SettingsUpdateServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
 
-        if (session == null || session.getAttribute("userId") == null) {
+        if (session == null || session.getAttribute("loginUser") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -30,7 +31,14 @@ public class SettingsUpdateServlet extends HttpServlet {
             return;
         }
 
-        String userId = (String) session.getAttribute("userId");
+        LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+
+        String userId = loginUser.getId();
         String email = request.getParameter("email");
         String newPw = request.getParameter("newPw");
         String newPwCheck = request.getParameter("newPwCheck");
