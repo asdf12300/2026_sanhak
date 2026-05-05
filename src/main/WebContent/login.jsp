@@ -274,37 +274,51 @@
 %>
 
 <script>
-  Kakao.init('<%= kakaoJsKey %>');
+ <%--  Kakao.init('<%= kakaoJsKey %>');
 
   function kakaoLogin() {
-    Kakao.Auth.login({
-      success: function(res) {
-        var userId = res.id;
-        var nickname = res.kakao_account.profile.nickname;
+	    Kakao.Auth.login({
+	        success: function(res) {
+	            // 사용자 정보를 별도로 요청
+	            Kakao.API.request({
+	                url: '/v2/user/me',
+	                success: function(userInfo) {
+	                    var userId = userInfo.id;
+	                    var nickname = userInfo.kakao_account?.profile?.nickname || '';
 
-        fetch('/kakao/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: userId,
-            nickname: nickname
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          window.location.href = '/projects.jsp';
-        });
-      },                   
-      fail: function(err) {
-        console.error(err);
-      }                     
-    });                    
-  }                        
+	                    fetch('/sanhak/kakao/login', {
+	                        method: 'POST',
+	                        headers: { 'Content-Type': 'application/json' },
+	                        body: JSON.stringify({
+	                            id: userId,
+	                            nickname: nickname
+	                        })
+	                    })
+	                    .then(response => response.json())
+	                    .then(data => {
+	                        window.location.href = '/sanhak/projects.jsp';
+	                    });
+	                },
+	                fail: function(err) {
+	                    console.error('카카오 로그인 실패', err);
+	                }
+	            });
+	        },
+	        fail: function(err) {
+	            console.error(err);
+	        }
+	    });
+	}           --%>         
 
   function naverLogin() {
 	  var CLIENT_ID = '<%= naverClientId %>';
-	  var REDIRECT_URI = 'http://localhost:8080/naver/login';
-	  var STATE = Math.random().toString(36).substring(2); // 보안용 랜덤값
+	  var REDIRECT_URI = 'http://localhost:8080/sanhak/naver/login';
+
+	  var role = document.querySelector('input[name="role"]:checked').value;
+	  console.log("선택된 role:", role);
+
+	  var STATE = role + '_' + Math.random().toString(36).substring(2);
+	  console.log("STATE:", STATE);
 
 	  var url = 'https://nid.naver.com/oauth2.0/authorize'
 	    + '?response_type=code'
@@ -411,6 +425,11 @@
     <% if (error != null) { %>
       <div class="alert alert-danger py-2 mb-3" style="font-size:0.85rem;"><%= error %></div>
     <% } %>
+    <% if ("true".equals(request.getParameter("joined"))) { %>
+	  <div class="alert alert-success py-2 mb-3" style="font-size:0.85rem;">
+	    회원가입이 완료되었습니다. 로그인해주세요!
+	  </div>
+	<% } %>
 
     <form action="login" method="post">
     <div class="mb-3">
@@ -439,12 +458,12 @@
 
     <div class="divider">또는</div>
 
-	<button class="btn-kakao" onclick="kakaoLogin()">
+	<!-- <button class="btn-kakao" onclick="kakaoLogin()">
 	  <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
 	    <path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.67 1.69 5.02 4.26 6.37l-1.08 3.97 4.64-3.06c.37.05.75.07 1.18.07 4.97 0 9-3.36 9-7.5S16.97 3 12 3z" fill="rgba(0,0,0,0.85)"/>
 	  </svg>
 	  카카오 로그인
-	</button>
+	</button> -->
 	<button class="btn-naver" onclick="naverLogin()">
 	  <svg viewBox="0 0 24 24" width="20" height="20">
 	    <path d="M13.5 12.3L10.2 7H7v10h3.5V11.7L13.8 17H17V7h-3.5z" fill="#fff"/>

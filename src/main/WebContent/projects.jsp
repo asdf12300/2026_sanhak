@@ -1,13 +1,27 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*, model.*" %>
 <%
+  // 기존 일반 로그인 방식
   model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
-  if (loginUser == null) {
+  
+  String userName = null;
+  String userId = null;
+  
+  if (loginUser != null) {
+    // 일반 로그인
+    userName = loginUser.getName();
+    userId = loginUser.getId();
+  } else {
+    // 소셜 로그인 (네이버/카카오)
+    userName = (String) session.getAttribute("name");
+    userId = (String) session.getAttribute("email");
+  }
+  
+  if (userName == null) {
     response.sendRedirect("login.jsp");
     return;
   }
-  String userName = loginUser.getName();
-  String userId = loginUser.getId();
+  
   String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
 %>
 <!DOCTYPE html>

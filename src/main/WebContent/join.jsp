@@ -1,4 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+    String naverName = (String) session.getAttribute("naverName");
+    String naverEmail = (String) session.getAttribute("naverEmail");
+    if (naverName == null) naverName = "";
+    if (naverEmail == null) naverEmail = "";
+    boolean isNaver = !naverEmail.isEmpty();
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,7 +26,6 @@
     overflow: hidden;
   }
 
-  /* ── 좌측 소개 패널 ── */
   .intro-panel {
     flex: 1;
     background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
@@ -127,12 +133,11 @@
     color: rgba(255,255,255,0.75);
   }
 
-  /* ── 우측 회원가입 패널 ── */
   .join-panel {
     flex: 1;
     background: #f8fafc;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     padding: 2rem 2.5rem;
     overflow-y: auto;
@@ -177,6 +182,11 @@
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
     outline: none;
+  }
+  .form-control[readonly] {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
   }
 
   .btn-join {
@@ -282,10 +292,18 @@
 <div class="join-panel">
   <div class="join-card">
     <h2>회원가입 ✏️</h2>
-    <p class="welcome-sub">아래 정보를 입력하여 계정을 만드세요.</p>
+    <p class="welcome-sub">
+      <% if (isNaver) { %>
+        네이버 계정으로 가입합니다. 역할만 선택해주세요!
+      <% } else { %>
+        아래 정보를 입력하여 계정을 만드세요.
+      <% } %>
+    </p>
 
     <form action="JoinServlet" method="post" onsubmit="return joinCheck()">
-    <div class="mb-3">
+
+      <!-- 역할 선택 -->
+      <div class="mb-3">
         <label class="form-label">사용자 유형</label>
         <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
           <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -298,10 +316,17 @@
           </label>
         </div>
       </div>
+
+      <!-- 이름 -->
       <div class="mb-3">
-        <label class="form-label" for="name">이름</label>
-        <input type="text" name="name" id="name" class="form-control" placeholder="이름을 입력하세요">
-      </div>
+	    <label class="form-label" for="name">이름</label>
+	    <input type="text" name="name" id="name" class="form-control"
+	        placeholder="이름을 입력하세요"
+	        value="<%= naverName %>">
+	</div>
+
+      <!-- 아이디/비번: 네이버면 숨김 -->
+      <% if (!isNaver) { %>
       <div class="mb-3">
         <label class="form-label" for="id">아이디 (5~12자)</label>
         <input type="text" name="id" id="id" class="form-control" placeholder="아이디를 입력하세요">
@@ -314,11 +339,44 @@
         <label class="form-label" for="pw_check">비밀번호 확인</label>
         <input type="password" name="pw_check" id="pw_check" class="form-control" placeholder="비밀번호를 다시 입력하세요">
       </div>
-      <div class="mb-3">
-        <label class="form-label" for="email">이메일</label>
-        <input type="email" name="email" id="email" class="form-control" placeholder="이메일을 입력하세요">
+      <% } else { %>
+        <input type="hidden" name="id" value="NAVER_<%= naverEmail %>">
+        <input type="hidden" name="pw" value="NAVER_SOCIAL">
+      <% } %>
+
+      <!-- 이메일 -->
+<div class="mb-3">
+  <label class="form-label" for="email">이메일</label>
+  <% if (isNaver) { %>
+    <%-- 네이버: 이메일 고정, 인증 불필요 --%>
+    <input type="email" name="email" id="email" class="form-control"
+        value="<%= naverEmail %>" readonly>
+  <% } else { %>
+    <%-- 일반: 이메일 입력 + 인증 버튼 --%>
+    <div style="display:flex; gap:8px;">
+      <input type="email" name="email" id="email" class="form-control"
+          placeholder="이메일을 입력하세요">
+      <button type="button" onclick="sendCode()"
+          style="min-width:90px; background:#2563eb; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
+          인증 요청
+      </button>
+    </div>
+
+    <!-- 인증 코드 입력란 -->
+    <div class="mb-3" id="codeArea" style="display:none;">
+      <label class="form-label">인증 코드</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="codeInput" class="form-control" placeholder="6자리 코드 입력" maxlength="6">
+        <button type="button" onclick="verifyCode()"
+            style="min-width:90px; background:#22c55e; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
+            확인
+        </button>
       </div>
-      
+      <div id="codeMsg" style="font-size:0.8rem; margin-top:6px;"></div>
+    </div>
+  <% } %>
+</div>
+
       <button type="submit" class="btn-join">회원가입</button>
     </form>
 
@@ -329,6 +387,56 @@
     </div>
   </div>
 </div>
+<script>
+function sendCode() {
+  var email = document.getElementById('email').value.trim();
+  if (!email) {
+    alert('이메일을 입력해주세요.');
+    return;
+  }
 
+  fetch('sendCode', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'email=' + encodeURIComponent(email)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.result === 'ok') {
+      document.getElementById('codeArea').style.display = 'block';
+      alert('인증 코드를 발송했습니다. 메일함을 확인해주세요.');
+    } else {
+      alert(data.msg);
+    }
+  });
+}
+
+function verifyCode() {
+  var code = document.getElementById('codeInput').value.trim();
+  if (!code) {
+    alert('인증 코드를 입력해주세요.');
+    return;
+  }
+
+  fetch('verifyCode', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'code=' + encodeURIComponent(code)
+  })
+  .then(res => res.json())
+  .then(data => {
+    var msg = document.getElementById('codeMsg');
+    if (data.result === 'ok') {
+      msg.style.color = '#22c55e';
+      msg.textContent = '✅ 인증이 완료되었습니다.';
+      document.getElementById('codeInput').disabled = true;
+      document.querySelector('#codeArea button').disabled = true;
+    } else {
+      msg.style.color = '#ef4444';
+      msg.textContent = '❌ ' + data.msg;
+    }
+  });
+}
+</script>
 </body>
 </html>

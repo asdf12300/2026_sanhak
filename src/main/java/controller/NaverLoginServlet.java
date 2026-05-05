@@ -1,18 +1,14 @@
 package controller;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
+import java.sql.*;
 import java.util.Properties;
 
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
+
+import org.json.JSONObject;
 
 @WebServlet("/naver/login")
 public class NaverLoginServlet extends HttpServlet {
@@ -24,12 +20,14 @@ public class NaverLoginServlet extends HttpServlet {
     public void init() {
         try {
             Properties prop = new Properties();
-            InputStream is = getClass().getClassLoader()
-                .getResourceAsStream("secret.properties");
+            InputStream is = getServletContext()
+                .getResourceAsStream("/WEB-INF/classes/secret.properties");
             prop.load(is);
+
             CLIENT_ID = prop.getProperty("naver.client.id");
             CLIENT_SECRET = prop.getProperty("naver.client.secret");
-        } catch (IOException e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -39,69 +37,155 @@ public class NaverLoginServlet extends HttpServlet {
 
         String code = request.getParameter("code");
         String state = request.getParameter("state");
+        System.out.println("state 값: " + state);
 
-        // 1. 액세스 토큰 요청
-        String tokenUrl = "https://nid.naver.com/oauth2.0/token"
-            + "?grant_type=authorization_code"
-            + "&client_id=" + CLIENT_ID
-            + "&client_secret=" + CLIENT_SECRET
-            + "&code=" + code
-            + "&state=" + state;
-
-        URL url = new URL(tokenUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-
-        BufferedReader br = new BufferedReader(
-            new InputStreamReader(conn.getInputStream(), "UTF-8")
-        );
-        StringBuilder tokenResult = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) tokenResult.append(line);
-        br.close();
-
-        // 2. 토큰 파싱
-        String accessToken = tokenResult.toString()
-            .split("\"access_token\":\"")[1]
-            .split("\"")[0];
-
-        // 3. 사용자 정보 요청
-        URL profileUrl = new URL("https://openapi.naver.com/v1/nid/me");
-        HttpURLConnection profileConn = (HttpURLConnection) profileUrl.openConnection();
-        profileConn.setRequestMethod("GET");
-        profileConn.setRequestProperty("Authorization", "Bearer " + accessToken);
-
-        BufferedReader pbr = new BufferedReader(
-            new InputStreamReader(profileConn.getInputStream(), "UTF-8")
-        );
-        StringBuilder profileResult = new StringBuilder();
-        while ((line = pbr.readLine()) != null) profileResult.append(line);
-        pbr.close();
-
-        // 4. 사용자 정보 파싱
-        String userId = profileResult.toString()
-            .split("\"id\":\"")[1]
-            .split("\"")[0];
-
-        String nickname = profileResult.toString()
-            .split("\"nickname\":\"")[1]
-            .split("\"")[0];
-
-        String email = "";
-        if (profileResult.toString().contains("\"email\":\"")) {
-            email = profileResult.toString()
-                .split("\"email\":\"")[1]
-                .split("\"")[0];
+        String role = "student";
+        if (state != null && state.startsWith("professor")) {
+            role = "professor";
         }
+        System.out.println("role 값: " + role);
+        Connection dbConn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
 
-        // 5. 세션 저장
-        HttpSession session = request.getSession();
-        session.setAttribute("userId", userId);
-        session.setAttribute("nickname", nickname);
-        session.setAttribute("email", email);
-        session.setAttribute("loginType", "naver");
+        try {
+            /* =========================
+               1. 토큰 요청
+            ========================= */
+            String tokenUrl = "https://nid.naver.com/oauth2.0/token"
+                    + "?grant_type=authorization_code"
+                    + "&client_id=" + CLIENT_ID
+                    + "&client_secret=" + CLIENT_SECRET
+                    + "&code=" + code
+                    + "&state=" + state;
 
-        // 6. 메인 페이지로 이동
-        response.sendRedirect("/projects.jsp");
+            HttpURLConnection conn = (HttpURLConnection) new URL(tokenUrl).openConnection();
+            conn.setRequestMethod("GET");
+
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream(), "UTF-8"));
+
+            StringBuilder tokenResult = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                tokenResult.append(line);
+            }
+            br.close();
+
+            System.out.println("토큰 응답: " + tokenResult.toString());
+
+            /* =========================
+               2. 토큰 파싱 + 검증
+            ========================= */
+            JSONObject tokenJson = new JSONObject(tokenResult.toString());
+            String accessToken = tokenJson.optString("access_token", "");
+
+            if (accessToken.equals("")) {
+                System.out.println("토큰 발급 실패");
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
+                return;
+            }
+
+            /* =========================
+               3. 사용자 정보 요청
+            ========================= */
+            HttpURLConnection profileConn = (HttpURLConnection)
+                    new URL("https://openapi.naver.com/v1/nid/me").openConnection();
+
+            profileConn.setRequestMethod("GET");
+            profileConn.setRequestProperty("Authorization", "Bearer " + accessToken);
+
+            BufferedReader pbr = new BufferedReader(
+                    new InputStreamReader(profileConn.getInputStream(), "UTF-8"));
+
+            StringBuilder profileResult = new StringBuilder();
+            while ((line = pbr.readLine()) != null) {
+                profileResult.append(line);
+            }
+            pbr.close();
+
+            System.out.println("프로필 응답: " + profileResult.toString());
+
+            /* =========================
+               4. 프로필 파싱 + 검증
+            ========================= */
+            JSONObject profileJson = new JSONObject(profileResult.toString());
+
+            if (!profileJson.optString("resultcode").equals("00")) {
+                System.out.println("프로필 조회 실패");
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
+                return;
+            }
+
+            JSONObject responseNode = profileJson.getJSONObject("response");
+
+            String email = responseNode.optString("email", "");
+            String name = responseNode.optString("name", "");
+
+            System.out.println("email: " + email);
+            System.out.println("name: " + name);
+            System.out.println("isEmpty: " + email.trim().isEmpty());
+            
+            /* =========================
+               5. 이메일 없을 경우 처리
+            ========================= */
+            if (email == null || email.trim().isEmpty()) {
+                System.out.println("이메일 없음 → 회원가입으로 이동");
+                response.sendRedirect(request.getContextPath() + "/join.jsp?error=empty");
+                return;
+            }
+            /* =========================
+               6. DB 연결 및 로그인 처리
+            ========================= */
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            dbConn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/sanhak?serverTimezone=Asia/Seoul&characterEncoding=UTF-8",
+                    "root",
+                    "1234"
+            );
+
+            String sql = "SELECT * FROM member WHERE email = ?";
+            pstmt = dbConn.prepareStatement(sql);
+            pstmt.setString(1, email);
+
+            rs = pstmt.executeQuery();
+
+            HttpSession session = request.getSession();
+
+            if (rs.next()) {
+                // 기존 회원 → 로그인
+                session.setAttribute("name", rs.getString("name"));
+                session.setAttribute("email", rs.getString("email"));
+                session.setAttribute("role", rs.getString("role"));
+                session.setAttribute("loginType", "naver");
+
+                response.sendRedirect(request.getContextPath() + "/projects.jsp");
+
+            } else {
+            	String insertSql = "INSERT INTO member(email, name, role) VALUES (?, ?, ?)";
+            	PreparedStatement insertStmt = dbConn.prepareStatement(insertSql);
+            	insertStmt.setString(1, email);
+            	insertStmt.setString(2, name);
+            	insertStmt.setString(3, role);
+
+                insertStmt.executeUpdate();
+
+                session.setAttribute("name", name);
+                session.setAttribute("email", email);
+                session.setAttribute("role", role);
+                session.setAttribute("loginType", "naver");
+
+                response.sendRedirect(request.getContextPath() + "/projects.jsp");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+
+        } finally {
+            try { if (rs != null) rs.close(); } catch (Exception e) {}
+            try { if (pstmt != null) pstmt.close(); } catch (Exception e) {}
+            try { if (dbConn != null) dbConn.close(); } catch (Exception e) {}
+        }
     }
 }
