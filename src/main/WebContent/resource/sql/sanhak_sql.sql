@@ -66,8 +66,70 @@ FROM information_schema.KEY_COLUMN_USAGE
 WHERE REFERENCED_TABLE_NAME = 'member'
 AND TABLE_SCHEMA = 'sanhak';
 
-select * from member;
+-- 1. 각 테이블의 실제 외래키 이름 먼저 확인
+SHOW CREATE TABLE project_member;
+SHOW CREATE TABLE task;
+SHOW CREATE TABLE meeting_minutes;
+SHOW CREATE TABLE meeting_minutes_history;
+SHOW CREATE TABLE feedback;
+SHOW CREATE TABLE feedback_comment;
+SHOW CREATE TABLE folder;
+
+-- 2. 확인한 이름으로 외래키 제거
+ALTER TABLE project_member DROP FOREIGN KEY /* project_member 테이블의 member_id 외래키 이름 */;
+ALTER TABLE task DROP FOREIGN KEY /* task 테이블의 assignee 외래키 이름 */;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY /* meeting_minutes 테이블의 created_by 외래키 이름 */;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY /* meeting_minutes 테이블의 last_modified_by 외래키 이름 */;
+ALTER TABLE meeting_minutes_history DROP FOREIGN KEY /* meeting_minutes_history 테이블의 modified_by 외래키 이름 */;
+ALTER TABLE feedback DROP FOREIGN KEY /* feedback 테이블의 author_id 외래키 이름 */;
+ALTER TABLE feedback_comment DROP FOREIGN KEY /* feedback_comment 테이블의 author_id 외래키 이름 */;
+ALTER TABLE folder DROP FOREIGN KEY /* folder 테이블의 owner_id 외래키 이름 */;
+
+-- 3. 데이터 초기화
+DELETE FROM feedback_comment;
+DELETE FROM feedback;
+DELETE FROM meeting_minutes_history;
+DELETE FROM meeting_minutes;
+DELETE FROM calendar;
+DELETE FROM task;
+DELETE FROM project_member;
+DELETE FROM folder;
+DELETE FROM board;
 DELETE FROM member;
+
+-- 4. member PK를 id로 복원
+ALTER TABLE member DROP PRIMARY KEY;
+ALTER TABLE member MODIFY id VARCHAR(20) NOT NULL;
+ALTER TABLE member MODIFY pw VARCHAR(20) NOT NULL;
+ALTER TABLE member ADD PRIMARY KEY (id);
+
+-- 5. 참조 컬럼 복원 및 외래키 재연결
+ALTER TABLE project_member MODIFY member_id VARCHAR(20);
+ALTER TABLE project_member ADD CONSTRAINT fk_pm_member FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
+
+ALTER TABLE task MODIFY assignee VARCHAR(20);
+ALTER TABLE task ADD CONSTRAINT fk_task_assignee FOREIGN KEY (assignee) REFERENCES member(id) ON DELETE SET NULL;
+
+ALTER TABLE meeting_minutes MODIFY created_by VARCHAR(20);
+ALTER TABLE meeting_minutes MODIFY last_modified_by VARCHAR(20);
+ALTER TABLE meeting_minutes ADD CONSTRAINT fk_mm_created_by FOREIGN KEY (created_by) REFERENCES member(id) ON DELETE RESTRICT;
+ALTER TABLE meeting_minutes ADD CONSTRAINT fk_mm_modified_by FOREIGN KEY (last_modified_by) REFERENCES member(id) ON DELETE SET NULL;
+
+ALTER TABLE meeting_minutes_history MODIFY modified_by VARCHAR(20);
+ALTER TABLE meeting_minutes_history ADD CONSTRAINT fk_mmh_modified_by FOREIGN KEY (modified_by) REFERENCES member(id) ON DELETE RESTRICT;
+
+ALTER TABLE feedback MODIFY author_id VARCHAR(20);
+ALTER TABLE feedback ADD CONSTRAINT fk_feedback_author FOREIGN KEY (author_id) REFERENCES member(id) ON DELETE CASCADE;
+
+ALTER TABLE feedback_comment MODIFY author_id VARCHAR(20);
+ALTER TABLE feedback_comment ADD CONSTRAINT fk_fc_author FOREIGN KEY (author_id) REFERENCES member(id) ON DELETE CASCADE;
+
+ALTER TABLE folder MODIFY owner_id VARCHAR(20);
+ALTER TABLE folder ADD CONSTRAINT fk_folder_owner FOREIGN KEY (owner_id) REFERENCES member(id) ON DELETE CASCADE;
+
+
+DESC member;
+
 
 CREATE TABLE board (
     id INT AUTO_INCREMENT PRIMARY KEY,
