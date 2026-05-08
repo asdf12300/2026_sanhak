@@ -326,4 +326,24 @@ public class ProjectMemberDAO {
             return false;
         }
     }
+    public boolean isUserLeader(String userId) {
+        String sql = "SELECT COUNT(*) FROM board WHERE team_leader = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

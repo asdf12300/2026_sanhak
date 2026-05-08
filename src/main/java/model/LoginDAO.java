@@ -58,4 +58,57 @@ public class LoginDAO {
             return false;
         }
     }
+    public boolean checkPassword(String userId, String password) {
+        String sql = "SELECT id FROM member WHERE id = ? AND pw = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+            pstmt.setString(2, password);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+    // 계정 탈퇴
+    public boolean deleteMember(String userId) {
+        String sql1 = "DELETE FROM project_member WHERE member_id = ?";
+        String sql2 = "DELETE FROM member WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection()) {
+
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement pstmt1 = conn.prepareStatement(sql1);
+                 PreparedStatement pstmt2 = conn.prepareStatement(sql2)) {
+
+                pstmt1.setString(1, userId);
+                pstmt1.executeUpdate();
+
+                pstmt2.setString(1, userId);
+                int result = pstmt2.executeUpdate();
+
+                conn.commit();
+                return result > 0;
+
+            } catch (Exception e) {
+                conn.rollback();
+                e.printStackTrace();
+            } finally {
+                conn.setAutoCommit(true);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

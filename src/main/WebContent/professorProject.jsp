@@ -171,6 +171,10 @@
           </div>
           <div class="folder-header-right">
             <span class="folder-drag-hint">드래그하여 추가</span>
+            <!-- 이름 변경 버튼 추가 -->
+            <button class="folder-rename-btn"onclick="event.stopPropagation(); renameFolder(<%= folder.getId() %>, '<%= folder.getName() %>')">
+              ✏️
+            </button>
             <button class="folder-delete-btn"
                     onclick="event.stopPropagation(); if(confirm('폴더를 삭제하시겠습니까?\n프로젝트는 삭제되지 않습니다.')) { location.href='folderAction?action=delete&folderId=<%= folder.getId() %>'; }">
               <!-- trash icon -->
@@ -351,7 +355,24 @@
     </form>
   </div>
 </div>
+<script>
+function renameFolder(folderId, oldName) {
 
+    const newName = prompt("새 폴더명을 입력하세요.", oldName);
+
+    if (newName == null) return;
+
+    if (newName.trim() === "") {
+        alert("폴더명을 입력해주세요.");
+        return;
+    }
+
+    location.href =
+        "folderAction?action=rename"
+        + "&folderId=" + folderId
+        + "&folderName=" + encodeURIComponent(newName.trim());
+}
+</script>
 <script src="resource/js/professorProject.js"></script>
 </body>
 </html>
