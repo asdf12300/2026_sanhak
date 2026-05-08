@@ -30,7 +30,8 @@ public class CreateProjectServlet extends HttpServlet {
         HttpSession session = request.getSession();
         model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
         String teamLeader = (loginUser != null) ? loginUser.getId() : null;
-
+        System.out.println("teamLeader: " + teamLeader);
+        
         ProjectDTO dto = new ProjectDTO();
         dto.setTitle(title);
         dto.setContent(content);

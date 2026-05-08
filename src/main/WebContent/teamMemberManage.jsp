@@ -52,6 +52,9 @@ if (project != null) teamLeaderId = project.getTeam_leader();
 
 boolean amILeader = loginId != null && loginId.equals(teamLeaderId);
 %>
+<% for (ProjectMemberDTO dto : studentList) {
+    System.out.println("memberId: " + dto.getMemberId() + " / teamLeader: " + teamLeaderId);
+} %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>

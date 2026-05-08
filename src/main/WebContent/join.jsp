@@ -244,7 +244,6 @@
 </head>
 <body>
 
-<!-- ── 좌측: 플랫폼 소개 ── -->
 <div class="intro-panel">
   <a href="login.jsp" class="logo">
     <div class="logo-icon">
@@ -257,38 +256,24 @@
 
   <div class="intro-body">
     <p class="tagline">지금 바로<br>팀과 함께 시작하세요</p>
-    <p class="sub">
-      ProjectOS에 가입하고 팀 프로젝트를 더 효율적으로 관리해보세요.
-      가입은 1분이면 충분합니다.
-    </p>
-
+    <p class="sub">ProjectOS에 가입하고 팀 프로젝트를 더 효율적으로 관리해보세요. 가입은 1분이면 충분합니다.</p>
     <div class="step-list">
       <div class="step-item">
         <div class="step-num">1</div>
-        <div class="step-text">
-          <strong>계정 만들기</strong>
-          <span>이름, 아이디, 비밀번호로 간단하게 가입</span>
-        </div>
+        <div class="step-text"><strong>계정 만들기</strong><span>이름, 아이디, 비밀번호로 간단하게 가입</span></div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
-        <div class="step-text">
-          <strong>프로젝트 생성 또는 참여</strong>
-          <span>새 프로젝트를 만들거나 팀원 초대를 수락</span>
-        </div>
+        <div class="step-text"><strong>프로젝트 생성 또는 참여</strong><span>새 프로젝트를 만들거나 팀원 초대를 수락</span></div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
-        <div class="step-text">
-          <strong>협업 시작</strong>
-          <span>업무 배정, 일정 관리, 회의록까지 한 번에</span>
-        </div>
+        <div class="step-text"><strong>협업 시작</strong><span>업무 배정, 일정 관리, 회의록까지 한 번에</span></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── 우측: 회원가입 폼 ── -->
 <div class="join-panel">
   <div class="join-card">
     <h2>회원가입 ✏️</h2>
@@ -302,7 +287,6 @@
 
     <form action="JoinServlet" method="post" onsubmit="return joinCheck()">
 
-      <!-- 역할 선택 -->
       <div class="mb-3">
         <label class="form-label">사용자 유형</label>
         <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
@@ -317,15 +301,13 @@
         </div>
       </div>
 
-      <!-- 이름 -->
       <div class="mb-3">
-	    <label class="form-label" for="name">이름</label>
-	    <input type="text" name="name" id="name" class="form-control"
-	        placeholder="이름을 입력하세요"
-	        value="<%= naverName %>">
-	</div>
+        <label class="form-label" for="name">이름</label>
+        <input type="text" name="name" id="name" class="form-control"
+            placeholder="이름을 입력하세요"
+            value="<%= naverName %>">
+      </div>
 
-      <!-- 아이디/비번: 네이버면 숨김 -->
       <% if (!isNaver) { %>
       <div class="mb-3">
         <label class="form-label" for="id">아이디 (5~12자)</label>
@@ -342,59 +324,51 @@
       <% } else { %>
         <input type="hidden" name="id" value="NAVER_<%= naverEmail %>">
         <input type="hidden" name="pw" value="NAVER_SOCIAL">
+        <input type="hidden" name="pw_check" value="NAVER_SOCIAL">
       <% } %>
 
-      <!-- 이메일 -->
-<div class="mb-3">
-  <label class="form-label" for="email">이메일</label>
-  <% if (isNaver) { %>
-    <%-- 네이버: 이메일 고정, 인증 불필요 --%>
-    <input type="email" name="email" id="email" class="form-control"
-        value="<%= naverEmail %>" readonly>
-  <% } else { %>
-    <%-- 일반: 이메일 입력 + 인증 버튼 --%>
-    <div style="display:flex; gap:8px;">
-      <input type="email" name="email" id="email" class="form-control"
-          placeholder="이메일을 입력하세요">
-      <button type="button" onclick="sendCode()"
-          style="min-width:90px; background:#2563eb; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
-          인증 요청
-      </button>
-    </div>
-
-    <!-- 인증 코드 입력란 -->
-    <div class="mb-3" id="codeArea" style="display:none;">
-      <label class="form-label">인증 코드</label>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="codeInput" class="form-control" placeholder="6자리 코드 입력" maxlength="6">
-        <button type="button" onclick="verifyCode()"
-            style="min-width:90px; background:#22c55e; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
-            확인
-        </button>
+      <div class="mb-3">
+        <label class="form-label" for="email">이메일</label>
+        <% if (isNaver) { %>
+          <input type="email" name="email" id="email" class="form-control"
+              value="<%= naverEmail %>" readonly>
+        <% } else { %>
+          <div style="display:flex; gap:8px;">
+            <input type="email" name="email" id="email" class="form-control"
+                placeholder="이메일을 입력하세요">
+            <button type="button" onclick="sendCode()"
+                style="min-width:90px; background:#2563eb; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
+                인증 요청
+            </button>
+          </div>
+          <div class="mb-3" id="codeArea" style="display:none;">
+            <label class="form-label">인증 코드</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="codeInput" class="form-control" placeholder="6자리 코드 입력" maxlength="6">
+              <button type="button" onclick="verifyCode()"
+                  style="min-width:90px; background:#22c55e; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
+                  확인
+              </button>
+            </div>
+            <div id="codeMsg" style="font-size:0.8rem; margin-top:6px;"></div>
+          </div>
+        <% } %>
       </div>
-      <div id="codeMsg" style="font-size:0.8rem; margin-top:6px;"></div>
-    </div>
-  <% } %>
-</div>
 
       <button type="submit" class="btn-join">회원가입</button>
     </form>
 
     <div class="divider">또는</div>
-
     <div class="login-link">
       이미 계정이 있으신가요? <a href="login.jsp">로그인</a>
     </div>
   </div>
 </div>
+
 <script>
 function sendCode() {
   var email = document.getElementById('email').value.trim();
-  if (!email) {
-    alert('이메일을 입력해주세요.');
-    return;
-  }
-
+  if (!email) { alert('이메일을 입력해주세요.'); return; }
   fetch('sendCode', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -413,11 +387,7 @@ function sendCode() {
 
 function verifyCode() {
   var code = document.getElementById('codeInput').value.trim();
-  if (!code) {
-    alert('인증 코드를 입력해주세요.');
-    return;
-  }
-
+  if (!code) { alert('인증 코드를 입력해주세요.'); return; }
   fetch('verifyCode', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
