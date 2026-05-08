@@ -10,6 +10,7 @@
     String activeTeam      = path.endsWith("team.jsp") ? "active" : "";
     String activeTeamMember = path.contains("/teamMemberManage.jsp") ? "active" : "";
     String activeBookRecommend = path.contains("bookRecommend") ? "active" : "";
+    String activeFileShare = path.contains("fileShare") ? "active" : "";
     
     Integer currentProjectId = (Integer) session.getAttribute("currentProjectId");
     String projectParam = request.getParameter("projectId");
@@ -138,13 +139,13 @@ String activeChat = path.contains("chat.jsp") ? "active" : "";
       실시간 채팅
     </a>
     <% } %>
-    <div class="nav-item">
+    <a href="fileShare<%= projectQuery %>" class="nav-item <%= activeFileShare %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
         <polyline points="13 2 13 9 20 9"/>
       </svg>
       파일 공유
-    </div>
+    </a>
   </div>
   <div class="nav-sec">
   <div class="nav-label">설정</div>

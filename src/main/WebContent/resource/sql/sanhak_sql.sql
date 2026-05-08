@@ -1,5 +1,8 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS chat_messages;
+DROP TABLE IF EXISTS chat_room_members;
+DROP TABLE IF EXISTS chat_rooms;
 DROP TABLE IF EXISTS feedback_comment;
 DROP TABLE IF EXISTS feedback;
 DROP TABLE IF EXISTS meeting_minutes_history;
@@ -11,7 +14,7 @@ DROP TABLE IF EXISTS board;
 DROP TABLE IF EXISTS folder;
 DROP TABLE IF EXISTS member;
 
-SET FOREIGN_KEY_CHECKS = 1;
+SET FOREIGN_KEY_CHECKS = 1
 
 
 create table member(
@@ -32,7 +35,7 @@ ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
 
 -- 2. member PRIMARY KEY 변경
 ALTER TABLE member DROP PRIMARY KEY;
-ALTER TABLE member ADD PRIMARY KEY (email);
+ALTER TABLE member ADD PRIMARY KEY (id);
 ALTER TABLE member MODIFY id VARCHAR(20) NULL;
 ALTER TABLE member MODIFY pw VARCHAR(20) NULL;
 
@@ -91,14 +94,23 @@ SHOW CREATE TABLE feedback_comment;
 SHOW CREATE TABLE folder;
 
 -- 2. 확인한 이름으로 외래키 제거
-ALTER TABLE project_member DROP FOREIGN KEY /* project_member 테이블의 member_id 외래키 이름 */;
+/*ALTER TABLE project_member DROP FOREIGN KEY /* project_member 테이블의 member_id 외래키 이름 */;
 ALTER TABLE task DROP FOREIGN KEY /* task 테이블의 assignee 외래키 이름 */;
 ALTER TABLE meeting_minutes DROP FOREIGN KEY /* meeting_minutes 테이블의 created_by 외래키 이름 */;
 ALTER TABLE meeting_minutes DROP FOREIGN KEY /* meeting_minutes 테이블의 last_modified_by 외래키 이름 */;
 ALTER TABLE meeting_minutes_history DROP FOREIGN KEY /* meeting_minutes_history 테이블의 modified_by 외래키 이름 */;
 ALTER TABLE feedback DROP FOREIGN KEY /* feedback 테이블의 author_id 외래키 이름 */;
 ALTER TABLE feedback_comment DROP FOREIGN KEY /* feedback_comment 테이블의 author_id 외래키 이름 */;
-ALTER TABLE folder DROP FOREIGN KEY /* folder 테이블의 owner_id 외래키 이름 */;
+ALTER TABLE folder DROP FOREIGN KEY /* folder 테이블의 owner_id 외래키 이름 */;*/
+
+ALTER TABLE project_member DROP FOREIGN KEY project_member_ibfk_2;
+ALTER TABLE task DROP FOREIGN KEY task_ibfk_2;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_2;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_3;
+ALTER TABLE meeting_minutes_history DROP FOREIGN KEY meeting_minutes_history_ibfk_2;
+ALTER TABLE feedback DROP FOREIGN KEY feedback_ibfk_2;
+ALTER TABLE feedback_comment DROP FOREIGN KEY feedback_comment_ibfk_2;
+ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
 
 -- 3. 데이터 초기화
 DELETE FROM feedback_comment;
@@ -169,6 +181,19 @@ alter table project_member add column role varchar(50) default '팀원';
 -- 기존 테이블에 role 컬럼이 없다면 추가
 -- ALTER TABLE project_member ADD COLUMN role VARCHAR(20) DEFAULT '팀원' AFTER member_id;
 
+CREATE TABLE task (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  project_id INT NOT NULL,
+  title      VARCHAR(200) NOT NULL,
+  content    TEXT,
+  assignee   VARCHAR(20),
+  status     ENUM('To Do', 'In Progress', 'Done') NOT NULL DEFAULT 'To Do',
+  deadline   DATE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES board(id)   ON DELETE CASCADE,
+  FOREIGN KEY (assignee)   REFERENCES member(id)  ON DELETE SET NULL
+);
+
 CREATE TABLE calendar (
     event_id    INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     project_id  INT NOT NULL,
@@ -184,18 +209,6 @@ CREATE TABLE calendar (
     FOREIGN KEY (task_id)    REFERENCES task(id)  ON DELETE SET NULL
 );
 
-CREATE TABLE task (
-  id         INT AUTO_INCREMENT PRIMARY KEY,
-  project_id INT NOT NULL,
-  title      VARCHAR(200) NOT NULL,
-  content    TEXT,
-  assignee   VARCHAR(20),
-  status     ENUM('To Do', 'In Progress', 'Done') NOT NULL DEFAULT 'To Do',
-  deadline   DATE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (project_id) REFERENCES board(id)   ON DELETE CASCADE,
-  FOREIGN KEY (assignee)   REFERENCES member(id)  ON DELETE SET NULL
-);
 
 ALTER TABLE calendar ADD COLUMN task_id INT NULL;
 ALTER TABLE calendar ADD FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE SET NULL;
@@ -352,3 +365,21 @@ CREATE INDEX idx_chat_messages_sent_at ON chat_messages(sent_at);
 CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
 
 show tables;
+
+
+-- =============================================
+-- 파일 공유 기능
+-- =============================================
+CREATE TABLE file_share (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    project_id    INT NOT NULL,
+    uploader_id   VARCHAR(20) NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    saved_name    VARCHAR(255) NOT NULL,
+    file_size     BIGINT NOT NULL DEFAULT 0,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id)  REFERENCES board(id)   ON DELETE CASCADE,
+    FOREIGN KEY (uploader_id) REFERENCES member(id)  ON DELETE CASCADE
+);
+
+CREATE INDEX idx_file_share_project ON file_share(project_id);
