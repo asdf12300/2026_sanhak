@@ -2,12 +2,14 @@ package controller;
 
 import model.LoginDTO;
 import model.ProjectMemberDAO;
+import model.ChatDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.List;
 import model.ProjectDAO;
 import model.ProjectDTO;
 
@@ -16,6 +18,7 @@ public class TeamMemberActionServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private final ProjectMemberDAO dao = new ProjectMemberDAO();
+    private final ChatDAO chatDAO = new ChatDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -96,8 +99,33 @@ public class TeamMemberActionServlet extends HttpServlet {
             return;
         } else if ("accept".equals(action)) {
             int pmNo = Integer.parseInt(pmNoStr);
+
+            System.out.println("[TeamMemberAction] accept: loginId=" + loginId
+                    + ", pmNo=" + pmNo + ", projectId=" + projectId);
+
             boolean result = dao.updateInvitationStatus(pmNo, loginId, "accepted");
             msg = result ? "초대를 수락했습니다." : "초대 수락에 실패했습니다.";
+
+            // 수락한 멤버를 해당 프로젝트의 모든 팀 채팅방에 자동 추가
+            if (result) {
+                // projectId가 0이면 pmNo로 projectId를 직접 조회
+                int targetProjectId = projectId;
+                if (targetProjectId <= 0) {
+                    targetProjectId = dao.getProjectIdByPmNo(pmNo);
+                    System.out.println("[TeamMemberAction] projectId가 0이어서 pmNo로 조회: " + targetProjectId);
+                }
+
+                if (targetProjectId > 0) {
+                    List<Integer> teamRoomIds = chatDAO.getTeamChatRoomIds(targetProjectId);
+                    for (int roomId : teamRoomIds) {
+                        chatDAO.addRoomMember(roomId, loginId);
+                    }
+                    System.out.println("[TeamMemberAction] " + loginId + " -> " + teamRoomIds.size() + "개 팀 채팅방 자동 추가 (projectId=" + targetProjectId + ")");
+                } else {
+                    System.out.println("[TeamMemberAction] projectId를 찾을 수 없어 채팅방 추가 실패");
+                }
+            }
+
             // role에 따라 리다이렉트 분기
             String myRole = dao.getMemberRole(loginId);
             if ("professor".equals(myRole)) {

@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="model.*" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.sql.Connection" %>
 <%
 String selectedProjectId = request.getParameter("projectId");
 if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".equals(selectedProjectId)) {
@@ -37,10 +38,17 @@ String projectQuery = (projectIdParam != null && !projectIdParam.isEmpty())
 <%
 
 List<TaskDTO> alertList = null;
-
 if (loginUser != null) {
     TaskDAO taskDAO = new TaskDAO();
     alertList = taskDAO.getDeadlineAlerts(loginUser.getId());
+}
+
+List<FileShareDTO> recentFiles = null;
+if (currentProject != null) {
+    try (Connection _fsConn = model.DBConnection.getConnection()) {
+        recentFiles = new FileShareDAO().getList(_fsConn, currentProject.getId());
+        if (recentFiles != null && recentFiles.size() > 4) recentFiles = recentFiles.subList(0, 4);
+    } catch (Exception _e) { recentFiles = null; }
 }
 %>
 <!DOCTYPE html>
@@ -325,12 +333,45 @@ if (loginUser != null) {
       </div>
     </div>
      <div class="card c4">
-      <div class="card-hd"><div class="card-t">파일 공유</div><button class="btn btn-g" style="font-size:11px;padding:5px 10px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>업로드</button></div>
+      <div class="card-hd">
+        <div class="card-t">파일 공유</div>
+        <% if (currentProject != null) { %>
+        <a href="fileShare?projectId=<%= currentProject.getId() %>" style="text-decoration:none;">
+          <% if (!isProfessor) { %>
+          <button class="btn btn-g" style="font-size:11px;padding:5px 10px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            업로드
+          </button>
+          <% } else { %>
+          <button class="btn btn-g" style="font-size:11px;padding:5px 10px">전체 보기</button>
+          <% } %>
+        </a>
+        <% } %>
+      </div>
       <div class="file-list">
-        <div class="file-item"><div class="file-icon" style="background:var(--red-light)">📄</div><div style="flex:1"><div class="file-name">요구사항_명세서_v3.pdf</div><div class="file-meta">장수연 · 2시간 전</div></div><div class="file-sz">2.4 MB</div></div>
-        <div class="file-item"><div class="file-icon" style="background:var(--violet-light)">🎨</div><div style="flex:1"><div class="file-name">디자인시스템_최종.fig</div><div class="file-meta">박현우 · 5시간 전</div></div><div class="file-sz">18.7 MB</div></div>
-        <div class="file-item"><div class="file-icon" style="background:var(--blue-light)">📊</div><div style="flex:1"><div class="file-name">스프린트12_계획.xlsx</div><div class="file-meta">김지호 · 어제</div></div><div class="file-sz">384 KB</div></div>
-        <div class="file-item"><div class="file-icon" style="background:var(--orange-light)">📝</div><div style="flex:1"><div class="file-name">API_명세서_v2.1.docx</div><div class="file-meta">이민준 · 어제</div></div><div class="file-sz">1.1 MB</div></div>
+        <% if (recentFiles != null && !recentFiles.isEmpty()) {
+             for (FileShareDTO rf : recentFiles) {
+               String rfExt = rf.getOriginalName().contains(".")
+                 ? rf.getOriginalName().substring(rf.getOriginalName().lastIndexOf('.')+1).toLowerCase() : "";
+               String rfIcon = "📄"; String rfBg = "var(--surface2)";
+               if (rfExt.equals("pdf"))  { rfIcon="📕"; rfBg="var(--red-light)"; }
+               else if (rfExt.equals("xlsx")||rfExt.equals("xls")||rfExt.equals("csv")) { rfIcon="📊"; rfBg="var(--teal-light)"; }
+               else if (rfExt.equals("docx")||rfExt.equals("doc")) { rfIcon="📝"; rfBg="var(--orange-light)"; }
+               else if (rfExt.equals("pptx")||rfExt.equals("ppt")) { rfIcon="📋"; rfBg="var(--blue-light)"; }
+               else if (rfExt.equals("zip")||rfExt.equals("rar")) { rfIcon="🗜️"; rfBg="var(--violet-light)"; }
+               else if (rfExt.equals("jpg")||rfExt.equals("jpeg")||rfExt.equals("png")||rfExt.equals("gif")) { rfIcon="🖼️"; rfBg="var(--violet-light)"; }
+        %>
+        <div class="file-item">
+          <div class="file-icon" style="background:<%= rfBg %>"><%= rfIcon %></div>
+          <div style="flex:1">
+            <div class="file-name"><%= rf.getOriginalName() %></div>
+            <div class="file-meta"><%= rf.getUploaderName() != null ? rf.getUploaderName() : rf.getUploaderId() %> · <%= rf.getCreatedAt() %></div>
+          </div>
+          <div class="file-sz"><%= rf.getFileSizeFormatted() %></div>
+        </div>
+        <% } } else { %>
+        <div style="text-align:center;color:var(--muted2);font-size:12px;padding:20px 0;">공유된 파일이 없습니다</div>
+        <% } %>
       </div>
     </div>
   </div>
