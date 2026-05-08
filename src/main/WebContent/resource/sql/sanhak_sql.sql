@@ -20,7 +20,6 @@ id varchar(20) NOT NULL,
 pw varchar(20) NOT NULL,
 email varchar(30) NOT NULL
 )
-
 -- 1. 외래키 제약 모두 제거
 ALTER TABLE project_member DROP FOREIGN KEY project_member_ibfk_2;
 ALTER TABLE task DROP FOREIGN KEY task_ibfk_2;
@@ -33,7 +32,7 @@ ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
 
 -- 2. member PRIMARY KEY 변경
 ALTER TABLE member DROP PRIMARY KEY;
-ALTER TABLE member ADD PRIMARY KEY (name);
+ALTER TABLE member ADD PRIMARY KEY (email);
 ALTER TABLE member MODIFY id VARCHAR(20) NULL;
 ALTER TABLE member MODIFY pw VARCHAR(20) NULL;
 
@@ -82,7 +81,7 @@ FROM information_schema.KEY_COLUMN_USAGE
 WHERE REFERENCED_TABLE_NAME = 'member'
 AND TABLE_SCHEMA = 'sanhak';
 
--- 1. 각 테이블의 실제 외래키 이름 먼저 확인
+--1. 각 테이블의 실제 외래키 이름 먼저 확인
 SHOW CREATE TABLE project_member;
 SHOW CREATE TABLE task;
 SHOW CREATE TABLE meeting_minutes;
@@ -146,7 +145,6 @@ ALTER TABLE folder ADD CONSTRAINT fk_folder_owner FOREIGN KEY (owner_id) REFEREN
 
 DESC member;
 
-
 CREATE TABLE board (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255),
@@ -155,6 +153,7 @@ CREATE TABLE board (
     team_leader varchar(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 CREATE TABLE project_member (
     id INT AUTO_INCREMENT PRIMARY KEY,
     project_id INT NOT NULL,
