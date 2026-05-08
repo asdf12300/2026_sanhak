@@ -17,6 +17,31 @@ public class ProjectMemberServlet extends HttpServlet {
     private final ProjectMemberDAO dao = new ProjectMemberDAO();
 
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        
+        req.setCharacterEncoding("UTF-8");
+        String action = req.getParameter("action");
+        
+        if ("getMembers".equals(action)) {
+            String projectIdStr = req.getParameter("projectId");
+            if (projectIdStr != null) {
+                int projectId = Integer.parseInt(projectIdStr);
+                var members = dao.getMembersByProject(projectId);
+                
+                resp.setContentType("application/json; charset=UTF-8");
+                
+                // Gson을 사용하여 JSON 변환
+                com.google.gson.Gson gson = new com.google.gson.Gson();
+                resp.getWriter().write(gson.toJson(members));
+                return;
+            }
+        }
+        
+        resp.sendRedirect("list");
+    }
+
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

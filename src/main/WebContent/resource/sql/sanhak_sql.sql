@@ -1,3 +1,19 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS feedback_comment;
+DROP TABLE IF EXISTS feedback;
+DROP TABLE IF EXISTS meeting_minutes_history;
+DROP TABLE IF EXISTS meeting_minutes;
+DROP TABLE IF EXISTS calendar;
+DROP TABLE IF EXISTS task;
+DROP TABLE IF EXISTS project_member;
+DROP TABLE IF EXISTS board;
+DROP TABLE IF EXISTS folder;
+DROP TABLE IF EXISTS member;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
 create table member(
 name varchar(20) NOT NULL,
 id varchar(20) NOT NULL,
@@ -17,7 +33,7 @@ ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
 
 -- 2. member PRIMARY KEY 변경
 ALTER TABLE member DROP PRIMARY KEY;
-ALTER TABLE member ADD PRIMARY KEY (email);
+ALTER TABLE member ADD PRIMARY KEY (name);
 ALTER TABLE member MODIFY id VARCHAR(20) NULL;
 ALTER TABLE member MODIFY pw VARCHAR(20) NULL;
 
@@ -211,7 +227,7 @@ CREATE TABLE feedback_comment (
 );
    
 --폴더 생성
-	CREATE TABLE folder (
+CREATE TABLE folder (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     owner_id VARCHAR(20) NOT NULL,
@@ -221,5 +237,57 @@ CREATE TABLE feedback_comment (
 
 ALTER TABLE board ADD COLUMN folder_id INT NULL;
 ALTER TABLE board ADD FOREIGN KEY (folder_id) REFERENCES folder(id) ON DELETE SET NULL;
+
+-- =============================================
+-- 실시간 채팅 기능
+-- =============================================
+
+-- 채팅방 테이블
+CREATE TABLE chat_rooms (
+    room_id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    room_name VARCHAR(100) NOT NULL,
+    room_type ENUM('personal', 'team') NOT NULL DEFAULT 'team',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES board(id) ON DELETE CASCADE
+);
+
+-- 채팅방 인덱스 추가 (프로젝트별 조회 최적화)
+CREATE INDEX idx_chat_rooms_project ON chat_rooms(project_id);
+CREATE INDEX idx_chat_rooms_type ON chat_rooms(room_type);
+
+-- 채팅방 멤버 테이블
+CREATE TABLE chat_room_members (
+    room_member_id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT NOT NULL,
+    member_id VARCHAR(20) NOT NULL,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_read_at TIMESTAMP NULL,
+    FOREIGN KEY (room_id) REFERENCES chat_rooms(room_id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_room_member (room_id, member_id)
+);
+
+-- 채팅방 멤버 인덱스 추가 (멤버별 채팅방 조회 최적화)
+CREATE INDEX idx_chat_room_members_member ON chat_room_members(member_id);
+CREATE INDEX idx_chat_room_members_last_read ON chat_room_members(last_read_at);
+
+-- 채팅 메시지 테이블
+CREATE TABLE chat_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT NOT NULL,
+    sender_id VARCHAR(20) NOT NULL,
+    sender_name VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    message_type ENUM('text', 'file', 'system') NOT NULL DEFAULT 'text',
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES chat_rooms(room_id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES member(id) ON DELETE CASCADE
+);
+
+-- 채팅 메시지 인덱스 추가 (채팅방별 메시지 조회 최적화)
+CREATE INDEX idx_chat_messages_room ON chat_messages(room_id);
+CREATE INDEX idx_chat_messages_sent_at ON chat_messages(sent_at);
+CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
 
 show tables;

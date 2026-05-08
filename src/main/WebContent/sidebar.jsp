@@ -76,7 +76,6 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
      팀원 관리
     </a>
     <a href="task.jsp<%= projectQuery %>" class="nav-item">
-
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -119,13 +118,25 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
 	  </svg>
 	  도서 추천
 	</a>
-    <% if (loginUser == null || !"professor".equals(loginUser.getRole())) { %>
-    <div class="nav-item">
+<%
+String chatUrl;
+if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
+    chatUrl = request.getContextPath() + "/chat.jsp?projectId=" + lastProjectId;
+} else {
+    chatUrl = "javascript:alert('먼저 프로젝트를 선택하세요.')";
+}
+String activeChat = path.contains("chat.jsp") ? "active" : "";
+%>
+<% if (loginUser == null || !"professor".equals(loginUser.getRole())) { %>
+    <a href="<%= chatUrl %>" class="nav-item <%= activeChat %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        <circle cx="9" cy="10" r="1" fill="currentColor"/>
+        <circle cx="12" cy="10" r="1" fill="currentColor"/>
+        <circle cx="15" cy="10" r="1" fill="currentColor"/>
       </svg>
-      팀 채팅 <span class="nav-badge red">2</span>
-    </div>
+      실시간 채팅
+    </a>
     <% } %>
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

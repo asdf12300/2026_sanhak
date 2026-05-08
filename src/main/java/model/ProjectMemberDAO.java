@@ -14,7 +14,7 @@ public class ProjectMemberDAO {
         List<ProjectMemberDTO> list = new ArrayList<>();
 
         String sql =
-            "SELECT pm.id, pm.project_id, pm.member_id, pm.role, pm.status, pm.invited_at, m.name " +
+            "SELECT pm.id, pm.project_id, pm.member_id, pm.role, pm.status, pm.invited_at, m.name, m.role as member_role " +
             "FROM project_member pm " +
             "LEFT JOIN member m ON pm.member_id = m.id " +
             "WHERE pm.project_id = ? " +
@@ -31,7 +31,7 @@ public class ProjectMemberDAO {
                     dto.setProjectId(rs.getInt("project_id"));
                     dto.setMemberId(rs.getString("member_id"));
                     dto.setName(rs.getString("name"));
-                    dto.setRole(rs.getString("role"));
+                    dto.setRole(rs.getString("member_role")); // member 테이블의 student/professor
                     dto.setStatus(rs.getString("status"));
                     Timestamp ts = rs.getTimestamp("invited_at");
                     dto.setInvitedAt(ts != null ? ts.toString() : "");
@@ -252,9 +252,23 @@ public class ProjectMemberDAO {
         return list;
     }
 
+    // pmNo로 projectId 조회 (accept 시 projectId가 없을 경우 대비)
+    public int getProjectIdByPmNo(int pmNo) {
+        String sql = "SELECT project_id FROM project_member WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, pmNo);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("project_id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     // 이미 초대/참여 상태인지 확인
-    public boolean isMember(int projectId, String memberId) {
-        String sql =
+    public boolean isMember(int projectId, String memberId) {        String sql =
             "SELECT id FROM project_member " +
             "WHERE project_id = ? AND member_id = ? AND status IN ('invited','accepted')";
 
