@@ -40,6 +40,11 @@ public class FolderServlet extends HttpServlet {
         } else if ("remove".equals(action)) {
             int projectId = Integer.parseInt(request.getParameter("projectId"));
             dao.removeProjectFromFolder(projectId);
+        } else if ("rename".equals(action)) {
+
+            int folderId = Integer.parseInt(request.getParameter("folderId"));
+            String folderName = request.getParameter("folderName");
+            dao.renameFolder(folderId, folderName);
         }
 
         response.sendRedirect(request.getContextPath() + "/professorProject.jsp");

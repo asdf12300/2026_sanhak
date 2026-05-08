@@ -97,7 +97,36 @@ input:focus {
 
     <button class="btn" type="submit">변경하기</button>
   </form>
+  <hr>
 
+<h3>계정 탈퇴</h3>
+
+<form action="<%= request.getContextPath() %>/deleteAccount" method="post"
+      onsubmit="return confirm('정말 탈퇴하시겠습니까?');">
+
+    <p style="color:red;">
+        계정 탈퇴 시 되돌릴 수 없습니다.<br>
+        팀장인 경우 팀장을 다른 팀원에게 넘긴 후 탈퇴할 수 있습니다.
+    </p>
+
+    <label>탈퇴 확인 문구</label>
+    <input type="text" name="confirmText" placeholder="탈퇴합니다" required>
+
+    <br><br>
+
+    <label>비밀번호 확인</label>
+    <input type="password" name="password" required>
+
+    <br><br>
+
+    <button type="submit" style="background:red; color:white;">
+        계정 탈퇴
+    </button>
+</form>
+
+<% if (request.getAttribute("deleteError") != null) { %>
+    <p style="color:red;"><%= request.getAttribute("deleteError") %></p>
+<% } %>
   <% if (request.getAttribute("error") != null) { %>
     <div class="error"><%= request.getAttribute("error") %></div>
   <% } %>

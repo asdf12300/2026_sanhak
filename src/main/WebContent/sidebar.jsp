@@ -157,7 +157,17 @@ String activeChat = path.contains("chat.jsp") ? "active" : "";
     설정 변경
   </a>
 
-</div>
+  </div>
+  <div class="nav-sec">
+  <div class="nav-label">추천 외부 사이트</div>
+  <a href="https://stackoverflow.com/" 
+   class="nav-item"
+   target="_blank"
+   rel="noopener noreferrer">
+    <span>💻</span>
+    <span>코드 리뷰</span>
+  </a>
+  </div>
   
   <div class="sidebar-bot">
     <div class="av-row">
