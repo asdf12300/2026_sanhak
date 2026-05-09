@@ -1,95 +1,61 @@
 package controller;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
-import java.nio.file.*;
 import java.sql.Connection;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import model.DBConnection;
 import model.FileShareDAO;
 import model.FileShareDTO;
 import model.LoginDTO;
+import util.S3FileStorage;
 
 @WebServlet("/fileShare")
 @MultipartConfig(
-    maxFileSize    = 20 * 1024 * 1024,   // 파일 1개 최대 20MB
-    maxRequestSize = 25 * 1024 * 1024    // 요청 전체 최대 25MB
+    maxFileSize = 20 * 1024 * 1024,
+    maxRequestSize = 25 * 1024 * 1024
 )
 public class FileShareServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
-    private static final String UPLOAD_DIR = "uploads/fileshare";
-    private FileShareDAO dao = new FileShareDAO();
+    private final FileShareDAO dao = new FileShareDAO();
+    private final S3FileStorage storage = new S3FileStorage();
 
-    /** 실제 저장 경로 반환 */
-    // 현재 (로컬 테스트용)
-    private String getUploadPath() {
-        return getServletContext().getRealPath("/") + UPLOAD_DIR;
-    }
-    
-    /*
-    // 배포용
-    private String getUploadPath() {
-        return "/home/ec2-user/uploads/fileshare"; // 서버 절대경로
-    }
-    */
-
-    // ── 목록 조회 ──
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        HttpSession session = req.getSession();
-        LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            resp.sendRedirect("login.jsp");
-            return;
-        }
+        LoginDTO loginUser = getLoginUser(req, resp);
+        if (loginUser == null) return;
 
-        String action  = req.getParameter("action");
-        String pidStr  = req.getParameter("projectId");
-        if (pidStr == null || pidStr.isEmpty()) {
+        int projectId = parseProjectId(req);
+        if (projectId <= 0) {
             resp.sendRedirect("projects.jsp");
             return;
         }
-        int projectId = Integer.parseInt(pidStr);
 
-        // 다운로드
+        String action = req.getParameter("action");
         if ("download".equals(action)) {
-            String idStr = req.getParameter("id");
-            if (idStr == null) { resp.sendRedirect("fileShare?projectId=" + projectId); return; }
-            try (Connection conn = DBConnection.getConnection()) {
-                FileShareDTO file = dao.getById(conn, Integer.parseInt(idStr));
-                if (file == null || file.getProjectId() != projectId) {
-                    resp.sendRedirect("fileShare?projectId=" + projectId);
-                    return;
-                }
-                File f = new File(getUploadPath(), file.getSavedName());
-                if (!f.exists()) {
-                    resp.sendRedirect("fileShare?projectId=" + projectId);
-                    return;
-                }
-                String encoded = URLEncoder.encode(file.getOriginalName(), "UTF-8").replace("+", "%20");
-                resp.setContentType("application/octet-stream");
-                resp.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encoded);
-                resp.setContentLengthLong(f.length());
-                Files.copy(f.toPath(), resp.getOutputStream());
-            } catch (Exception e) {
-                e.printStackTrace();
-                resp.sendRedirect("fileShare?projectId=" + projectId);
-            }
+            download(req, resp, loginUser, projectId);
             return;
         }
 
-        // 목록
         try (Connection conn = DBConnection.getConnection()) {
-            boolean isMember = dao.isProjectMember(conn, projectId, loginUser.getId());
-            if (!isMember) { resp.sendRedirect("projects.jsp"); return; }
+            if (!dao.isProjectMember(conn, projectId, loginUser.getId())) {
+                resp.sendRedirect("projects.jsp");
+                return;
+            }
 
             req.setAttribute("fileList", dao.getList(conn, projectId));
             req.setAttribute("projectId", projectId);
@@ -102,78 +68,165 @@ public class FileShareServlet extends HttpServlet {
         }
     }
 
-    // ── 업로드 / 삭제 ──
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
         req.setCharacterEncoding("UTF-8");
-        HttpSession session = req.getSession();
-        LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
-        if (loginUser == null) { resp.sendRedirect("login.jsp"); return; }
 
-        // 교수는 업로드/삭제 불가
+        LoginDTO loginUser = getLoginUser(req, resp);
+        if (loginUser == null) return;
+
+        int projectId = parseProjectId(req);
+        if (projectId <= 0) {
+            resp.sendRedirect("projects.jsp");
+            return;
+        }
+
         if ("professor".equals(loginUser.getRole())) {
-            resp.sendRedirect("fileShare?projectId=" + req.getParameter("projectId"));
+            resp.sendRedirect("fileShare?projectId=" + projectId);
             return;
         }
 
         String action = req.getParameter("action");
-        String pidStr = req.getParameter("projectId");
-        int projectId = (pidStr != null && !pidStr.isEmpty()) ? Integer.parseInt(pidStr) : 0;
-
         try (Connection conn = DBConnection.getConnection()) {
-            boolean isMember = dao.isProjectMember(conn, projectId, loginUser.getId());
-            if (!isMember) { resp.sendRedirect("projects.jsp"); return; }
-
-            if ("upload".equals(action)) {
-                Part filePart = req.getPart("file");
-                if (filePart == null || filePart.getSize() == 0) {
-                    resp.sendRedirect("fileShare?projectId=" + projectId);
-                    return;
-                }
-
-                String originalName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-                String ext = originalName.contains(".")
-                    ? originalName.substring(originalName.lastIndexOf('.'))
-                    : "";
-                String savedName = UUID.randomUUID().toString() + ext;
-
-                // 저장 디렉토리 생성
-                File uploadDir = new File(getUploadPath());
-                if (!uploadDir.exists()) uploadDir.mkdirs();
-
-                File dest = new File(uploadDir, savedName);
-                filePart.write(dest.getAbsolutePath());
-
-                FileShareDTO dto = new FileShareDTO();
-                dto.setProjectId(projectId);
-                dto.setUploaderId(loginUser.getId());
-                dto.setOriginalName(originalName);
-                dto.setSavedName(savedName);
-                dto.setFileSize(filePart.getSize());
-
-                conn.setAutoCommit(false);
-                dao.insert(conn, dto);
-                conn.commit();
-
-            } else if ("delete".equals(action)) {
-                int fileId = Integer.parseInt(req.getParameter("id"));
-                conn.setAutoCommit(false);
-                FileShareDTO file = dao.getById(conn, fileId);
-                if (file != null && file.getUploaderId().equals(loginUser.getId())) {
-                    // 실제 파일 삭제
-                    File f = new File(getUploadPath(), file.getSavedName());
-                    if (f.exists()) f.delete();
-                    dao.delete(conn, fileId, loginUser.getId());
-                }
-                conn.commit();
+            if (!dao.isProjectMember(conn, projectId, loginUser.getId())) {
+                resp.sendRedirect("projects.jsp");
+                return;
             }
 
+            if ("upload".equals(action)) {
+                upload(req, projectId, loginUser, conn);
+            } else if ("delete".equals(action)) {
+                delete(req, loginUser, conn);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         resp.sendRedirect("fileShare?projectId=" + projectId);
+    }
+
+    private void upload(HttpServletRequest req, int projectId, LoginDTO loginUser, Connection conn)
+            throws Exception {
+        Part filePart = req.getPart("file");
+        if (filePart == null || filePart.getSize() == 0) return;
+
+        String originalName = extractFileName(filePart);
+        if (originalName.isEmpty()) return;
+
+        String savedName = UUID.randomUUID().toString() + extensionOf(originalName);
+        String s3Key = "projects/" + projectId + "/files/" + savedName;
+        String contentType = filePart.getContentType();
+
+        try (InputStream input = filePart.getInputStream()) {
+            storage.upload(input, s3Key, contentType);
+        }
+
+        FileShareDTO dto = new FileShareDTO();
+        dto.setProjectId(projectId);
+        dto.setUploaderId(loginUser.getId());
+        dto.setOriginalName(originalName);
+        dto.setSavedName(savedName);
+        dto.setFileSize(filePart.getSize());
+        dto.setStorageType("s3");
+        dto.setS3Bucket(storage.getBucket());
+        dto.setS3Key(s3Key);
+        dto.setContentType(contentType);
+
+        conn.setAutoCommit(false);
+        try {
+            dao.insert(conn, dto);
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            try {
+                storage.delete(s3Key);
+            } catch (Exception cleanupError) {
+                cleanupError.printStackTrace();
+            }
+            throw e;
+        }
+    }
+
+    private void download(HttpServletRequest req, HttpServletResponse resp, LoginDTO loginUser, int projectId)
+            throws IOException {
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.trim().isEmpty()) {
+            resp.sendRedirect("fileShare?projectId=" + projectId);
+            return;
+        }
+
+        try (Connection conn = DBConnection.getConnection()) {
+            if (!dao.isProjectMember(conn, projectId, loginUser.getId())) {
+                resp.sendRedirect("projects.jsp");
+                return;
+            }
+
+            FileShareDTO file = dao.getById(conn, Integer.parseInt(idStr));
+            if (file == null || file.getProjectId() != projectId || file.getS3Key() == null) {
+                resp.sendRedirect("fileShare?projectId=" + projectId);
+                return;
+            }
+
+            String encoded = URLEncoder.encode(file.getOriginalName(), "UTF-8").replace("+", "%20");
+            resp.setContentType(file.getContentType() != null ? file.getContentType() : "application/octet-stream");
+            resp.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encoded);
+            resp.setContentLengthLong(file.getFileSize());
+            storage.download(file.getS3Key(), resp.getOutputStream());
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect("fileShare?projectId=" + projectId);
+        }
+    }
+
+    private void delete(HttpServletRequest req, LoginDTO loginUser, Connection conn) throws Exception {
+        String id = req.getParameter("id");
+        if (id == null || id.trim().isEmpty()) return;
+
+        FileShareDTO file = dao.getById(conn, Integer.parseInt(id));
+        if (file == null || !loginUser.getId().equals(file.getUploaderId())) return;
+
+        conn.setAutoCommit(false);
+        try {
+            dao.delete(conn, file.getId(), loginUser.getId());
+            conn.commit();
+            if (file.getS3Key() != null && !file.getS3Key().trim().isEmpty()) {
+                storage.delete(file.getS3Key());
+            }
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
+    }
+
+    private LoginDTO getLoginUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        HttpSession session = req.getSession();
+        LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            resp.sendRedirect("login.jsp");
+            return null;
+        }
+        return loginUser;
+    }
+
+    private int parseProjectId(HttpServletRequest req) {
+        try {
+            return Integer.parseInt(req.getParameter("projectId"));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private String extractFileName(Part filePart) {
+        String submitted = filePart.getSubmittedFileName();
+        if (submitted == null) return "";
+        return submitted.replace("\\", "/").substring(submitted.replace("\\", "/").lastIndexOf('/') + 1);
+    }
+
+    private String extensionOf(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        if (dot < 0 || dot == fileName.length() - 1) return "";
+        return fileName.substring(dot);
     }
 }

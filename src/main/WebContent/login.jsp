@@ -312,7 +312,7 @@
 
   function naverLogin() {
 	  var CLIENT_ID = '<%= naverClientId %>';
-	  var REDIRECT_URI = 'http://localhost:8080/sanhak/naver/login';
+	  var REDIRECT_URI = window.location.origin + '<%= request.getContextPath() %>/naver/login';
 
 	  var role = document.querySelector('input[name="role"]:checked').value;
 	  console.log("선택된 role:", role);

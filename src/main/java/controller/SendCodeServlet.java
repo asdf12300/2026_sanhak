@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.Random;
 
@@ -50,18 +51,28 @@ public class SendCodeServlet extends HttpServlet {
     }
 
     private void sendEmail(String toEmail, String code) throws Exception {
-        java.io.InputStream is = getServletContext().getResourceAsStream("/WEB-INF/classes/secret.properties");
-        java.util.Properties secret = new java.util.Properties();
-        secret.load(is);
+        Properties secret = new Properties();
+        try (InputStream is = getServletContext().getResourceAsStream("/WEB-INF/classes/secret.properties")) {
+            if (is == null) {
+                throw new IllegalStateException("secret.properties file was not found in WEB-INF/classes.");
+            }
+            secret.load(is);
+        }
 
         String username = secret.getProperty("mail.username");
         String password = secret.getProperty("mail.password");
+        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            throw new IllegalStateException("mail.username or mail.password is missing in secret.properties.");
+        }
 
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.naver.com");
         props.put("mail.smtp.port", "465");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.ssl.enable", "true");
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "10000");
 
         Session session = Session.getInstance(props, new javax.mail.Authenticator() {
             protected javax.mail.PasswordAuthentication getPasswordAuthentication() {

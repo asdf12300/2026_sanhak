@@ -10,7 +10,8 @@ public class FileShareDAO {
     public List<FileShareDTO> getList(Connection conn, int projectId) throws Exception {
         List<FileShareDTO> list = new ArrayList<>();
         String sql = "SELECT f.id, f.project_id, f.uploader_id, m.name AS uploader_name, " +
-                     "f.original_name, f.saved_name, f.file_size, " +
+                     "f.original_name, f.saved_name, f.file_size, f.storage_type, " +
+                     "f.s3_bucket, f.s3_key, f.content_type, " +
                      "DATE_FORMAT(f.created_at, '%Y-%m-%d %H:%i') AS created_at " +
                      "FROM file_share f " +
                      "LEFT JOIN member m ON f.uploader_id = m.id " +
@@ -28,6 +29,10 @@ public class FileShareDAO {
                     dto.setOriginalName(rs.getString("original_name"));
                     dto.setSavedName(rs.getString("saved_name"));
                     dto.setFileSize(rs.getLong("file_size"));
+                    dto.setStorageType(rs.getString("storage_type"));
+                    dto.setS3Bucket(rs.getString("s3_bucket"));
+                    dto.setS3Key(rs.getString("s3_key"));
+                    dto.setContentType(rs.getString("content_type"));
                     dto.setCreatedAt(rs.getString("created_at"));
                     list.add(dto);
                 }
@@ -39,7 +44,8 @@ public class FileShareDAO {
     /** 파일 단건 조회 (다운로드용) */
     public FileShareDTO getById(Connection conn, int id) throws Exception {
         String sql = "SELECT f.id, f.project_id, f.uploader_id, m.name AS uploader_name, " +
-                     "f.original_name, f.saved_name, f.file_size, " +
+                     "f.original_name, f.saved_name, f.file_size, f.storage_type, " +
+                     "f.s3_bucket, f.s3_key, f.content_type, " +
                      "DATE_FORMAT(f.created_at, '%Y-%m-%d %H:%i') AS created_at " +
                      "FROM file_share f " +
                      "LEFT JOIN member m ON f.uploader_id = m.id " +
@@ -56,6 +62,10 @@ public class FileShareDAO {
                     dto.setOriginalName(rs.getString("original_name"));
                     dto.setSavedName(rs.getString("saved_name"));
                     dto.setFileSize(rs.getLong("file_size"));
+                    dto.setStorageType(rs.getString("storage_type"));
+                    dto.setS3Bucket(rs.getString("s3_bucket"));
+                    dto.setS3Key(rs.getString("s3_key"));
+                    dto.setContentType(rs.getString("content_type"));
                     dto.setCreatedAt(rs.getString("created_at"));
                     return dto;
                 }
@@ -66,14 +76,19 @@ public class FileShareDAO {
 
     /** 파일 등록 */
     public void insert(Connection conn, FileShareDTO dto) throws Exception {
-        String sql = "INSERT INTO file_share (project_id, uploader_id, original_name, saved_name, file_size) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO file_share " +
+                     "(project_id, uploader_id, original_name, saved_name, file_size, storage_type, s3_bucket, s3_key, content_type) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, dto.getProjectId());
             ps.setString(2, dto.getUploaderId());
             ps.setString(3, dto.getOriginalName());
             ps.setString(4, dto.getSavedName());
             ps.setLong(5, dto.getFileSize());
+            ps.setString(6, dto.getStorageType());
+            ps.setString(7, dto.getS3Bucket());
+            ps.setString(8, dto.getS3Key());
+            ps.setString(9, dto.getContentType());
             ps.executeUpdate();
         }
     }
