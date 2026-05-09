@@ -9,7 +9,7 @@
 - MySQL/RDS
 - AWS S3 파일 저장소
 - WebSocket 실시간 채팅
-- Naver/Kakao 로그인 연동
+- Naver 로그인 연동
 - Naver SMTP 이메일 인증
 - Groq API 기반 도서 추천
 
