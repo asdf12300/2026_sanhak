@@ -184,7 +184,7 @@ UnsupportedClassVersionError: Java 버전 불일치
 ClassNotFoundException/NoClassDefFoundError: jar 누락 또는 깨진 빌드
 ```
 
-## 유지보수 원칙
+## 주의사항
 
 - 서버 배포는 `sanhak`에서만 진행합니다. 
 - 코드 구조는 두 프로젝트가 최대한 같게 유지해야해요 제가 최대한 수정은 해놓았어요 구조 다른 건 S3 부분 정도예요
