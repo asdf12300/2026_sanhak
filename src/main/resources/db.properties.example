@@ -1,6 +1,6 @@
 # Database Configuration
 driver=com.mysql.cj.jdbc.Driver
-url=jdbc:mysql://localhost:3306/db이름?useSSL=false
+url=jdbc:mysql://RDS엔드포인트:RDS포트번호/DB이름?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&autoReconnect=true&allowPublicKeyRetrieval=true
 username=계정
 password=비밀번호
 

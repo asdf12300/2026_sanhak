@@ -5,7 +5,7 @@
     auth="Container"
     type="javax.sql.DataSource"
     driverClassName="com.mysql.cj.jdbc.Driver"
-    url="jdbc:mysql://localhost:3306/DB이름?useSSL=false&amp;serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true"
+    url="jdbc:mysql://RDS엔드포인트:RDS포트번호/DB이름?useSSL=false&amp;serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;allowPublicKeyRetrieval=true"
     username="계정"
     password="비밀번호"
     maxTotal="20"
