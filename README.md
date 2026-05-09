@@ -1,8 +1,6 @@
 # ProjectOS
 
-ProjectOS는 산학 프로젝트 팀을 위한 협업 웹 애플리케이션입니다. 프로젝트 관리, 일정, 업무, 회의록, 피드백, 파일 공유, 실시간 채팅, 이메일 인증, 소셜 로그인을 한 곳에서 다룹니다.
-
-이 폴더는 **서버 배포용 프로젝트(`sanhak`)**입니다. 로컬 테스트용 프로젝트는 상위 폴더의 `sanhak_test`를 사용합니다.
+이 폴더는 **서버 배포용 프로젝트(`sanhak`)** 입니다.
 
 ## 기술 스택
 
@@ -26,21 +24,13 @@ sanhak/
   src/main/WebContent/          JSP, 정적 리소스, WEB-INF
   src/main/WebContent/WEB-INF/  web.xml, lib, config.properties
   src/main/WebContent/resource/ CSS, JS, SQL 등 화면 리소스
-  deploy.ps1                   서버 배포 스크립트
-  배포하기.bat                  더블클릭 배포 실행 파일
+  deploy.ps1                    서버 배포 스크립트
+  배포하기.bat                   더블클릭 배포 실행 파일
 ```
 
 ## 서버용/로컬용 분리 규칙
 
-상위 폴더에는 두 프로젝트가 있습니다.
-
-```text
-2026_sanhak/
-  sanhak/       서버 배포용
-  sanhak_test/  로컬 테스트용
-```
-
-공통으로 맞춰야 하는 파일:
+구조가 같은 파일:
 
 ```text
 Servlet, DAO, DTO, JSP, JS, CSS, web.xml 구조
@@ -53,7 +43,7 @@ DB 설정
 S3/로컬 파일 저장 설정
 API 키
 메일 계정
-네이버/카카오 Redirect URL
+네이버 Redirect URL
 Tomcat context.xml
 config.properties
 secret.properties
@@ -62,9 +52,8 @@ secret.properties
 주의할 점:
 
 ```text
-환경 설정 파일은 서로 복사하지 않습니다.
+환경 설정 파일은 서로 복사하지 않습니다. (따로 구축해서 하는 거 아니면 그대로 두셔도 됩니다.)
 sanhak은 서버 배포용 설정을 유지합니다.
-sanhak_test는 로컬 테스트용 설정을 유지합니다.
 ```
 
 ## web.xml 정책
@@ -73,37 +62,15 @@ sanhak_test는 로컬 테스트용 설정을 유지합니다.
 
 `web.xml`에는 servlet mapping을 넣지 않고, 다음 공통 설정만 유지합니다.
 
-```text
-DB JNDI resource-ref
-welcome-file-list
-error-page
-```
-
 중요:
 
 ```text
-web.xml에 servlet-mapping을 추가하면서 Java 파일의 @WebServlet을 그대로 두면 중복 매핑 오류가 발생할 수 있습니다.
-새 Servlet을 추가할 때는 Java 파일에 @WebServlet 경로를 명확히 작성합니다.
-파일 업로드는 FileShareServlet의 @MultipartConfig로 관리합니다.
+web.xml에 servlet-mapping을 추가하면서 Java 파일의 @WebServlet을 그대로 두면 중복 매핑 오류가 발생할 수 있어서 새 Servlet을 만드실 땐 Java 파일에 @WebServlet 경로로 명시해주세요 !
 ```
 
 ## 환경 파일
 
-실제 환경 파일은 Git에 올리지 않습니다.
-
-```text
-src/main/resources/db.properties
-src/main/resources/secret.properties
-src/main/WebContent/WEB-INF/config.properties
-src/main/WebContent/META-INF/context.xml
-```
-
-예시 파일만 공유합니다.
-
-```text
-*.properties.example
-*.xml.example
-```
+.gitignore에 설정이 되어있고 따로 배포 및 테스트를 진행하실 땐 각 환경에 맞는 파일 및 키 값을 수정해주시면 돼요
 
 필요한 설정 예:
 
@@ -115,7 +82,14 @@ mail.username=your-naver-id@naver.com
 mail.password=your-mail-app-password
 ```
 
-도서 추천 기능은 `WEB-INF/config.properties`에 Groq API 키가 필요합니다.
+```properties
+src/main/resources/db.properties
+src/main/resources/secret.properties
+src/main/WebContent/WEB-INF/config.properties
+src/main/WebContent/META-INF/context.xml
+```
+
+도서 추천 기능은 `WEB-INF/config.properties`에 Groq API 받아서 오시면 됩니다. 
 
 ```properties
 groq.api.key=your-groq-api-key
@@ -123,13 +97,11 @@ groq.api.key=your-groq-api-key
 
 ## 데이터베이스
 
-서버용 전체 SQL은 아래 파일을 기준으로 합니다.
+서버용 전체 SQL은 아래 파일을 기준으로 하고 실행시키시면 됩니다. (서버에 이미 되어있어서 추가로 배포 작업 진행하시면 아래 db 실행해주세요)
 
 ```text
 src/main/WebContent/resource/sql/ProjectOS_DB.sql
 ```
-
-서버와 로컬 DB는 가능한 한 같은 테이블 구조를 유지하는 것을 권장합니다. 예를 들어 `file_share`는 로컬에서 S3를 사용하지 않더라도 서버와 같은 컬럼 구조를 유지하는 편이 안전합니다.
 
 ## 배포 방법
 
@@ -139,8 +111,8 @@ src/main/WebContent/resource/sql/ProjectOS_DB.sql
 Project 우클릭
 Export
 WAR file
-Destination: C:\Users\1_032\OneDrive\바탕 화면\2026_sanhak\ProjectOS.war
-Target runtime: Apache Tomcat v9.0
+Destination: 배포 할 위치 설정
+Target runtime: Apache Tomcat v9.0 or 자신이 사용하는 서버 버전 선택 
 Overwrite existing file 체크
 Finish
 ```
@@ -157,16 +129,15 @@ Finish
 powershell -NoProfile -ExecutionPolicy Bypass -File .\deploy.ps1
 ```
 
-처음 배포하는 팀원은 `deploy.example.ps1`을 `deploy.local.ps1`로 복사한 뒤 자기 환경에 맞게 수정해야 합니다.
+처음 배포진행하시면  `deploy.example.ps1`을 `deploy.local.ps1`로 복사한 뒤 자기 환경에 맞게 수정하셔야됩니다. 
 
 ```powershell
-$KeyPath = "C:\path\to\projectos-key.pem"
+$KeyPath = "key 위치 복사 붙이기"
 $Server = "ubuntu@your-server-ip"
 ```
+서버 key.pem은 따로 관리해서 필요하시면 보내드리겠습니다. 
 
-`deploy.local.ps1`은 개인별 설정 파일이므로 Git에 올리지 않습니다.
-
-배포 스크립트는 다음 작업을 수행합니다.
+배포 스크립트 실행하면 아래와 같이 실행됩니다.
 
 ```text
 ProjectOS.war 확인
@@ -213,36 +184,9 @@ UnsupportedClassVersionError: Java 버전 불일치
 ClassNotFoundException/NoClassDefFoundError: jar 누락 또는 깨진 빌드
 ```
 
-## Git 관리 규칙
-
-`.gitignore`는 실제 환경 파일과 빌드 산출물을 제외합니다.
-
-Git에 올리지 않는 것:
-
-```text
-실제 DB/API/메일 비밀 설정
-context.xml
-WAR 파일
-build 결과물
-Eclipse 개인 설정
-```
-
-Git에 올릴 수 있는 것:
-
-```text
-소스 코드
-JSP/JS/CSS
-SQL
-example 설정 파일
-WEB-INF/lib 라이브러리 jar
-README
-배포 스크립트
-```
-
 ## 유지보수 원칙
 
-- 서버 배포는 `sanhak`에서만 진행합니다.
-- 로컬 테스트는 `sanhak_test`에서 진행합니다.
-- 코드 구조는 두 프로젝트가 최대한 같게 유지합니다.
+- 서버 배포는 `sanhak`에서만 진행합니다. 
+- 코드 구조는 두 프로젝트가 최대한 같게 유지해야해요 제가 최대한 수정은 해놓았어요 구조 다른 건 S3 부분 정도예요
 - 환경 설정 파일은 서로 덮어쓰지 않습니다.
-- 서버 오류는 브라우저 화면보다 Tomcat 로그를 기준으로 판단합니다.
+- 서버 오류는 브라우저 화면보다 Tomcat 로그를 기준으로 보시고 디버깅하시면 됩니다. 
