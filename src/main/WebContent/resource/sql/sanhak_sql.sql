@@ -41,6 +41,9 @@ ALTER TABLE member MODIFY id VARCHAR(20) NULL;
 ALTER TABLE member MODIFY pw VARCHAR(20) NULL;
 
 -- 2-2. 참조하는 테이블 데이터 전부 초기화
+DELETE FROM chat_messages;
+DELETE FROM chat_room_members;
+DELETE FROM chat_rooms;
 DELETE FROM feedback_comment;
 DELETE FROM feedback;
 DELETE FROM meeting_minutes_history;
@@ -114,7 +117,7 @@ DELETE FROM task;
 DELETE FROM project_member;
 DELETE FROM folder;
 DELETE FROM board;
-DELETE FROM member;
+DELETE FROM member where id = "정현숙";
 
 -- 4. member PK를 id로 복원
 ALTER TABLE member DROP PRIMARY KEY;
@@ -256,6 +259,7 @@ INSERT INTO member VALUES ('최대로', 'dr123', '1234', 'dr123@gmail.com', 'stu
 INSERT INTO member VALUES ('차소희', 'sh123', '1234', 'sh123@gmail.com', 'student');
 INSERT INTO member VALUES ('이민제', 'mj123', '1234', 'mj123@gmail.com', 'student');
 INSERT INTO member VALUES ('김채연', 'cy123', '1234', 'cy123@gmail.com', 'student');
+INSERT INTO member VALUES ('hs123', '정현숙', '1234', 'hs123@gmail.com', 'professor');
 
 -- role에 교수 추가 // 기존에 있던 db 멤버들 기본값을 student로
 ALTER TABLE member ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'student';
@@ -342,7 +346,7 @@ CREATE INDEX idx_chat_room_members_last_read ON chat_room_members(last_read_at);
 CREATE TABLE chat_messages (
     message_id INT AUTO_INCREMENT PRIMARY KEY,
     room_id INT NOT NULL,
-    sender_id VARCHAR(20) NOT NULL,
+    sender_id VARCHAR(50) NULL,  -- 시스템 메시지는 NULL
     sender_name VARCHAR(50) NOT NULL,
     message TEXT NOT NULL,
     message_type ENUM('text', 'file', 'system') NOT NULL DEFAULT 'text',
@@ -375,3 +379,6 @@ CREATE TABLE file_share (
 );
 
 CREATE INDEX idx_file_share_project ON file_share(project_id);
+
+-- 기존 chat_messages 테이블의 sender_id를 NULL 허용으로 변경 (시스템 메시지 지원)
+ALTER TABLE chat_messages MODIFY sender_id VARCHAR(50) NULL;

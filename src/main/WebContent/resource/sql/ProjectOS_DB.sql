@@ -244,7 +244,7 @@ CREATE INDEX idx_chat_room_members_last_read ON chat_room_members(last_read_at);
 CREATE TABLE chat_messages (
     message_id   INT AUTO_INCREMENT PRIMARY KEY,
     room_id      INT NOT NULL,
-    sender_id    VARCHAR(50) NOT NULL,
+    sender_id    VARCHAR(50) NULL, -- 시스템 메시지는 NULL
     sender_name  VARCHAR(50) NOT NULL,
     message      TEXT NOT NULL,
     message_type ENUM('text', 'file', 'system') NOT NULL DEFAULT 'text',
@@ -263,12 +263,16 @@ CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
 INSERT INTO member (id, name, pw, email, role) VALUES
 ('yk123', '김유경', '1234', 'yk123@gmail.com', 'student'),
 ('dr123', '최대로', '1234', 'dr123@gmail.com', 'student'),
-('sh123', '차소희', '1234', 'sh123@gmail.com', 'student'),
+('sh123', '차소희', '1234', 'sohui_0407@naver.com', 'student'),
 ('cy123', '김채연', '1234', 'cy123@gmail.com', 'student'),
-('mj123', '이민제', '1234', 'mj123@gmail.com', 'student')
+('mj123', '이민제', '1234', 'mj123@gmail.com', 'student'),
+('hs123', '정현숙', '1234', 'hs123@gmail.com', 'professor')
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     pw = VALUES(pw),
     email = VALUES(email),
     role = VALUES(role);
+    
 
+-- 기존 chat_messages 테이블의 sender_id를 NULL 허용으로 변경 (시스템 메시지 지원)
+ALTER TABLE chat_messages MODIFY sender_id VARCHAR(50) NULL;

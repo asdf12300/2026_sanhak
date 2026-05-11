@@ -32,9 +32,14 @@ public class ChatServlet extends HttpServlet {
             return;
         }
 
+        // 교수는 채팅 접근 불가
+        if ("professor".equals(user.getRole())) {
+            response.sendRedirect("index.jsp");
+            return;
+        }
         if ("getRooms".equals(action)) {
             getRooms(request, response, user);
-        } else if ("getMessages".equals(action)) {
+        }else if ("getMessages".equals(action)) {
             getMessages(request, response, user);
         } else if ("getRoomInfo".equals(action)) {
             getRoomInfo(request, response, user);
@@ -56,6 +61,12 @@ public class ChatServlet extends HttpServlet {
 
         if (user == null) {
             response.getWriter().write("{\"success\": false, \"message\": \"로그인이 필요합니다\"}");
+            return;
+        }
+
+        // 교수는 채팅 접근 불가
+        if ("professor".equals(user.getRole())) {
+            response.getWriter().write("{\"success\": false, \"message\": \"교수는 채팅을 사용할 수 없습니다\"}");
             return;
         }
 
@@ -163,14 +174,39 @@ public class ChatServlet extends HttpServlet {
             if (roomId > 0) {
                 if ("team".equals(roomType)) {
                     List<ProjectMemberDTO> members = projectMemberDAO.getMembersByProject(projectId);
+
+                    // 1단계: 멤버 추가 (교수 제외)
+                    boolean creatorAdded = false;
                     for (ProjectMemberDTO member : members) {
-                        if ("accepted".equals(member.getStatus())) {
+                        if ("accepted".equals(member.getStatus()) && !"professor".equals(member.getRole())) {
                             chatDAO.addRoomMember(roomId, member.getMemberId());
+                            if (member.getMemberId().equals(user.getId())) {
+                                creatorAdded = true;
+                            }
                         }
                     }
-                    // 팀장이 project_member에 없을 경우를 대비해 생성자도 추가
-                    chatDAO.addRoomMember(roomId, user.getId());
+                    if (!creatorAdded) {
+                        chatDAO.addRoomMember(roomId, user.getId());
+                    }
+
+                    // 2단계: 시스템 메시지 저장 (교수 제외, 생성자 → "참가", 나머지 → "초대")
+                    for (ProjectMemberDTO member : members) {
+                        if ("accepted".equals(member.getStatus()) && !"professor".equals(member.getRole())) {
+                            String name = (member.getName() != null && !member.getName().isEmpty())
+                                          ? member.getName() : member.getMemberId();
+                            if (member.getMemberId().equals(user.getId())) {
+                                chatDAO.saveSystemMessage(roomId, name + " 님이 채팅방에 참가하였습니다.");
+                            } else {
+                                chatDAO.saveSystemMessage(roomId, name + " 님이 초대되었습니다.");
+                            }
+                        }
+                    }
+                    if (!creatorAdded) {
+                        chatDAO.saveSystemMessage(roomId, user.getName() + " 님이 채팅방에 참가하였습니다.");
+                    }
+
                 } else {
+                    // 개인 채팅방
                     chatDAO.addRoomMember(roomId, user.getId());
                 }
                 response.getWriter().write("{\"success\": true, \"roomId\": " + roomId + "}");

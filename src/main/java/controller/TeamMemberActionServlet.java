@@ -116,11 +116,26 @@ public class TeamMemberActionServlet extends HttpServlet {
                 }
 
                 if (targetProjectId > 0) {
-                    List<Integer> teamRoomIds = chatDAO.getTeamChatRoomIds(targetProjectId);
-                    for (int roomId : teamRoomIds) {
-                        chatDAO.addRoomMember(roomId, loginId);
+                    // 신규 멤버 이름 조회
+                    String newMemberName = dao.getMemberNameById(loginId);
+                    if (newMemberName == null) newMemberName = loginId;
+
+                    // 교수는 채팅방에 추가하지 않음
+                    String newMemberRole = dao.getMemberRole(loginId);
+                    if (!"professor".equals(newMemberRole)) {
+                        List<Integer> teamRoomIds = chatDAO.getTeamChatRoomIds(targetProjectId);
+                        for (int roomId : teamRoomIds) {
+                            chatDAO.addRoomMember(roomId, loginId);
+                            chatDAO.saveSystemMessage(roomId, newMemberName + " 님이 팀에 추가되었습니다.");
+                            com.google.gson.JsonObject broadcast = new com.google.gson.JsonObject();
+                            broadcast.addProperty("type",    "system");
+                            broadcast.addProperty("message", newMemberName + " 님이 팀에 추가되었습니다.");
+                            ChatWebSocket.broadcastToRoom(String.valueOf(roomId), broadcast.toString(), null);
+                        }
+                        System.out.println("[TeamMemberAction] " + loginId + " -> " + teamRoomIds.size() + "개 팀 채팅방 자동 추가 (projectId=" + targetProjectId + ")");
+                    } else {
+                        System.out.println("[TeamMemberAction] 교수(" + loginId + ")는 채팅방에 추가하지 않음");
                     }
-                    System.out.println("[TeamMemberAction] " + loginId + " -> " + teamRoomIds.size() + "개 팀 채팅방 자동 추가 (projectId=" + targetProjectId + ")");
                 } else {
                     System.out.println("[TeamMemberAction] projectId를 찾을 수 없어 채팅방 추가 실패");
                 }

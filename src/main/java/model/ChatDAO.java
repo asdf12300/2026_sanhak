@@ -145,6 +145,22 @@ public class ChatDAO {
         return false;
     }
     
+    // 시스템 메시지 저장 (sender_id FK 제약 없이 저장)
+    public boolean saveSystemMessage(int roomId, String content) {
+        // sender_id 컬럼의 FK 제약을 피하기 위해 NULL로 저장
+        String sql = "INSERT INTO chat_messages (room_id, sender_id, sender_name, message, message_type, sent_at) " +
+                     "VALUES (?, NULL, 'system', ?, 'system', NOW())";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            pstmt.setString(2, content);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
     // 채팅 메시지 조회 (페이징)
     public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
         List<ChatMessageDTO> messages = new ArrayList<>();

@@ -6,7 +6,13 @@
         response.sendRedirect("login.jsp");
         return;
     }
-    
+
+    // 교수는 채팅 접근 불가
+    if ("professor".equals(user.getRole())) {
+        response.sendRedirect("index.jsp");
+        return;
+    }
+
     String projectIdParam = request.getParameter("projectId");
     if (projectIdParam == null) {
         response.sendRedirect("list.jsp");
