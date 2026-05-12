@@ -160,6 +160,11 @@ public class ChatDAO {
         }
         return false;
     }
+    // 다른 Servlet 코드들에서 오류가나서 추가한 코드
+    public boolean saveSystemMessage(Integer roomId, String content) {
+        if (roomId == null) return false;
+        return saveSystemMessage(roomId.intValue(), content);
+    }
     
     // 채팅 메시지 조회 (페이징)
     public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
@@ -270,4 +275,5 @@ public class ChatDAO {
         }
         return roomIds;
     }
+    
 }

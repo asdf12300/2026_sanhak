@@ -30,7 +30,22 @@ public class DeleteAccountServlet extends HttpServlet {
 
         String confirmText = request.getParameter("confirmText");
         String password = request.getParameter("password");
+        String inputCode = request.getParameter("deleteCode");
 
+        String sessionCode = (String) session.getAttribute("deleteEmailCode");
+        Long codeTime = (Long) session.getAttribute("deleteEmailCodeTime");
+
+        if (sessionCode == null || inputCode == null || !sessionCode.equals(inputCode)) {
+            request.setAttribute("deleteError", "이메일 인증번호가 일치하지 않습니다.");
+            request.getRequestDispatcher("/settings.jsp").forward(request, response);
+            return;
+        }
+
+        if (codeTime == null || System.currentTimeMillis() - codeTime > 3 * 60 * 1000) {
+            request.setAttribute("deleteError", "이메일 인증번호가 만료되었습니다. 다시 발송해주세요.");
+            request.getRequestDispatcher("/settings.jsp").forward(request, response);
+            return;
+        }
         try {
             if (!"탈퇴합니다".equals(confirmText)) {
                 request.setAttribute("deleteError", "탈퇴 확인 문구를 정확히 입력해주세요.");

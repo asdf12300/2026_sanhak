@@ -2,12 +2,13 @@
 <%
     String naverName = (String) session.getAttribute("naverName");
     String naverEmail = (String) session.getAttribute("naverEmail");
+    String error = request.getParameter("error");
     if (naverName == null) naverName = "";
     if (naverEmail == null) naverEmail = "";
     boolean isNaver = !naverEmail.isEmpty();
 %>
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,232 +19,43 @@
 <script type="text/javascript" src="resource/js/join.js" defer></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Noto Sans KR', 'Plus Jakarta Sans', sans-serif;
-    height: 100vh;
-    display: flex;
-    overflow: hidden;
-  }
-
-  .intro-panel {
-    flex: 1;
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
-    display: flex;
-    flex-direction: column;
-    padding: 2.5rem 3rem;
-    color: #fff;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .intro-panel::before {
-    content: '';
-    position: absolute;
-    width: 500px; height: 500px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    top: -120px; right: -120px;
-  }
-  .intro-panel::after {
-    content: '';
-    position: absolute;
-    width: 300px; height: 300px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    bottom: -80px; left: -60px;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 1.35rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: #fff;
-    z-index: 1;
-    text-decoration: none;
-  }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .logo-icon svg {
-    width: 20px; height: 20px;
-    stroke: #fff;
-  }
-
-  .intro-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    z-index: 1;
-    padding-bottom: 2rem;
-  }
-
-  .intro-body .tagline {
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1.3;
-    margin-bottom: 1rem;
-  }
-
-  .intro-body .sub {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.85);
-    line-height: 1.7;
-    margin-bottom: 2.5rem;
-    max-width: 380px;
-  }
-
-  .step-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-  }
-
-  .step-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .step-num {
-    width: 36px; height: 36px;
-    min-width: 36px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.85rem;
-    font-weight: 800;
-  }
-
-  .step-text strong {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin-bottom: 2px;
-  }
-  .step-text span {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.75);
-  }
-
-  .join-panel {
-    flex: 1;
-    background: #f8fafc;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 2rem 2.5rem;
-    overflow-y: auto;
-  }
-
-  .join-card {
-    width: 100%;
-    max-width: 440px;
-    background: #fff;
-    border-radius: 1.2rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    padding: 2.5rem 2.8rem;
-  }
-
-  .join-card h2 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.4rem;
-  }
-  .join-card .welcome-sub {
-    font-size: 0.9rem;
-    color: #64748b;
-    margin-bottom: 1.8rem;
-  }
-
-  .form-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #374151;
-  }
-
-  .form-control {
-    border-radius: 0.6rem;
-    border: 1.5px solid #e2e8f0;
-    font-size: 0.95rem;
-    padding: 0.75rem 1rem;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-  .form-control:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-    outline: none;
-  }
-  .form-control[readonly] {
-    background: #f1f5f9;
-    color: #94a3b8;
-    cursor: not-allowed;
-  }
-
-  .btn-join {
-    background: linear-gradient(135deg, #3b82f6, #60a5fa);
-    border: none;
-    border-radius: 0.6rem;
-    color: #fff;
-    font-weight: 700;
-    font-size: 1rem;
-    padding: 0.8rem;
-    width: 100%;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-    margin-top: 0.5rem;
-  }
+  body { font-family: 'Noto Sans KR', 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; background: #f8fafc; }
+  .intro-panel { flex: 1; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%); display: flex; flex-direction: column; padding: 2.5rem 3rem; color: #fff; position: relative; overflow: hidden; }
+  .intro-panel::before { content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%; background: rgba(255,255,255,0.08); top: -120px; right: -120px; }
+  .intro-panel::after { content: ''; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(255,255,255,0.08); bottom: -80px; left: -60px; }
+  .logo { display: flex; align-items: center; gap: 0.6rem; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.5px; color: #fff; z-index: 1; text-decoration: none; }
+  .logo-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 20px; height: 20px; stroke: #fff; }
+  .intro-body { flex: 1; display: flex; flex-direction: column; justify-content: center; z-index: 1; padding-bottom: 2rem; }
+  .intro-body .tagline { font-size: 2rem; font-weight: 800; line-height: 1.3; margin-bottom: 1rem; }
+  .intro-body .sub { font-size: 1rem; color: rgba(255,255,255,0.85); line-height: 1.7; margin-bottom: 2.5rem; max-width: 380px; }
+  .step-list { display: flex; flex-direction: column; gap: 1.2rem; }
+  .step-item { display: flex; align-items: flex-start; gap: 1rem; }
+  .step-num { width: 36px; height: 36px; min-width: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; }
+  .step-text strong { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+  .step-text span { font-size: 0.8rem; color: rgba(255,255,255,0.75); }
+  .join-panel { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 2.5rem; overflow-y: auto; }
+  .join-card { width: 100%; max-width: 440px; background: #fff; border-radius: 1.2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2.5rem 2.8rem; }
+  .join-card h2 { font-size: 1.6rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; }
+  .join-card .welcome-sub { font-size: 0.9rem; color: #64748b; margin-bottom: 1.8rem; }
+  .form-label { font-size: 0.85rem; font-weight: 600; color: #374151; }
+  .form-control { border-radius: 0.6rem; border: 1.5px solid #e2e8f0; font-size: 0.95rem; padding: 0.75rem 1rem; transition: border-color 0.2s; width: 100%; }
+  .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); outline: none; }
+  .form-control[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+  .btn-join { background: linear-gradient(135deg, #3b82f6, #60a5fa); border: none; border-radius: 0.6rem; color: #fff; font-weight: 700; font-size: 1rem; padding: 0.8rem; width: 100%; cursor: pointer; transition: opacity 0.2s, transform 0.1s; margin-top: 0.5rem; }
   .btn-join:hover { opacity: 0.9; transform: translateY(-1px); }
-  .btn-join:active { transform: translateY(0); }
-
-  .divider {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 0.8rem;
-    margin: 1.2rem 0;
-    position: relative;
-  }
-  .divider::before, .divider::after {
-    content: '';
-    position: absolute;
-    top: 50%; width: 38%;
-    height: 1px;
-    background: #e2e8f0;
-  }
+  .divider { text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 1.2rem 0; position: relative; }
+  .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: #e2e8f0; }
   .divider::before { left: 0; }
   .divider::after { right: 0; }
-
-  .login-link {
-    text-align: center;
-    font-size: 0.85rem;
-    color: #64748b;
-  }
-  .login-link a {
-    color: #3b82f6;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .login-link a:hover { text-decoration: underline; }
-
+  .login-link { text-align: center; font-size: 0.85rem; color: #64748b; }
+  .login-link a { color: #3b82f6; font-weight: 600; text-decoration: none; }
+  .error-box { display: none; margin-bottom: 1rem; padding: 0.75rem 0.9rem; border-radius: 0.6rem; background: #fef2f2; color: #b91c1c; font-size: 0.85rem; }
   .mb-3 { margin-bottom: 1rem; }
-
-  @media (max-width: 768px) {
-    .intro-panel { display: none; }
-    .join-panel { width: 100%; }
-  }
+  @media (max-width: 768px) { .intro-panel { display: none; } .join-panel { width: 100%; padding: 1.2rem; } }
 </style>
 </head>
-<body>
-
+<body data-error="<%= error == null ? "" : error %>">
 <div class="intro-panel">
   <a href="login.jsp" class="logo">
     <div class="logo-icon">
@@ -253,10 +65,9 @@
     </div>
     ProjectOS
   </a>
-
   <div class="intro-body">
-    <p class="tagline">지금 바로<br>팀과 함께 시작하세요</p>
-    <p class="sub">ProjectOS에 가입하고 팀 프로젝트를 더 효율적으로 관리해보세요. 가입은 1분이면 충분합니다.</p>
+    <p class="tagline">지금 바로<br>프로젝트 협업을 시작하세요</p>
+    <p class="sub">ProjectOS에 가입하고 팀 프로젝트를 효율적으로 관리해보세요. 가입은 1분이면 충분합니다.</p>
     <div class="step-list">
       <div class="step-item">
         <div class="step-num">1</div>
@@ -264,11 +75,11 @@
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
-        <div class="step-text"><strong>프로젝트 생성 또는 참여</strong><span>새 프로젝트를 만들거나 팀원 초대를 수락</span></div>
+        <div class="step-text"><strong>프로젝트 생성 또는 참여</strong><span>새 프로젝트를 만들거나 팀 초대를 수락</span></div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
-        <div class="step-text"><strong>협업 시작</strong><span>업무 배정, 일정 관리, 회의록까지 한 번에</span></div>
+        <div class="step-text"><strong>작업 시작</strong><span>업무 배정, 일정 관리, 회의록까지 한 번에</span></div>
       </div>
     </div>
   </div>
@@ -276,17 +87,17 @@
 
 <div class="join-panel">
   <div class="join-card">
-    <h2>회원가입 ✏️</h2>
+    <h2>회원가입</h2>
     <p class="welcome-sub">
       <% if (isNaver) { %>
-        네이버 계정으로 가입합니다. 역할만 선택해주세요!
+        네이버 계정으로 가입합니다. 역할만 선택해주세요.
       <% } else { %>
-        아래 정보를 입력하여 계정을 만드세요.
+        아래 정보를 입력하여 계정을 만들어주세요.
       <% } %>
     </p>
+    <div id="errorBox" class="error-box"></div>
 
     <form action="JoinServlet" method="post" onsubmit="return joinCheck()">
-
       <div class="mb-3">
         <label class="form-label">사용자 유형</label>
         <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
@@ -303,9 +114,7 @@
 
       <div class="mb-3">
         <label class="form-label" for="name">이름</label>
-        <input type="text" name="name" id="name" class="form-control"
-            placeholder="이름을 입력하세요"
-            value="<%= naverName %>">
+        <input type="text" name="name" id="name" class="form-control" placeholder="이름을 입력하세요" value="<%= naverName %>">
       </div>
 
       <% if (!isNaver) { %>
@@ -322,33 +131,25 @@
         <input type="password" name="pw_check" id="pw_check" class="form-control" placeholder="비밀번호를 다시 입력하세요">
       </div>
       <% } else { %>
-        <input type="hidden" name="id" value="NAVER_<%= naverEmail %>">
-        <input type="hidden" name="pw" value="NAVER_SOCIAL">
-        <input type="hidden" name="pw_check" value="NAVER_SOCIAL">
+        <input type="hidden" name="id" id="id" value="NAVER_<%= naverEmail %>">
+        <input type="hidden" name="pw" id="pw" value="NAVER_SOCIAL">
+        <input type="hidden" name="pw_check" id="pw_check" value="NAVER_SOCIAL">
       <% } %>
 
       <div class="mb-3">
         <label class="form-label" for="email">이메일</label>
         <% if (isNaver) { %>
-          <input type="email" name="email" id="email" class="form-control"
-              value="<%= naverEmail %>" readonly>
+          <input type="email" name="email" id="email" class="form-control" value="<%= naverEmail %>" readonly>
         <% } else { %>
           <div style="display:flex; gap:8px;">
-            <input type="email" name="email" id="email" class="form-control"
-                placeholder="이메일을 입력하세요">
-            <button type="button" onclick="sendCode()"
-                style="min-width:90px; background:#2563eb; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
-                인증 요청
-            </button>
+            <input type="email" name="email" id="email" class="form-control" placeholder="이메일을 입력하세요">
+            <button type="button" onclick="sendCode()" style="min-width:90px; background:#2563eb; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">인증 요청</button>
           </div>
           <div class="mb-3" id="codeArea" style="display:none;">
             <label class="form-label">인증 코드</label>
             <div style="display:flex; gap:8px;">
               <input type="text" id="codeInput" class="form-control" placeholder="6자리 코드 입력" maxlength="6">
-              <button type="button" onclick="verifyCode()"
-                  style="min-width:90px; background:#22c55e; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">
-                  확인
-              </button>
+              <button type="button" onclick="verifyCode()" style="min-width:90px; background:#22c55e; color:#fff; border:none; border-radius:0.6rem; font-size:0.85rem; font-weight:700; cursor:pointer; padding:0 12px;">확인</button>
             </div>
             <div id="codeMsg" style="font-size:0.8rem; margin-top:6px;"></div>
           </div>
@@ -366,9 +167,30 @@
 </div>
 
 <script>
+const errorMessages = {
+  empty: '입력되지 않은 항목이 있습니다.',
+  pw_mismatch: '비밀번호와 비밀번호 확인이 일치하지 않습니다.',
+  invalid_role: '사용자 유형이 올바르지 않습니다.',
+  email_not_verified: '이메일 인증을 먼저 완료해주세요.',
+  id_exists: '이미 사용 중인 아이디입니다.',
+  email_exists: '이미 사용 중인 이메일입니다.',
+  server_error: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+};
+
+window.addEventListener('DOMContentLoaded', function () {
+  const error = document.body.dataset.error;
+  if (!error) return;
+  const errorBox = document.getElementById('errorBox');
+  errorBox.textContent = errorMessages[error] || '회원가입에 실패했습니다.';
+  errorBox.style.display = 'block';
+});
+
 function sendCode() {
   var email = document.getElementById('email').value.trim();
-  if (!email) { alert('이메일을 입력해주세요.'); return; }
+  if (!email) {
+    alert('이메일을 입력해주세요.');
+    return;
+  }
   fetch('sendCode', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -380,14 +202,18 @@ function sendCode() {
       document.getElementById('codeArea').style.display = 'block';
       alert('인증 코드를 발송했습니다. 메일함을 확인해주세요.');
     } else {
-      alert(data.msg);
+      alert(data.msg || '인증 코드 발송에 실패했습니다.');
     }
-  });
+  })
+  .catch(() => alert('인증 코드 발송 중 오류가 발생했습니다.'));
 }
 
 function verifyCode() {
   var code = document.getElementById('codeInput').value.trim();
-  if (!code) { alert('인증 코드를 입력해주세요.'); return; }
+  if (!code) {
+    alert('인증 코드를 입력해주세요.');
+    return;
+  }
   fetch('verifyCode', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -398,14 +224,15 @@ function verifyCode() {
     var msg = document.getElementById('codeMsg');
     if (data.result === 'ok') {
       msg.style.color = '#22c55e';
-      msg.textContent = '✅ 인증이 완료되었습니다.';
+      msg.textContent = '이메일 인증이 완료되었습니다.';
       document.getElementById('codeInput').disabled = true;
       document.querySelector('#codeArea button').disabled = true;
     } else {
       msg.style.color = '#ef4444';
-      msg.textContent = '❌ ' + data.msg;
+      msg.textContent = data.msg || '인증 코드가 올바르지 않습니다.';
     }
-  });
+  })
+  .catch(() => alert('인증 확인 중 오류가 발생했습니다.'));
 }
 </script>
 </body>

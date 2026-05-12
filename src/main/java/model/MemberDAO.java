@@ -1,5 +1,7 @@
 package model;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.*;
 import java.util.*;
 
@@ -23,5 +25,25 @@ public class MemberDAO {
             }
         }
         return list;
+    }
+    public String getEmailById(String id) {
+        String sql = "SELECT email FROM member WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, id);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("email");
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }
