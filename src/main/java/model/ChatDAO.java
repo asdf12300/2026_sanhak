@@ -32,11 +32,38 @@ public class ChatDAO {
         String sql = "INSERT IGNORE INTO chat_room_members (room_id, member_id, joined_at) VALUES (?, ?, NOW())";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
             pstmt.setInt(1, roomId);
             pstmt.setString(2, memberId);
             pstmt.executeUpdate();
             return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 채팅방 멤버 제거 (나가기)
+    public boolean removeRoomMember(int roomId, String memberId) {
+        String sql = "DELETE FROM chat_room_members WHERE room_id = ? AND member_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            pstmt.setString(2, memberId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 채팅방 이름 변경
+    public boolean updateRoomName(int roomId, String newName) {
+        String sql = "UPDATE chat_rooms SET room_name = ? WHERE room_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newName);
+            pstmt.setInt(2, roomId);
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -161,10 +188,10 @@ public class ChatDAO {
         return false;
     }
     // 다른 Servlet 코드들에서 오류가나서 추가한 코드
-    public boolean saveSystemMessage(Integer roomId, String content) {
+    /*public boolean saveSystemMessage(Integer roomId, String content) {
         if (roomId == null) return false;
         return saveSystemMessage(roomId.intValue(), content);
-    }
+    }*/
     
     // 채팅 메시지 조회 (페이징)
     public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
@@ -237,7 +264,31 @@ public class ChatDAO {
         return null;
     }
     
-    // 채팅방 멤버 목록 조회
+    // 채팅방 멤버 목록 조회 (ID + 이름)
+    public List<java.util.Map<String, String>> getRoomMembersWithName(int roomId) {
+        List<java.util.Map<String, String>> members = new ArrayList<>();
+        String sql = "SELECT crm.member_id, m.name " +
+                     "FROM chat_room_members crm " +
+                     "LEFT JOIN member m ON crm.member_id = m.id " +
+                     "WHERE crm.room_id = ? " +
+                     "ORDER BY crm.joined_at ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                java.util.Map<String, String> member = new java.util.HashMap<>();
+                member.put("memberId", rs.getString("member_id"));
+                member.put("name", rs.getString("name") != null ? rs.getString("name") : rs.getString("member_id"));
+                members.add(member);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
+
+    // 채팅방 멤버 목록 조회 (ID만, 기존 호환용)
     public List<String> getRoomMembers(int roomId) {
         List<String> members = new ArrayList<>();
         String sql = "SELECT member_id FROM chat_room_members WHERE room_id = ?";

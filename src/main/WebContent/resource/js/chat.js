@@ -7,31 +7,67 @@ let rooms = [];
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
     loadChatRooms();
-    setupEventListeners();
+    try {
+        setupEventListeners();
+        console.log('[chat] 이벤트 리스너 등록 완료');
+    } catch(e) {
+        console.error('[chat] setupEventListeners 오류:', e);
+    }
 });
 
 // 이벤트 리스너 설정
 function setupEventListeners() {
+
+    function on(id, event, fn) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener(event, fn);
+        } else {
+            console.warn('[chat] 요소를 찾을 수 없음: #' + id);
+        }
+    }
+
     // 팀 채팅방 만들기
-    document.getElementById('createTeamChatBtn').addEventListener('click', function() {
+    on('createTeamChatBtn', 'click', function() {
         showModal('createTeamChatModal');
     });
 
     // 개인 채팅 시작
-    document.getElementById('createPersonalChatBtn').addEventListener('click', function() {
+    on('createPersonalChatBtn', 'click', function() {
         loadProjectMembers();
         showModal('createPersonalChatModal');
     });
 
     // 채팅방 정보
-    document.getElementById('chatInfoBtn').addEventListener('click', function() {
+    on('chatInfoBtn', 'click', function() {
+        console.log('[chat] 정보 버튼 클릭, currentRoomId=', currentRoomId);
         if (currentRoomId) {
             loadRoomInfo(currentRoomId);
+        } else {
+            alert('채팅방을 먼저 선택해주세요.');
         }
     });
 
+    // 정보 모달 - 이름 변경
+    on('infoConfirmRename', 'click', function() {
+        const newName = document.getElementById('infoRoomNameInput').value.trim();
+        if (!newName) { alert('채팅방 이름을 입력해주세요.'); return; }
+        renameRoom(currentRoomId, newName);
+    });
+
+    // 정보 모달 - 나가기 버튼
+    on('infoLeaveRoom', 'click', function() {
+        hideModal('chatInfoModal');
+        showModal('leaveRoomModal');
+    });
+
+    // 나가기 확인
+    on('confirmLeaveRoom', 'click', function() {
+        leaveRoom(currentRoomId);
+    });
+
     // 팀 채팅방 생성 확인
-    document.getElementById('confirmCreateTeamChat').addEventListener('click', function() {
+    on('confirmCreateTeamChat', 'click', function() {
         const roomName = document.getElementById('teamChatName').value.trim();
         if (roomName) {
             createTeamChatRoom(roomName);
@@ -41,53 +77,43 @@ function setupEventListeners() {
     });
 
     // 메시지 전송
-    document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
-    
+    on('sendMessageBtn', 'click', sendMessage);
+
     // Enter 키로 메시지 전송 (Shift+Enter는 줄바꿈)
-    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+    on('messageInput', 'keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
 
-    // 모달 닫기
-    document.querySelectorAll('.modal-close').forEach(btn => {
+    // 모달 × 버튼 닫기
+    document.querySelectorAll('.modal-close, .btn-secondary').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const modal = this.closest('.modal');
-            hideModal(modal.id);
+            if (modal) hideModal(modal.id);
         });
     });
-	document.querySelectorAll('.btn-secondary').forEach(btn => {
-	    btn.addEventListener('click', function() {
-	        const modal = this.closest('.modal');
-	        hideModal(modal.id);
-	    });
-	});
 
     // 모달 외부 클릭 시 닫기
-    document.querySelectorAll('.modal').forEach(modal => {
+    document.querySelectorAll('.modal').forEach(function(modal) {
         modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                hideModal(this.id);
-            }
+            if (e.target === this) hideModal(this.id);
         });
     });
 
-    // 팀원 검색
-    document.getElementById('memberSearch').addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const memberItems = document.querySelectorAll('.member-item');
-        memberItems.forEach(item => {
-            const name = item.querySelector('.member-name').textContent.toLowerCase();
-            const id = item.querySelector('.member-id').textContent.toLowerCase();
-            if (name.includes(searchTerm) || id.includes(searchTerm)) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
+    // 팀원 검색 (요소가 있을 때만)
+    const memberSearchEl = document.getElementById('memberSearch');
+    if (memberSearchEl) {
+        memberSearchEl.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.member-item').forEach(function(item) {
+                const name = item.querySelector('.member-name').textContent.toLowerCase();
+                const id   = item.querySelector('.member-id').textContent.toLowerCase();
+                item.style.display = (name.includes(searchTerm) || id.includes(searchTerm)) ? 'block' : 'none';
+            });
         });
-    });
+    }
 }
 
 // 채팅방 목록 로드
@@ -237,6 +263,15 @@ function connectWebSocket(roomId) {
 
     ws.onmessage = function(event) {
         const message = JSON.parse(event.data);
+
+        // 채팅방 이름 변경 알림 처리
+        if (message.type === 'system' && message.renameRoom && message.newName) {
+            document.getElementById('chatRoomName').textContent = message.newName;
+            // rooms 배열도 업데이트
+            const room = rooms.find(r => r.roomId === currentRoomId);
+            if (room) room.roomName = message.newName;
+        }
+
         appendMessage(message);
     };
 
@@ -384,36 +419,118 @@ function startPersonalChat(targetMemberId) {
     });
 }
 
+// 채팅방 나가기
+function leaveRoom(roomId) {
+    const params = new URLSearchParams();
+    params.append('action', 'leaveRoom');
+    params.append('roomId', roomId);
+
+    fetch('ChatServlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    })
+    .then(response => response.text())
+    .then(text => {
+        const data = JSON.parse(text);
+        if (data.success) {
+            hideModal('leaveRoomModal');
+            // WebSocket 연결 종료
+            if (ws) { ws.close(); ws = null; }
+            // 채팅 영역 초기화
+            currentRoomId = null;
+            currentRoomType = null;
+            document.getElementById('chatActive').style.display = 'none';
+            document.getElementById('chatEmpty').style.display = 'flex';
+            // 채팅방 목록 갱신
+            loadChatRooms();
+        } else {
+            alert('나가기 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(error => {
+        console.error('채팅방 나가기 실패:', error);
+        alert('채팅방 나가기에 실패했습니다.');
+    });
+}
+
+// 채팅방 이름 변경
+function renameRoom(roomId, newName) {
+    const params = new URLSearchParams();
+    params.append('action', 'renameRoom');
+    params.append('roomId', roomId);
+    params.append('newName', newName);
+
+    fetch('ChatServlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    })
+    .then(response => response.text())
+    .then(text => {
+        const data = JSON.parse(text);
+        if (data.success) {
+            hideModal('renameRoomModal');
+            hideModal('chatInfoModal');
+            // 헤더 이름 즉시 업데이트
+            document.getElementById('chatRoomName').textContent = newName;
+            // 채팅방 목록 갱신
+            loadChatRooms();
+        } else {
+            alert('이름 변경 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(error => {
+        console.error('채팅방 이름 변경 실패:', error);
+        alert('채팅방 이름 변경에 실패했습니다.');
+    });
+}
+
 // 채팅방 정보 로드
 function loadRoomInfo(roomId) {
     fetch(`ChatServlet?action=getRoomInfo&roomId=${roomId}`)
-        .then(response => response.json())
-        .then(data => {
+        .then(response => response.text())
+        .then(text => {
+            console.log('[getRoomInfo] 서버 응답:', text);
+            if (!text || text.trim() === '') {
+                alert('서버에서 빈 응답이 왔습니다.');
+                return;
+            }
+            const data = JSON.parse(text);
+            if (!data || !data.room) {
+                alert('채팅방 정보를 불러올 수 없습니다: ' + text);
+                return;
+            }
             displayRoomInfo(data);
             showModal('chatInfoModal');
         })
-        .catch(error => {
-            console.error('채팅방 정보 로드 실패:', error);
-        });
+        .catch(error => console.error('채팅방 정보 로드 실패:', error));
 }
 
 // 채팅방 정보 표시
 function displayRoomInfo(data) {
-    const content = document.getElementById('chatInfoContent');
-    content.innerHTML = `
-        <div style="margin-bottom: 16px;">
-            <strong>채팅방 이름:</strong> ${escapeHtml(data.room.roomName)}
-        </div>
-        <div style="margin-bottom: 16px;">
-            <strong>유형:</strong> ${data.room.roomType === 'team' ? '팀 채팅' : '개인 채팅'}
-        </div>
-        <div style="margin-bottom: 8px;">
-            <strong>참여자 (${data.members.length}명):</strong>
-        </div>
-        <div style="padding-left: 16px;">
-            ${data.members.map(m => `<div style="padding: 4px 0;">${escapeHtml(m)}</div>`).join('')}
-        </div>
-    `;
+    // 이름 입력창에 현재 이름 채우기
+    document.getElementById('infoRoomNameInput').value = data.room.roomName;
+
+    // 유형
+    document.getElementById('infoRoomType').textContent =
+        data.room.roomType === 'team' ? '👥 팀 채팅' : '💬 개인 채팅';
+
+    // 참여자 수
+    document.getElementById('infoMemberCount').textContent = data.members.length + '명';
+
+    // 참여자 목록
+    const list = document.getElementById('infoMemberList');
+    list.innerHTML = data.members.map(m => {
+        const isMe = m.memberId === userId;
+        return `
+            <div class="info-member-item ${isMe ? 'info-member-me' : ''}">
+                <div class="info-member-avatar">${m.name.charAt(0)}</div>
+                <div class="info-member-name">${escapeHtml(m.name)}</div>
+                ${isMe ? '<span class="info-member-badge">나</span>' : ''}
+            </div>
+        `;
+    }).join('');
 }
 
 // 읽음 처리

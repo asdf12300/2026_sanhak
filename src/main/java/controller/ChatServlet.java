@@ -77,6 +77,10 @@ public class ChatServlet extends HttpServlet {
                 createPersonalChat(request, response, user);
             } else if ("markAsRead".equals(action)) {
                 markAsRead(request, response, user);
+            } else if ("leaveRoom".equals(action)) {
+                leaveRoom(request, response, user);
+            } else if ("renameRoom".equals(action)) {
+                renameRoom(request, response, user);
             } else {
                 response.getWriter().write("{\"success\": false, \"message\": \"알 수 없는 action: " + action + "\"}");
             }
@@ -131,28 +135,30 @@ public class ChatServlet extends HttpServlet {
     // 채팅방 정보 조회
     private void getRoomInfo(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
             throws IOException {
-        int roomId = Integer.parseInt(request.getParameter("roomId"));
-
-        // 채팅방 멤버 확인
-        if (!chatDAO.isRoomMember(roomId, user.getId())) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        ChatRoomDTO room = chatDAO.getChatRoom(roomId);
-        List<String> members = chatDAO.getRoomMembers(roomId);
-        
-        final ChatRoomDTO finalRoom = room;
-        final List<String> finalMembers = members;
-        
         response.setContentType("application/json; charset=UTF-8");
-        response.getWriter().write(gson.toJson(new Object() {
-            public ChatRoomDTO room = finalRoom;
-            public List<String> members = finalMembers;
-        }));
-    }
+        try {
+            int roomId = Integer.parseInt(request.getParameter("roomId"));
 
-    // 팀 채팅방 생성
+            if (!chatDAO.isRoomMember(roomId, user.getId())) {
+                response.getWriter().write("{\"success\": false, \"message\": \"권한 없음\"}");
+                return;
+            }
+
+            ChatRoomDTO room = chatDAO.getChatRoom(roomId);
+            List<java.util.Map<String, String>> members = chatDAO.getRoomMembersWithName(roomId);
+
+            // Gson 익명 클래스 직렬화 문제 우회 → Map으로 직접 구성
+            java.util.Map<String, Object> result = new java.util.HashMap<>();
+            result.put("room", room);
+            result.put("members", members);
+
+            response.getWriter().write(gson.toJson(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("{\"success\": false, \"message\": \"" + e.getMessage() + "\"}");
+        }
+    }
+  // 팀 채팅방 생성
     private void createRoom(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
             throws IOException {
 
@@ -277,6 +283,79 @@ public class ChatServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.getWriter().write("{\"success\": false}");
+        }
+    }
+
+    // 채팅방 나가기
+    private void leaveRoom(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
+            throws IOException {
+        response.setContentType("application/json; charset=UTF-8");
+        try {
+            int roomId = Integer.parseInt(request.getParameter("roomId"));
+            // 멤버인지 확인
+            if (!chatDAO.isRoomMember(roomId, user.getId())) {
+                response.getWriter().write("{\"success\": false, \"message\": \"채팅방 멤버가 아닙니다\"}");
+                return;
+            }
+            // chat_room_members에서 제거
+            boolean removed = chatDAO.removeRoomMember(roomId, user.getId());
+            if (removed) {
+                // 시스템 메시지 DB 저장
+                chatDAO.saveSystemMessage(roomId, user.getName() + " 님이 나갔습니다.");
+
+                // 현재 채팅방 접속자에게 실시간 전송
+                /*com.google.gson.JsonObject broadcast = new com.google.gson.JsonObject();
+                broadcast.addProperty("type",    "system");
+                broadcast.addProperty("message", user.getName() + " 님이 나갔습니다.");
+                ChatWebSocket.broadcastToRoom(String.valueOf(roomId), broadcast.toString(), null);*/
+
+                response.getWriter().write("{\"success\": true}");
+            } else {
+                response.getWriter().write("{\"success\": false, \"message\": \"나가기 처리 실패\"}");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("{\"success\": false, \"message\": \"서버 오류: " + e.getMessage() + "\"}");
+        }
+    }
+
+    // 채팅방 이름 변경
+    private void renameRoom(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
+            throws IOException {
+        response.setContentType("application/json; charset=UTF-8");
+        try {
+            int roomId = Integer.parseInt(request.getParameter("roomId"));
+            String newName = request.getParameter("newName");
+            if (newName == null || newName.trim().isEmpty()) {
+                response.getWriter().write("{\"success\": false, \"message\": \"이름을 입력해주세요\"}");
+                return;
+            }
+            // 멤버인지 확인
+            if (!chatDAO.isRoomMember(roomId, user.getId())) {
+                response.getWriter().write("{\"success\": false, \"message\": \"채팅방 멤버가 아닙니다\"}");
+                return;
+            }
+            boolean updated = chatDAO.updateRoomName(roomId, newName.trim());
+
+            if (updated) {
+                // 이름 변경 시스템 메시지 저장
+                chatDAO.saveSystemMessage(roomId,
+                    user.getName() + " 님이 채팅방 이름을 '" + newName.trim() + "'(으)로 변경했습니다.");
+
+                // 현재 접속자에게 실시간 전송 (이름 변경 알림)
+                /*com.google.gson.JsonObject broadcast = new com.google.gson.JsonObject();
+                broadcast.addProperty("type",    "system");
+                broadcast.addProperty("message", user.getName() + " 님이 채팅방 이름을 '" + newName.trim() + "'(으)로 변경했습니다.");
+                broadcast.addProperty("renameRoom", true);
+                broadcast.addProperty("newName", newName.trim());
+                ChatWebSocket.broadcastToRoom(String.valueOf(roomId), broadcast.toString(), null);*/
+                response.getWriter().write("{\"success\": true}");
+            } else {
+                response.getWriter().write("{\"success\": false, \"message\": \"이름 변경 실패\"}");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("{\"success\": false, \"message\": \"서버 오류: " + e.getMessage() + "\"}");
         }
     }
 
