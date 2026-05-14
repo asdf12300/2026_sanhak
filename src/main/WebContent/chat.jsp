@@ -76,6 +76,14 @@
                 </div>
 
                 <div class="chat-input-container">
+                    <input type="file" id="imageFileInput" accept="image/*" style="display:none;">
+                    <button id="imageUploadBtn" class="btn-img-upload" title="이미지 전송">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </button>
                     <textarea id="messageInput" placeholder="메시지를 입력하세요..." rows="1"></textarea>
                     <button id="sendMessageBtn" class="btn-send">전송</button>
                 </div>

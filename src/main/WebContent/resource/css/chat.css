@@ -656,6 +656,37 @@ body {
     justify-content: space-between;
 }
 
+/* 채팅 이미지 */
+.chat-img {
+    max-width: 240px;
+    max-height: 240px;
+    border-radius: 10px;
+    cursor: zoom-in;
+    display: block;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* 이미지 업로드 버튼 */
+.btn-img-upload {
+    flex-shrink: 0;
+    width: 40px;
+    height: 48px;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+}
+.btn-img-upload:hover {
+    color: #2196F3;
+    background: #e3f2fd;
+}
+
 /* 스크롤바 스타일 */
 ::-webkit-scrollbar {
     width: 8px;

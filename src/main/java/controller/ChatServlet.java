@@ -1,25 +1,38 @@
 package controller;
 
 import java.io.IOException;
+import java.nio.file.*;
 import java.util.List;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import com.google.gson.Gson;
 
 import model.*;
 
 @WebServlet("/ChatServlet")
+@MultipartConfig(
+    maxFileSize    = 10 * 1024 * 1024,
+    maxRequestSize = 12 * 1024 * 1024
+)
 public class ChatServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private ChatDAO chatDAO = new ChatDAO();
     private ProjectMemberDAO projectMemberDAO = new ProjectMemberDAO();
     private Gson gson = new Gson();
+
+    private static final String UPLOAD_DIR = "uploads/chat";
+    private String getUploadPath() {
+        return getServletContext().getRealPath("/") + UPLOAD_DIR;
+    }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -81,6 +94,8 @@ public class ChatServlet extends HttpServlet {
                 leaveRoom(request, response, user);
             } else if ("renameRoom".equals(action)) {
                 renameRoom(request, response, user);
+            } else if ("uploadImage".equals(action)) {
+                uploadImage(request, response, user);
             } else {
                 response.getWriter().write("{\"success\": false, \"message\": \"알 수 없는 action: " + action + "\"}");
             }
@@ -362,5 +377,43 @@ public class ChatServlet extends HttpServlet {
     // 프로젝트 멤버 확인
     private boolean isProjectMember(int projectId, String memberId) {
         return projectMemberDAO.isActiveMember(projectId, memberId);
+    }
+
+    // 채팅 이미지 업로드
+    private void uploadImage(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
+            throws IOException, ServletException {
+        response.setContentType("application/json; charset=UTF-8");
+        try {
+            Part filePart = request.getPart("image");
+            if (filePart == null || filePart.getSize() == 0) {
+                response.getWriter().write("{\"success\": false, \"message\": \"파일이 없습니다\"}");
+                return;
+            }
+
+            // 이미지 확장자 검증
+            String originalName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+            String ext = originalName.contains(".")
+                ? originalName.substring(originalName.lastIndexOf('.')).toLowerCase() : "";
+            if (!ext.equals(".jpg") && !ext.equals(".jpeg") && !ext.equals(".png")
+                    && !ext.equals(".gif") && !ext.equals(".webp")) {
+                response.getWriter().write("{\"success\": false, \"message\": \"이미지 파일만 업로드 가능합니다\"}");
+                return;
+            }
+
+            String savedName = UUID.randomUUID().toString() + ext;
+            java.io.File uploadDir = new java.io.File(getUploadPath());
+            if (!uploadDir.exists()) uploadDir.mkdirs();
+
+            java.io.File dest = new java.io.File(uploadDir, savedName);
+            filePart.write(dest.getAbsolutePath());
+
+            // 접근 가능한 URL 반환
+            String imageUrl = request.getContextPath() + "/uploads/chat/" + savedName;
+            response.getWriter().write("{\"success\": true, \"imageUrl\": \"" + imageUrl + "\"}");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("{\"success\": false, \"message\": \"업로드 실패: " + e.getMessage() + "\"}");
+        }
     }
 }

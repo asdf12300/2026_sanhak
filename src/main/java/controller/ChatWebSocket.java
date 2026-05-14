@@ -43,18 +43,18 @@ public class ChatWebSocket {
             String messageType = jsonMessage.get("type").getAsString();
             String content = jsonMessage.get("message").getAsString();
             String senderName = jsonMessage.has("senderName") ? jsonMessage.get("senderName").getAsString() : userId;
-            
-         // DB 저장
-            //String senderId = userId;
+
+            // DB 저장
             if ("system".equals(messageType)) {
                 chatDAO.saveSystemMessage(Integer.parseInt(roomId), content);
             } else {
-            	chatDAO.saveMessage(new ChatMessageDTO(
-                        Integer.parseInt(roomId), userId, senderName, content, messageType
-                    ));
+                // image 타입도 message 컬럼에 URL 저장, messageType = 'file'
+                String dbType = "image".equals(messageType) ? "file" : messageType;
+                chatDAO.saveMessage(new ChatMessageDTO(
+                    Integer.parseInt(roomId), userId, senderName, content, dbType
+                ));
             }
-            
-            
+
             // 응답 메시지 구성
             JsonObject response = new JsonObject();
             response.addProperty("type", messageType);
@@ -62,10 +62,9 @@ public class ChatWebSocket {
             response.addProperty("senderName", senderName);
             response.addProperty("message", content);
             response.addProperty("timestamp", System.currentTimeMillis());
-            
-            // 같은 채팅방의 모든 사용자에게 브로드캐스트
+
             broadcastToRoom(roomId, response.toString(), null);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             sendError(session, "메시지 처리 중 오류가 발생했습니다.");

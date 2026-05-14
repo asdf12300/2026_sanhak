@@ -87,6 +87,22 @@ function setupEventListeners() {
         }
     });
 
+    // 이미지 업로드 버튼
+    on('imageUploadBtn', 'click', function() {
+        document.getElementById('imageFileInput').click();
+    });
+
+    // 이미지 파일 선택
+    const imageInput = document.getElementById('imageFileInput');
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                uploadAndSendImage(this.files[0]);
+                this.value = '';
+            }
+        });
+    }
+
     // 모달 × 버튼 닫기
     document.querySelectorAll('.modal-close, .btn-secondary').forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -232,7 +248,7 @@ function displayMessages(messages) {
 function createMessageElement(msg) {
     const isMine = msg.senderId === userId;
     const messageClass = msg.messageType === 'system' ? 'system' : (isMine ? 'mine' : 'other');
-    
+
     if (msg.messageType === 'system') {
         return `
             <div class="message system">
@@ -240,11 +256,19 @@ function createMessageElement(msg) {
             </div>
         `;
     }
-    
+
+    // 이미지 메시지 (type=image 또는 type=file이면서 URL이 이미지 확장자)
+    const isImage = msg.messageType === 'image' ||
+        (msg.messageType === 'file' && /\.(jpg|jpeg|png|gif|webp)$/i.test(msg.message));
+
+    const contentHtml = isImage
+        ? `<img src="${msg.message}" class="chat-img" onclick="openImageViewer('${msg.message}')" alt="이미지">`
+        : `<div class="message-content">${escapeHtml(msg.message)}</div>`;
+
     return `
         <div class="message ${messageClass}">
             ${!isMine ? `<div class="message-sender">${escapeHtml(msg.senderName)}</div>` : ''}
-            <div class="message-content">${escapeHtml(msg.message)}</div>
+            ${contentHtml}
             <div class="message-time">${formatTime(msg.sentAt)}</div>
         </div>
     `;
@@ -606,3 +630,61 @@ window.addEventListener('beforeunload', function() {
         ws.close();
     }
 });
+
+// 이미지 업로드 후 WebSocket으로 전송
+function uploadAndSendImage(file) {
+    if (!currentRoomId || !ws || ws.readyState !== WebSocket.OPEN) {
+        alert('채팅방을 먼저 선택해주세요.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('action', 'uploadImage');
+    formData.append('image', file);
+
+    // 업로드 중 표시
+    const chatMessages = document.getElementById('chatMessages');
+    const loadingId = 'img-loading-' + Date.now();
+    chatMessages.insertAdjacentHTML('beforeend',
+        `<div id="${loadingId}" class="message mine"><div class="message-content" style="color:#999;font-size:12px;">이미지 업로드 중...</div></div>`
+    );
+    scrollToBottom();
+
+    fetch('ChatServlet', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            const el = document.getElementById(loadingId);
+            if (el) el.remove();
+
+            if (data.success) {
+                const messageData = {
+                    type: 'image',
+                    message: data.imageUrl,
+                    senderName: userName
+                };
+                ws.send(JSON.stringify(messageData));
+            } else {
+                alert('이미지 업로드 실패: ' + (data.message || '알 수 없는 오류'));
+            }
+        })
+        .catch(e => {
+            const el = document.getElementById(loadingId);
+            if (el) el.remove();
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+        });
+}
+
+// 이미지 뷰어
+function openImageViewer(src) {
+    let viewer = document.getElementById('chatImageViewer');
+    if (!viewer) {
+        viewer = document.createElement('div');
+        viewer.id = 'chatImageViewer';
+        viewer.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;';
+        viewer.innerHTML = '<img style="max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);">';
+        viewer.addEventListener('click', function() { this.style.display = 'none'; });
+        document.body.appendChild(viewer);
+    }
+    viewer.querySelector('img').src = src;
+    viewer.style.display = 'flex';
+}
