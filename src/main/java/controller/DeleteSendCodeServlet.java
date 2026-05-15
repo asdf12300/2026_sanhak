@@ -39,6 +39,7 @@ public class DeleteSendCodeServlet extends HttpServlet {
         }
 
         String userId = loginUser.getId();
+        String mode = request.getParameter("mode");
 
         try {
             Connection conn = DBConnection.getConnection();
@@ -59,7 +60,7 @@ public class DeleteSendCodeServlet extends HttpServlet {
             session.setAttribute("deleteEmailCodeTime",
                     System.currentTimeMillis());
 
-            sendMail(email, code);
+            sendMail(email, code, mode);
 
             conn.close();
 
@@ -71,7 +72,7 @@ public class DeleteSendCodeServlet extends HttpServlet {
         }
     }
 
-    private void sendMail(String toEmail, String code) throws Exception {
+    private void sendMail(String toEmail, String code, String mode) throws Exception {
 
         Properties secretProp = new Properties();
 
@@ -116,11 +117,28 @@ public class DeleteSendCodeServlet extends HttpServlet {
         if (toEmail == null || toEmail.trim().isEmpty()) {
             throw new RuntimeException("DB에 저장된 사용자 이메일이 없습니다.");
         }
-        message.setSubject("[ProjectOS] 계정 탈퇴 인증번호");
-        message.setText(
-            "계정 탈퇴 인증번호는 [" + code + "] 입니다.\n\n"
-            + "본인이 요청하지 않았다면 무시해주세요."
-        );
+        String subject;
+        String content;
+
+        if ("settings".equals(mode)) {
+
+            subject = "[ProjectOS] 설정 변경 인증번호";
+
+            content =
+                "설정 변경 인증번호는 [" + code + "] 입니다.\n\n"
+                + "본인이 요청하지 않았다면 무시해주세요.";
+
+        } else {
+
+            subject = "[ProjectOS] 계정 탈퇴 인증번호";
+
+            content =
+                "계정 탈퇴 인증번호는 [" + code + "] 입니다.\n\n"
+                + "본인이 요청하지 않았다면 무시해주세요.";
+        }
+
+        message.setSubject(subject);
+        message.setText(content);
 
         Transport.send(message);
     }
