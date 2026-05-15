@@ -1,21 +1,6 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS chat_messages;
-DROP TABLE IF EXISTS chat_room_members;
-DROP TABLE IF EXISTS chat_rooms;
-DROP TABLE IF EXISTS feedback_comment;
-DROP TABLE IF EXISTS feedback;
-DROP TABLE IF EXISTS meeting_minutes_history;
-DROP TABLE IF EXISTS meeting_minutes;
-DROP TABLE IF EXISTS calendar;
-DROP TABLE IF EXISTS task;
-DROP TABLE IF EXISTS project_member;
-DROP TABLE IF EXISTS board;
-DROP TABLE IF EXISTS folder;
-DROP TABLE IF EXISTS member;
-
-SET FOREIGN_KEY_CHECKS = 1
-
+select * from member;
 
 create table member(
 name varchar(20) NOT NULL,
@@ -24,130 +9,6 @@ pw varchar(20) NOT NULL,
 email varchar(30) NOT NULL,
 role varchar(20) NOT NULL
 )
--- 1. 외래키 제약 모두 제거
-ALTER TABLE project_member DROP FOREIGN KEY project_member_ibfk_2;
-ALTER TABLE task DROP FOREIGN KEY task_ibfk_2;
-ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_2;
-ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_3;
-ALTER TABLE meeting_minutes_history DROP FOREIGN KEY meeting_minutes_history_ibfk_2;
-ALTER TABLE feedback DROP FOREIGN KEY feedback_ibfk_2;
-ALTER TABLE feedback_comment DROP FOREIGN KEY feedback_comment_ibfk_2;
-ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
-
--- 2. member PRIMARY KEY 변경
-ALTER TABLE member DROP PRIMARY KEY;
-ALTER TABLE member ADD PRIMARY KEY (id);
-ALTER TABLE member MODIFY id VARCHAR(20) NULL;
-ALTER TABLE member MODIFY pw VARCHAR(20) NULL;
-
--- 2-2. 참조하는 테이블 데이터 전부 초기화
-DELETE FROM feedback_comment;
-DELETE FROM feedback;
-DELETE FROM meeting_minutes_history;
-DELETE FROM meeting_minutes;
-DELETE FROM calendar;
-DELETE FROM task;
-DELETE FROM project_member;
-DELETE FROM folder;
-DELETE FROM board;
-DELETE FROM member;
-
--- 3. 참조 컬럼을 email 기준으로 변경 후 외래키 재연결
-ALTER TABLE project_member MODIFY member_id VARCHAR(30);
-ALTER TABLE project_member ADD FOREIGN KEY (member_id) REFERENCES member(email) ON DELETE CASCADE;
-
-ALTER TABLE task MODIFY assignee VARCHAR(30);
-ALTER TABLE task ADD FOREIGN KEY (assignee) REFERENCES member(email) ON DELETE SET NULL;
-
-ALTER TABLE meeting_minutes MODIFY created_by VARCHAR(30);
-ALTER TABLE meeting_minutes MODIFY last_modified_by VARCHAR(30);
-ALTER TABLE meeting_minutes ADD FOREIGN KEY (created_by) REFERENCES member(email) ON DELETE RESTRICT;
-ALTER TABLE meeting_minutes ADD FOREIGN KEY (last_modified_by) REFERENCES member(email) ON DELETE SET NULL;
-
-ALTER TABLE meeting_minutes_history MODIFY modified_by VARCHAR(30);
-ALTER TABLE meeting_minutes_history ADD FOREIGN KEY (modified_by) REFERENCES member(email) ON DELETE RESTRICT;
-
-ALTER TABLE feedback MODIFY author_id VARCHAR(30);
-ALTER TABLE feedback ADD FOREIGN KEY (author_id) REFERENCES member(email) ON DELETE CASCADE;
-
-ALTER TABLE feedback_comment MODIFY author_id VARCHAR(30);
-ALTER TABLE feedback_comment ADD FOREIGN KEY (author_id) REFERENCES member(email) ON DELETE CASCADE;
-
-ALTER TABLE folder MODIFY owner_id VARCHAR(30);
-ALTER TABLE folder ADD FOREIGN KEY (owner_id) REFERENCES member(email) ON DELETE CASCADE;
-
--- 1. member 기본키 확인 (email이 PRI여야 함)
-DESC member;
-
--- 2. 외래키 연결 확인
-SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_COLUMN_NAME
-FROM information_schema.KEY_COLUMN_USAGE
-WHERE REFERENCED_TABLE_NAME = 'member'
-AND TABLE_SCHEMA = 'sanhak';
-
---1. 각 테이블의 실제 외래키 이름 먼저 확인
-SHOW CREATE TABLE project_member;
-SHOW CREATE TABLE task;
-SHOW CREATE TABLE meeting_minutes;
-SHOW CREATE TABLE meeting_minutes_history;
-SHOW CREATE TABLE feedback;
-SHOW CREATE TABLE feedback_comment;
-SHOW CREATE TABLE folder;
-
-
-ALTER TABLE project_member DROP FOREIGN KEY project_member_ibfk_2;
-ALTER TABLE task DROP FOREIGN KEY task_ibfk_2;
-ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_2;
-ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_3;
-ALTER TABLE meeting_minutes_history DROP FOREIGN KEY meeting_minutes_history_ibfk_2;
-ALTER TABLE feedback DROP FOREIGN KEY feedback_ibfk_2;
-ALTER TABLE feedback_comment DROP FOREIGN KEY feedback_comment_ibfk_2;
-ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
-
--- 3. 데이터 초기화
-DELETE FROM feedback_comment;
-DELETE FROM feedback;
-DELETE FROM meeting_minutes_history;
-DELETE FROM meeting_minutes;
-DELETE FROM calendar;
-DELETE FROM task;
-DELETE FROM project_member;
-DELETE FROM folder;
-DELETE FROM board;
-DELETE FROM member;
-
--- 4. member PK를 id로 복원
-ALTER TABLE member DROP PRIMARY KEY;
-ALTER TABLE member MODIFY id VARCHAR(20) NOT NULL;
-ALTER TABLE member MODIFY pw VARCHAR(20) NOT NULL;
-ALTER TABLE member ADD PRIMARY KEY (id);
-
--- 5. 참조 컬럼 복원 및 외래키 재연결
-ALTER TABLE project_member MODIFY member_id VARCHAR(20);
-ALTER TABLE project_member ADD CONSTRAINT fk_pm_member FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
-
-ALTER TABLE task MODIFY assignee VARCHAR(20);
-ALTER TABLE task ADD CONSTRAINT fk_task_assignee FOREIGN KEY (assignee) REFERENCES member(id) ON DELETE SET NULL;
-
-ALTER TABLE meeting_minutes MODIFY created_by VARCHAR(20);
-ALTER TABLE meeting_minutes MODIFY last_modified_by VARCHAR(20);
-ALTER TABLE meeting_minutes ADD CONSTRAINT fk_mm_created_by FOREIGN KEY (created_by) REFERENCES member(id) ON DELETE RESTRICT;
-ALTER TABLE meeting_minutes ADD CONSTRAINT fk_mm_modified_by FOREIGN KEY (last_modified_by) REFERENCES member(id) ON DELETE SET NULL;
-
-ALTER TABLE meeting_minutes_history MODIFY modified_by VARCHAR(20);
-ALTER TABLE meeting_minutes_history ADD CONSTRAINT fk_mmh_modified_by FOREIGN KEY (modified_by) REFERENCES member(id) ON DELETE RESTRICT;
-
-ALTER TABLE feedback MODIFY author_id VARCHAR(20);
-ALTER TABLE feedback ADD CONSTRAINT fk_feedback_author FOREIGN KEY (author_id) REFERENCES member(id) ON DELETE CASCADE;
-
-ALTER TABLE feedback_comment MODIFY author_id VARCHAR(20);
-ALTER TABLE feedback_comment ADD CONSTRAINT fk_fc_author FOREIGN KEY (author_id) REFERENCES member(id) ON DELETE CASCADE;
-
-ALTER TABLE folder MODIFY owner_id VARCHAR(20);
-ALTER TABLE folder ADD CONSTRAINT fk_folder_owner FOREIGN KEY (owner_id) REFERENCES member(id) ON DELETE CASCADE;
-
-
-DESC member;
 
 CREATE TABLE board (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -375,3 +236,5 @@ CREATE TABLE file_share (
 );
 
 CREATE INDEX idx_file_share_project ON file_share(project_id);
+INSERT INTO member (name, id, pw, email, role) VALUES ('테스트', 'test', '1234', 'test@test.com', 'student');
+INSERT INTO member (name, id, pw, email, role) VALUES ('교수', 'pf', '1234', 'test@test.com', 'professor');

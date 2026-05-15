@@ -111,8 +111,13 @@ public class ChatServlet extends HttpServlet {
             return;
         }
 
-        List<ChatMessageDTO> messages = chatDAO.getMessages(roomId, limit, offset);
-        
+        List<ChatMessageDTO> messages;
+        if ("recent".equals(request.getParameter("type"))) {
+            messages = chatDAO.getRecentMessages(roomId, limit); // ← 추가
+        } else {
+            messages = chatDAO.getMessages(roomId, limit, offset);
+        }
+
         response.setContentType("application/json; charset=UTF-8");
         response.getWriter().write(gson.toJson(messages));
     }

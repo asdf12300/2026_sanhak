@@ -2,6 +2,9 @@
 <%@ page import="model.*" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.sql.Connection" %>
+<%@ page import="model.FileShareDTO" %>
+<%@ page import="model.FileShareDAO" %>
+
 <%
 String selectedProjectId = request.getParameter("projectId");
 if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".equals(selectedProjectId)) {
@@ -320,16 +323,9 @@ if (currentProject != null) {
     </div>
     
     <div class="card c4">
-      <div class="card-hd"><div class="card-t">나의 할 일</div><span class="badge b-or" id="todo-cnt">3개 남음</span></div>
-      <div class="todo-add">
-        <input class="todo-inp" id="todo-input" placeholder="새 할 일 입력 후 Enter...">
-        <button class="btn btn-p" onclick="addTodo()" style="padding:8px 14px;font-size:16px;line-height:1">+</button>
-      </div>
+      <div class="card-hd"><div class="card-t">나의 할 일</div><span class="badge b-or" id="todo-cnt"></span></div>
       <div class="todo-list" id="todo-list">
-        <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-chk"></div><div class="todo-txt">index.jsp 대시보드 완성</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
-        <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-chk"></div><div class="todo-txt">클라이언트 발표 자료 준비</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
-        <div class="todo-item done" onclick="toggleTodo(this)"><div class="todo-chk">✓</div><div class="todo-txt">스프린트 회고 문서 작성</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
-        <div class="todo-item" onclick="toggleTodo(this)"><div class="todo-chk"></div><div class="todo-txt">API 문서 업데이트</div><div class="todo-del" onclick="delTodo(event,this)">×</div></div>
+
       </div>
     </div>
      <div class="card c4">
@@ -577,14 +573,6 @@ function escHtml(s){ if(!s)return''; return s.replace(/&/g,'&').replace(/</g,'<'
 
 function toggleTodo(el){ el.classList.toggle('done'); el.querySelector('.todo-chk').textContent=el.classList.contains('done')?'✓':''; updateTodoCount(); }
 function delTodo(e,btn){ e.stopPropagation(); btn.closest('.todo-item').remove(); updateTodoCount(); }
-function addTodo(){
-  var inp=document.getElementById('todo-input'), val=inp.value.trim();
-  if(!val)return;
-  var item=document.createElement('div'); item.className='todo-item'; item.onclick=function(){ toggleTodo(this); };
-  item.innerHTML='<div class="todo-chk"></div><div class="todo-txt">'+val+'</div><div class="todo-del" onclick="delTodo(event,this)">×</div>';
-  document.getElementById('todo-list').appendChild(item); inp.value=''; updateTodoCount();
-}
-document.getElementById('todo-input').addEventListener('keydown',function(e){ if(e.key==='Enter')addTodo(); });
 function updateTodoCount(){
   var all=document.querySelectorAll('#todo-list .todo-item').length;
   var done=document.querySelectorAll('#todo-list .todo-item.done').length;
@@ -603,8 +591,62 @@ function sendChat(){
 var chatInput=document.getElementById('chat-input');
 if(chatInput) chatInput.addEventListener('keydown',function(e){ if(e.key==='Enter')sendChat(); });
 
+function loadMyTasks() {
+    fetch('taskApi?type=mine')
+        .then(r => r.json())
+        .then(tasks => {
+            const list = document.getElementById('todo-list');
+            list.innerHTML = '';
+            tasks.forEach(t => {
+                const done = t.status === 'Done';
+                const item = document.createElement('div');
+                item.className = 'todo-item' + (done ? ' done' : '');
+                item.dataset.id = t.id;
+                item.innerHTML = '<div class="todo-txt">'+t.title+'</div>';
+                list.appendChild(item);
+            });
+            updateTodoCount();
+        });
+}
+
+function loadRecentChat() {
+    if (!DASH_PROJECT_ID) return;
+    // 1. 팀 채팅방 목록 조회
+    fetch('ChatServlet?action=getRooms&projectId=' + DASH_PROJECT_ID)
+        .then(r => r.json())
+        .then(rooms => {
+            // team 타입 중 첫 번째 방
+            var teamRoom = rooms.find(function(r){ return r.roomType === 'team'; });
+            if (!teamRoom) return;
+            // 2. 메시지 5개 조회
+            return fetch('ChatServlet?action=getMessages&roomId=' + teamRoom.roomId + '&limit=5&type=recent');
+        })
+        .then(r => r && r.json())
+        .then(messages => {
+            if (!messages) return;
+            var box = document.getElementById('chat-messages');
+            box.innerHTML = '';
+            messages.forEach(function(m) {
+                var isMe = m.senderId === '<%= userId %>';
+                var div = document.createElement('div');
+                div.className = 'chat-msg' + (isMe ? ' me' : '');
+                var initials = m.senderName ? m.senderName.substring(0,2) : '??';
+                var color = isMe ? 'var(--blue)' : 'var(--teal)';
+                var time = m.sentAt ? m.sentAt.substring(11,16) : '';
+                div.innerHTML = '<div class="chat-av" style="background:'+color+'">'+initials+'</div>'
+                    +'<div class="chat-in"><div class="chat-nm">'+m.senderName+' · '+time+'</div>'
+                    +'<div class="chat-bbl">'+m.message+'</div></div>';
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
+        })
+        .catch(function(){});
+}
+
 dashLoadEvents();
 loadKanban();
+loadMyTasks();
+loadRecentChat();
 </script>
 <script>
 function toggleAlarm() {

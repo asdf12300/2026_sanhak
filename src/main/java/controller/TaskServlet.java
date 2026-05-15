@@ -4,17 +4,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import model.TaskDAO;
-import model.TaskDTO;
 import model.CalendarDAO;
 import model.DBConnection;
+import model.TaskDAO;
+import model.TaskDTO;
 
 @WebServlet("/taskApi")
 public class TaskServlet extends HttpServlet {
@@ -40,6 +45,42 @@ public class TaskServlet extends HttpServlet {
         int projectId = 0;
         try { projectId = Integer.parseInt(req.getParameter("projectId")); } catch (Exception e) {}
 
+        if ("mine".equals(req.getParameter("type"))) {
+            HttpSession session = req.getSession(false);
+            String userId = null;
+            if (session != null) {
+                model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
+                if (loginUser != null) userId = loginUser.getId();
+            }
+            if (userId == null) { out.print("[]"); return; }
+
+            try (Connection conn = DBConnection.getConnection()) {
+                String sql = "SELECT id, project_id, title, status FROM task WHERE assignee = ?";
+                StringBuilder json = new StringBuilder("[");
+                boolean first = true;
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, userId);
+                    ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        if (!first) json.append(",");
+                        first = false;
+                        json.append("{")
+                            .append("\"id\":").append(rs.getInt("id")).append(",")
+                            .append("\"projectId\":").append(rs.getInt("project_id")).append(",")
+                            .append("\"title\":\"").append(esc(rs.getString("title"))).append("\",")
+                            .append("\"status\":\"").append(esc(rs.getString("status"))).append("\"")
+                            .append("}");
+                    }
+                }
+                json.append("]");
+                out.print(json.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+                out.print("[]");
+            }
+            return;
+        }
+        
         // 팀원 목록 요청
         if ("members".equals(req.getParameter("type"))) {
             try (Connection conn = DBConnection.getConnection()) {

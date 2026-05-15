@@ -1,15 +1,20 @@
 package controller;
 
-import model.ProjectDAO;
-import model.ProjectDTO;
-import model.ProjectMemberDAO;
-import model.LoginDTO;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
-import java.io.IOException;
-import java.net.URLEncoder;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import model.LoginDTO;
+import model.ProjectDAO;
+import model.ProjectDTO;
+import model.ProjectMemberDAO;
+import model.ProjectMemberDTO;
 
 @WebServlet("/projectMember")
 public class ProjectMemberServlet extends HttpServlet {
@@ -27,7 +32,7 @@ public class ProjectMemberServlet extends HttpServlet {
             String projectIdStr = req.getParameter("projectId");
             if (projectIdStr != null) {
                 int projectId = Integer.parseInt(projectIdStr);
-                var members = dao.getMembersByProject(projectId);
+                List<ProjectMemberDTO> members = dao.getMembersByProject(projectId);
                 
                 resp.setContentType("application/json; charset=UTF-8");
                 

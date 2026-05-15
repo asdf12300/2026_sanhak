@@ -146,17 +146,40 @@ public class ChatDAO {
     }
     
     // 채팅 메시지 조회 (페이징)
+    public List<ChatMessageDTO> getRecentMessages(int roomId, int limit) {
+        List<ChatMessageDTO> messages = new ArrayList<>();
+        String sql = "SELECT * FROM (SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at DESC LIMIT ?) tmp ORDER BY sent_at ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            pstmt.setInt(2, limit);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                ChatMessageDTO message = new ChatMessageDTO();
+                message.setMessageId(rs.getInt("message_id"));
+                message.setRoomId(rs.getInt("room_id"));
+                message.setSenderId(rs.getString("sender_id"));
+                message.setSenderName(rs.getString("sender_name"));
+                message.setMessage(rs.getString("message"));
+                message.setMessageType(rs.getString("message_type"));
+                message.setSentAt(rs.getTimestamp("sent_at"));
+                messages.add(message);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messages;
+    }
+    
+ // 채팅 메시지 조회 (페이징)
     public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
         List<ChatMessageDTO> messages = new ArrayList<>();
         String sql = "SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at ASC LIMIT ? OFFSET ?";
-        
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
             pstmt.setInt(1, roomId);
             pstmt.setInt(2, limit);
             pstmt.setInt(3, offset);
-            
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 ChatMessageDTO message = new ChatMessageDTO();
