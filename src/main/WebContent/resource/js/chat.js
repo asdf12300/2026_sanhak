@@ -374,11 +374,12 @@ function connectWebSocket(roomId) {
 
 // 메시지 추가
 function appendMessage(message) {
-	// WebSocket 메시지는 'type' 필드, DB 메시지는 'messageType' 필드 → 통일
-	if (!message.messageType && message.type) {
-	    message.messageType = message.type;
-	}
-		
+
+    // WebSocket 메시지는 'type' 필드, DB 메시지는 'messageType' 필드 → 통일
+    if (!message.messageType && message.type) {
+        message.messageType = message.type;
+    }
+
     const chatMessages = document.getElementById('chatMessages');
     const messageElement = createMessageElement(message);
     chatMessages.insertAdjacentHTML('beforeend', messageElement);
