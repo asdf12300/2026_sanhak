@@ -148,16 +148,15 @@ String activeChat = path.contains("chat.jsp") ? "active" : "";
     </a>
   </div>
   <div class="nav-sec">
-  <div class="nav-label">설정</div>
-  <a href="<%=request.getContextPath()%>/settings/check" class="nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>
-    </svg>
-    설정 변경
+  <div class="nav-label">추천 외부 사이트</div>
+  <a href="https://stackoverflow.com/" 
+   class="nav-item"
+   target="_blank"
+   rel="noopener noreferrer">
+    <span>💻</span>
+    <span>코드 리뷰</span>
   </a>
-
-</div>
+  </div>
   
   <div class="sidebar-bot">
     <div class="av-row">

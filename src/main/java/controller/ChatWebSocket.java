@@ -18,25 +18,22 @@ import model.ChatMessageDTO;
 public class ChatWebSocket {
     
     private static Map<String, Session> sessions = new ConcurrentHashMap<>();
-    private static Map<String, String> userRooms = new ConcurrentHashMap<>();
+    //private static Map<String, String> userRooms = new ConcurrentHashMap<>();
     private static Gson gson = new Gson();
     private ChatDAO chatDAO = new ChatDAO();
     
     @OnOpen
     public void onOpen(Session session, @PathParam("roomId") String roomId, @PathParam("userId") String userId) {
-        String sessionKey = roomId + "_" + userId;
-        sessions.put(sessionKey, session);
-        userRooms.put(session.getId(), roomId);
-        
-        System.out.println("WebSocket 연결: 사용자 " + userId + " -> 채팅방 " + roomId);
+    	sessions.put(roomId + "_" + userId, session);
+		System.out.println("WebSocket 연결: 사용자 " + userId + " -> 채팅방 " + roomId);
         
         // 입장 알림
-        JsonObject joinMessage = new JsonObject();
+        /*JsonObject joinMessage = new JsonObject();
         joinMessage.addProperty("type", "system");
         joinMessage.addProperty("message", userId + "님이 입장했습니다.");
         joinMessage.addProperty("roomId", roomId);
         
-        broadcastToRoom(roomId, joinMessage.toString(), null);
+        broadcastToRoom(roomId, joinMessage.toString(), null);*/
     }
     
     @OnMessage
@@ -46,17 +43,18 @@ public class ChatWebSocket {
             String messageType = jsonMessage.get("type").getAsString();
             String content = jsonMessage.get("message").getAsString();
             String senderName = jsonMessage.has("senderName") ? jsonMessage.get("senderName").getAsString() : userId;
-            
-            // 메시지 DB 저장
-            ChatMessageDTO chatMessage = new ChatMessageDTO(
-                Integer.parseInt(roomId),
-                userId,
-                senderName,
-                content,
-                messageType
-            );
-            chatDAO.saveMessage(chatMessage);
-            
+
+            // DB 저장
+            if ("system".equals(messageType)) {
+                chatDAO.saveSystemMessage(Integer.parseInt(roomId), content);
+            } else {
+                // image 타입도 message 컬럼에 URL 저장, messageType = 'file'
+                String dbType = "image".equals(messageType) ? "file" : messageType;
+                chatDAO.saveMessage(new ChatMessageDTO(
+                    Integer.parseInt(roomId), userId, senderName, content, dbType
+                ));
+            }
+
             // 응답 메시지 구성
             JsonObject response = new JsonObject();
             response.addProperty("type", messageType);
@@ -64,10 +62,9 @@ public class ChatWebSocket {
             response.addProperty("senderName", senderName);
             response.addProperty("message", content);
             response.addProperty("timestamp", System.currentTimeMillis());
-            
-            // 같은 채팅방의 모든 사용자에게 브로드캐스트
+
             broadcastToRoom(roomId, response.toString(), null);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             sendError(session, "메시지 처리 중 오류가 발생했습니다.");
@@ -76,19 +73,16 @@ public class ChatWebSocket {
     
     @OnClose
     public void onClose(Session session, @PathParam("roomId") String roomId, @PathParam("userId") String userId) {
-        String sessionKey = roomId + "_" + userId;
-        sessions.remove(sessionKey);
-        userRooms.remove(session.getId());
-        
+    	sessions.remove(roomId + "_" + userId);
         System.out.println("WebSocket 연결 종료: 사용자 " + userId + " <- 채팅방 " + roomId);
         
         // 퇴장 알림
-        JsonObject leaveMessage = new JsonObject();
+        /*JsonObject leaveMessage = new JsonObject();
         leaveMessage.addProperty("type", "system");
         leaveMessage.addProperty("message", userId + "님이 퇴장했습니다.");
         leaveMessage.addProperty("roomId", roomId);
         
-        broadcastToRoom(roomId, leaveMessage.toString(), null);
+        broadcastToRoom(roomId, leaveMessage.toString(), null);*/
     }
     
     @OnError
@@ -98,11 +92,11 @@ public class ChatWebSocket {
     }
     
     // 특정 채팅방의 모든 사용자에게 메시지 전송
-    private void broadcastToRoom(String roomId, String message, String excludeUserId) {
+    public static void broadcastToRoom(String roomId, String message, String excludeUserId) {
         sessions.forEach((key, session) -> {
             if (key.startsWith(roomId + "_")) {
-                String userId = key.substring(roomId.length() + 1);
-                if (excludeUserId == null || !userId.equals(excludeUserId)) {
+            	String uid = key.substring(roomId.length() + 1);
+                if (excludeUserId == null || !uid.equals(excludeUserId)) {
                     try {
                         if (session.isOpen()) {
                             session.getBasicRemote().sendText(message);

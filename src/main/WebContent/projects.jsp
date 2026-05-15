@@ -24,6 +24,7 @@
   
   String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
 %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -621,7 +622,29 @@
 .edit-modal-actions { display:flex; gap:8px; justify-content:flex-end; }
 .edit-btn-save { background:var(--blue); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
 .edit-btn-cancel { background:var(--surface2); color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:13px; cursor:pointer; }
-  
+.settings-float-btn{
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+
+    background: #2F6FED;
+    color: white;
+    padding: 14px 20px;
+
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: bold;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: 0.2s;
+    z-index: 999;
+}
+
+.settings-float-btn:hover{
+    background: #1f57d6;
+    transform: translateY(-2px);
+}
 </style>
 </head>
 <body style="background: var(--bg);">
@@ -873,7 +896,10 @@
     </div>
   </div>
 </div>
-
+<!-- 설정 버튼 -->
+<a href="<%=request.getContextPath()%>/settings/check" class="settings-float-btn">
+    ⚙ 설정변경
+</a>
 <script>
 function openEditModal(id, title, content, deadline) {
 	  document.getElementById('editProjectId').value = id;

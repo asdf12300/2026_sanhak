@@ -2,7 +2,7 @@ function joinCheck() {
     const name = document.getElementById('name').value.trim();
     const id = document.getElementById('id').value.trim();
     const pw = document.getElementById('pw').value.trim();
-    const pw_check = document.getElementById('pw_check').value.trim();
+    const pwCheck = document.getElementById('pw_check').value.trim();
     const email = document.getElementById('email').value.trim();
     const role = document.querySelector('input[name="role"]:checked');
 
@@ -11,8 +11,8 @@ function joinCheck() {
         return false;
     }
 
-    if (id.length < 5 || id.length > 12) {
-        alert("아이디는 5~12자 사이로 입력해주세요.");
+    if (id.length < 5 || id.length > 80) {
+        alert("아이디를 확인해주세요.");
         return false;
     }
 
@@ -21,7 +21,7 @@ function joinCheck() {
         return false;
     }
 
-    if (pw !== pw_check) {
+    if (pw !== pwCheck) {
         alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         return false;
     }
@@ -32,10 +32,9 @@ function joinCheck() {
     }
 
     if (!role) {
-        alert("역할을 선택해주세요.");
+        alert("사용자 유형을 선택해주세요.");
         return false;
     }
 
-    // 모든 검증 통과
     return true;
 }

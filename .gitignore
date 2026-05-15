@@ -1,45 +1,46 @@
-# 개인 데이터베이스 설정 파일 (example 파일은 제외)
+# 개인파일
 **/db.properties
+**/secret.properties
+**/config.properties
 **/context.xml
 **/DBConnection.java
+**/web.xml
+
+# example파일
 !**/db.properties.example
+!**/secret.properties.example
+!**/config.properties.example
 !**/context.xml.example
 !**/DBConnection.java.example
+
+# 이클립스 빌드
 bin/
-*.jar
-**/config.properties
-**/secret.properties
-
-# Kiro 개인 작업 공간
-.kiro/
-
-# 빌드 결과물
+build/
+target/
+*.class
+*.war
 ROOT.war
-/build
-/target
+ProjectOS.war
 
-# Eclipse 설정
+# src/main/WebContent/WEB-INF/lib/ 안에 있는 jar 파일은 제외 했습니다. 
+*.jar
+!src/main/WebContent/WEB-INF/lib/*.jar
+
+# 이클립스 설정
 .classpath
 .project
 .settings/
 
-# IntelliJ IDEA 설정
+# 기타 파일
 .idea/
 *.iml
 *.iws
-
-# 컴파일된 클래스 파일
-*.class
-
-# 로그 파일
+.kiro/
+.codex-*/
 *.log
-
-# OS 파일
-.DS_Store
-Thumbs.db
-
-# 임시 파일
 *.tmp
 *.bak
 *.swp
 *~
+.DS_Store
+Thumbs.db

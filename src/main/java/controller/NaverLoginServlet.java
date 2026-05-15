@@ -141,15 +141,20 @@ public class NaverLoginServlet extends HttpServlet {
             ========================= */
             Class.forName("com.mysql.cj.jdbc.Driver");
             dbConn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/sanhak?serverTimezone=Asia/Seoul&characterEncoding=UTF-8",
+                    "jdbc:mysql://localhost:3306/test2026?serverTimezone=Asia/Seoul&characterEncoding=UTF-8",
                     "root",
-                    "Sohui0407!"
+                    "lost5595@"
                     //"1234"
             );
 
-            String sql = "SELECT * FROM member WHERE email = ?";
+            String extractedId = email.split("@")[0];
+
+            String sql = "SELECT * FROM member WHERE email = ? OR id = ?";
             pstmt = dbConn.prepareStatement(sql);
             pstmt.setString(1, email);
+            pstmt.setString(2, extractedId);
+
+            rs = pstmt.executeQuery();
 
             rs = pstmt.executeQuery();
 
@@ -169,7 +174,7 @@ public class NaverLoginServlet extends HttpServlet {
 
             } else {
                 // 신규 회원 INSERT
-                String extractedId = email.split("@")[0];
+                // String extractedId = email.split("@")[0];
                 
                 String insertSql = "INSERT INTO member(id, pw, email, name, role) VALUES (?, ?, ?, ?, ?)";
                 PreparedStatement insertStmt = dbConn.prepareStatement(insertSql);

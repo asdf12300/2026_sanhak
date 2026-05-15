@@ -65,4 +65,23 @@ public class FolderDAO {
             ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); }
     }
+    // 폴더 이름 변경
+    public boolean renameFolder(int folderId, String folderName) {
+
+        String sql = "UPDATE folder SET name = ? WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, folderName);
+            pstmt.setInt(2, folderId);
+
+            return pstmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

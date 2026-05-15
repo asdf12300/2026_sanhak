@@ -3,35 +3,87 @@ let ws = null;
 let currentRoomId = null;
 let currentRoomType = null;
 let rooms = [];
+let messageOffset = 0;
+const messageLimit = 30;
+
+let isLoadingMessages = false;
+let hasMoreMessages = true;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
     loadChatRooms();
-    setupEventListeners();
+
+    try {
+        setupEventListeners();
+        console.log('[chat] 이벤트 리스너 등록 완료');
+    } catch(e) {
+        console.error('[chat] setupEventListeners 오류:', e);
+    }
+
+    // 채팅 스크롤 무한 로딩
+    const chatMessages = document.getElementById('chatMessages');
+
+    chatMessages.addEventListener('scroll', function() {
+        // 스크롤이 맨 위 근처(100px 이내)에 도달하면 이전 메시지 로드
+        if (chatMessages.scrollTop <= 100 && currentRoomId && !isLoadingMessages && hasMoreMessages) {
+            loadMessages(currentRoomId, false);
+        }
+    });
 });
 
 // 이벤트 리스너 설정
 function setupEventListeners() {
+
+    function on(id, event, fn) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener(event, fn);
+        } else {
+            console.warn('[chat] 요소를 찾을 수 없음: #' + id);
+        }
+    }
+
     // 팀 채팅방 만들기
-    document.getElementById('createTeamChatBtn').addEventListener('click', function() {
+    on('createTeamChatBtn', 'click', function() {
         showModal('createTeamChatModal');
     });
 
     // 개인 채팅 시작
-    document.getElementById('createPersonalChatBtn').addEventListener('click', function() {
+    on('createPersonalChatBtn', 'click', function() {
         loadProjectMembers();
         showModal('createPersonalChatModal');
     });
 
     // 채팅방 정보
-    document.getElementById('chatInfoBtn').addEventListener('click', function() {
+    on('chatInfoBtn', 'click', function() {
+        console.log('[chat] 정보 버튼 클릭, currentRoomId=', currentRoomId);
         if (currentRoomId) {
             loadRoomInfo(currentRoomId);
+        } else {
+            alert('채팅방을 먼저 선택해주세요.');
         }
     });
 
+    // 정보 모달 - 이름 변경
+    on('infoConfirmRename', 'click', function() {
+        const newName = document.getElementById('infoRoomNameInput').value.trim();
+        if (!newName) { alert('채팅방 이름을 입력해주세요.'); return; }
+        renameRoom(currentRoomId, newName);
+    });
+
+    // 정보 모달 - 나가기 버튼
+    on('infoLeaveRoom', 'click', function() {
+        hideModal('chatInfoModal');
+        showModal('leaveRoomModal');
+    });
+
+    // 나가기 확인
+    on('confirmLeaveRoom', 'click', function() {
+        leaveRoom(currentRoomId);
+    });
+
     // 팀 채팅방 생성 확인
-    document.getElementById('confirmCreateTeamChat').addEventListener('click', function() {
+    on('confirmCreateTeamChat', 'click', function() {
         const roomName = document.getElementById('teamChatName').value.trim();
         if (roomName) {
             createTeamChatRoom(roomName);
@@ -41,53 +93,59 @@ function setupEventListeners() {
     });
 
     // 메시지 전송
-    document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
-    
+    on('sendMessageBtn', 'click', sendMessage);
+
     // Enter 키로 메시지 전송 (Shift+Enter는 줄바꿈)
-    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+    on('messageInput', 'keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
 
-    // 모달 닫기
-    document.querySelectorAll('.modal-close').forEach(btn => {
+    // 이미지 업로드 버튼
+    on('imageUploadBtn', 'click', function() {
+        document.getElementById('imageFileInput').click();
+    });
+
+    // 이미지 파일 선택
+    const imageInput = document.getElementById('imageFileInput');
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                uploadAndSendImage(this.files[0]);
+                this.value = '';
+            }
+        });
+    }
+
+    // 모달 × 버튼 닫기
+    document.querySelectorAll('.modal-close, .btn-secondary').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const modal = this.closest('.modal');
-            hideModal(modal.id);
+            if (modal) hideModal(modal.id);
         });
     });
-	document.querySelectorAll('.btn-secondary').forEach(btn => {
-	    btn.addEventListener('click', function() {
-	        const modal = this.closest('.modal');
-	        hideModal(modal.id);
-	    });
-	});
 
     // 모달 외부 클릭 시 닫기
-    document.querySelectorAll('.modal').forEach(modal => {
+    document.querySelectorAll('.modal').forEach(function(modal) {
         modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                hideModal(this.id);
-            }
+            if (e.target === this) hideModal(this.id);
         });
     });
 
-    // 팀원 검색
-    document.getElementById('memberSearch').addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const memberItems = document.querySelectorAll('.member-item');
-        memberItems.forEach(item => {
-            const name = item.querySelector('.member-name').textContent.toLowerCase();
-            const id = item.querySelector('.member-id').textContent.toLowerCase();
-            if (name.includes(searchTerm) || id.includes(searchTerm)) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
+    // 팀원 검색 (요소가 있을 때만)
+    const memberSearchEl = document.getElementById('memberSearch');
+    if (memberSearchEl) {
+        memberSearchEl.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.member-item').forEach(function(item) {
+                const name = item.querySelector('.member-name').textContent.toLowerCase();
+                const id   = item.querySelector('.member-id').textContent.toLowerCase();
+                item.style.display = (name.includes(searchTerm) || id.includes(searchTerm)) ? 'block' : 'none';
+            });
         });
-    });
+    }
 }
 
 // 채팅방 목록 로드
@@ -160,8 +218,13 @@ function selectRoom(roomId) {
     typeBadge.textContent = currentRoomType === 'team' ? '팀 채팅' : '개인 채팅';
     typeBadge.className = `room-type-badge ${currentRoomType}`;
 
-    // 메시지 로드
-    loadMessages(roomId);
+	// 메시지 상태 초기화
+	messageOffset = 0;
+	hasMoreMessages = true;
+	isLoadingMessages = false;
+
+	// 메시지 로드
+	loadMessages(roomId, true);
 
     // WebSocket 연결
     connectWebSocket(roomId);
@@ -184,14 +247,59 @@ function selectRoom(roomId) {
 }
 
 // 메시지 로드
-function loadMessages(roomId) {
-    fetch(`ChatServlet?action=getMessages&roomId=${roomId}&limit=50`)
+function loadMessages(roomId, firstLoad = false) {
+
+    if (isLoadingMessages || !hasMoreMessages) return;
+
+    isLoadingMessages = true;
+
+    fetch(
+        `ChatServlet?action=getMessages&roomId=${roomId}&limit=${messageLimit}&offset=${messageOffset}`
+    )
         .then(response => response.json())
         .then(messages => {
-            displayMessages(messages); // ASC 정렬이므로 reverse 불필요
+
+            // 받은 개수가 limit보다 적으면 더 이상 불러올 메시지 없음
+            if (messages.length < messageLimit) {
+                hasMoreMessages = false;
+            }
+
+            // 서버는 DESC(최신순)로 내려주므로 화면 표시용으로 오래된 순 정렬
+            messages.reverse();
+
+            const chatMessages = document.getElementById('chatMessages');
+
+            if (firstLoad) {
+                // 첫 로드: 기존 내용 비우고 append, 맨 아래로 스크롤
+                chatMessages.innerHTML = '';
+                messages.forEach(msg => {
+                    chatMessages.insertAdjacentHTML('beforeend', createMessageElement(msg));
+                });
+                requestAnimationFrame(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
+            } else {
+                // 추가 로드: 현재 스크롤 높이 기억 → prepend → 스크롤 위치 보정
+                const prevHeight = chatMessages.scrollHeight;
+                const prevScrollTop = chatMessages.scrollTop;
+
+                // 오래된 순으로 뒤집었으므로 역순으로 prepend해야 순서 유지
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    chatMessages.insertAdjacentHTML('afterbegin', createMessageElement(messages[i]));
+                }
+
+                // 스크롤 위치 보정: 새로 추가된 높이만큼 아래로 밀기
+                chatMessages.scrollTop = prevScrollTop + (chatMessages.scrollHeight - prevHeight);
+            }
+
+            // offset은 실제로 받은 개수만큼만 증가
+            messageOffset += messages.length;
+
+            isLoadingMessages = false;
         })
         .catch(error => {
             console.error('메시지 로드 실패:', error);
+            isLoadingMessages = false;
         });
 }
 
@@ -206,7 +314,7 @@ function displayMessages(messages) {
 function createMessageElement(msg) {
     const isMine = msg.senderId === userId;
     const messageClass = msg.messageType === 'system' ? 'system' : (isMine ? 'mine' : 'other');
-    
+
     if (msg.messageType === 'system') {
         return `
             <div class="message system">
@@ -214,11 +322,19 @@ function createMessageElement(msg) {
             </div>
         `;
     }
-    
+
+    // 이미지 메시지 (type=image 또는 type=file이면서 URL이 이미지 확장자)
+    const isImage = msg.messageType === 'image' ||
+        (msg.messageType === 'file' && /\.(jpg|jpeg|png|gif|webp)$/i.test(msg.message));
+
+    const contentHtml = isImage
+        ? `<img src="${msg.message}" class="chat-img" onclick="openImageViewer('${msg.message}')" alt="이미지">`
+        : `<div class="message-content">${escapeHtml(msg.message)}</div>`;
+
     return `
         <div class="message ${messageClass}">
             ${!isMine ? `<div class="message-sender">${escapeHtml(msg.senderName)}</div>` : ''}
-            <div class="message-content">${escapeHtml(msg.message)}</div>
+            ${contentHtml}
             <div class="message-time">${formatTime(msg.sentAt)}</div>
         </div>
     `;
@@ -237,6 +353,15 @@ function connectWebSocket(roomId) {
 
     ws.onmessage = function(event) {
         const message = JSON.parse(event.data);
+
+        // 채팅방 이름 변경 알림 처리
+        if (message.type === 'system' && message.renameRoom && message.newName) {
+            document.getElementById('chatRoomName').textContent = message.newName;
+            // rooms 배열도 업데이트
+            const room = rooms.find(r => r.roomId === currentRoomId);
+            if (room) room.roomName = message.newName;
+        }
+
         appendMessage(message);
     };
 
@@ -251,6 +376,11 @@ function connectWebSocket(roomId) {
 
 // 메시지 추가
 function appendMessage(message) {
+	// WebSocket 메시지는 'type' 필드, DB 메시지는 'messageType' 필드 → 통일
+	if (!message.messageType && message.type) {
+	    message.messageType = message.type;
+	}
+		
     const chatMessages = document.getElementById('chatMessages');
     const messageElement = createMessageElement(message);
     chatMessages.insertAdjacentHTML('beforeend', messageElement);
@@ -384,36 +514,185 @@ function startPersonalChat(targetMemberId) {
     });
 }
 
+// 채팅방 나가기
+function leaveRoom(roomId) {
+    const params = new URLSearchParams();
+    params.append('action', 'leaveRoom');
+    params.append('roomId', roomId);
+
+    fetch('ChatServlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    })
+    .then(response => response.text())
+    .then(text => {
+        const data = JSON.parse(text);
+        if (data.success) {
+            hideModal('leaveRoomModal');
+            // WebSocket 연결 종료
+            if (ws) { ws.close(); ws = null; }
+            // 채팅 영역 초기화
+            currentRoomId = null;
+            currentRoomType = null;
+            document.getElementById('chatActive').style.display = 'none';
+            document.getElementById('chatEmpty').style.display = 'flex';
+            // 채팅방 목록 갱신
+            loadChatRooms();
+        } else {
+            alert('나가기 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(error => {
+        console.error('채팅방 나가기 실패:', error);
+        alert('채팅방 나가기에 실패했습니다.');
+    });
+}
+
+// 채팅방 이름 변경
+function renameRoom(roomId, newName) {
+    const params = new URLSearchParams();
+    params.append('action', 'renameRoom');
+    params.append('roomId', roomId);
+    params.append('newName', newName);
+
+    fetch('ChatServlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    })
+    .then(response => response.text())
+    .then(text => {
+        const data = JSON.parse(text);
+        if (data.success) {
+            hideModal('renameRoomModal');
+            hideModal('chatInfoModal');
+            // 헤더 이름 즉시 업데이트
+            document.getElementById('chatRoomName').textContent = newName;
+            // 채팅방 목록 갱신
+            loadChatRooms();
+        } else {
+            alert('이름 변경 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(error => {
+        console.error('채팅방 이름 변경 실패:', error);
+        alert('채팅방 이름 변경에 실패했습니다.');
+    });
+}
+
 // 채팅방 정보 로드
 function loadRoomInfo(roomId) {
     fetch(`ChatServlet?action=getRoomInfo&roomId=${roomId}`)
-        .then(response => response.json())
-        .then(data => {
+        .then(response => response.text())
+        .then(text => {
+            console.log('[getRoomInfo] 서버 응답:', text);
+            if (!text || text.trim() === '') {
+                alert('서버에서 빈 응답이 왔습니다.');
+                return;
+            }
+            const data = JSON.parse(text);
+            if (!data || !data.room) {
+                alert('채팅방 정보를 불러올 수 없습니다: ' + text);
+                return;
+            }
             displayRoomInfo(data);
+            // 초대 가능 멤버도 함께 로드
+            loadInvitableMembers(roomId);
             showModal('chatInfoModal');
         })
-        .catch(error => {
-            console.error('채팅방 정보 로드 실패:', error);
-        });
+        .catch(error => console.error('채팅방 정보 로드 실패:', error));
 }
 
 // 채팅방 정보 표시
 function displayRoomInfo(data) {
-    const content = document.getElementById('chatInfoContent');
-    content.innerHTML = `
-        <div style="margin-bottom: 16px;">
-            <strong>채팅방 이름:</strong> ${escapeHtml(data.room.roomName)}
-        </div>
-        <div style="margin-bottom: 16px;">
-            <strong>유형:</strong> ${data.room.roomType === 'team' ? '팀 채팅' : '개인 채팅'}
-        </div>
-        <div style="margin-bottom: 8px;">
-            <strong>참여자 (${data.members.length}명):</strong>
-        </div>
-        <div style="padding-left: 16px;">
-            ${data.members.map(m => `<div style="padding: 4px 0;">${escapeHtml(m)}</div>`).join('')}
-        </div>
-    `;
+    // 이름 입력창에 현재 이름 채우기
+    document.getElementById('infoRoomNameInput').value = data.room.roomName;
+
+    // 유형
+    document.getElementById('infoRoomType').textContent =
+        data.room.roomType === 'team' ? '👥 팀 채팅' : '💬 개인 채팅';
+
+    // 참여자 수
+    document.getElementById('infoMemberCount').textContent = data.members.length + '명';
+
+    // 참여자 목록
+    const list = document.getElementById('infoMemberList');
+    list.innerHTML = data.members.map(m => {
+        const isMe = m.memberId === userId;
+        return `
+            <div class="info-member-item ${isMe ? 'info-member-me' : ''}">
+                <div class="info-member-avatar">${m.name.charAt(0)}</div>
+                <div class="info-member-name">${escapeHtml(m.name)}</div>
+                ${isMe ? '<span class="info-member-badge">나</span>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// 초대 가능한 멤버 로드
+function loadInvitableMembers(roomId) {
+    const container = document.getElementById('infoInvitableList');
+    container.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+    fetch(`ChatServlet?action=getInvitableMembers&roomId=${roomId}&projectId=${projectId}`)
+        .then(r => r.json())
+        .then(members => {
+            if (members.length === 0) {
+                container.innerHTML = '<div class="loading">초대할 수 있는 멤버가 없습니다.</div>';
+                return;
+            }
+            container.innerHTML = members.map(m => `
+                <div class="info-invitable-item">
+                    <div class="info-member-avatar" style="background:#64748b;">${m.name.charAt(0)}</div>
+                    <div class="info-member-name">${escapeHtml(m.name)}</div>
+                    <button class="btn-invite" onclick="inviteMember(${roomId}, '${escapeHtml(m.memberId)}', '${escapeHtml(m.name)}', this)">
+                        초대
+                    </button>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            container.innerHTML = '<div class="loading">불러오기 실패</div>';
+        });
+}
+
+// 멤버 초대
+function inviteMember(roomId, targetMemberId, targetName, btn) {
+    btn.disabled = true;
+    btn.textContent = '초대 중...';
+
+    const params = new URLSearchParams();
+    params.append('action', 'addMember');
+    params.append('roomId', roomId);
+    params.append('targetMemberId', targetMemberId);
+    params.append('targetName', targetName);
+
+    fetch('ChatServlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // 해당 행을 "초대됨" 상태로 변경
+            const item = btn.closest('.info-invitable-item');
+            btn.textContent = '초대됨';
+            btn.classList.add('btn-invite-done');
+            // 참여자 수 갱신을 위해 정보 다시 로드
+            loadRoomInfo(roomId);
+        } else {
+            btn.disabled = false;
+            btn.textContent = '초대';
+            alert('초대 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = '초대';
+        alert('초대 중 오류가 발생했습니다.');
+    });
 }
 
 // 읽음 처리
@@ -440,7 +719,9 @@ function hideModal(modalId) {
 
 function scrollToBottom() {
     const chatMessages = document.getElementById('chatMessages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    requestAnimationFrame(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
 }
 
 function escapeHtml(text) {
@@ -489,3 +770,61 @@ window.addEventListener('beforeunload', function() {
         ws.close();
     }
 });
+
+// 이미지 업로드 후 WebSocket으로 전송
+function uploadAndSendImage(file) {
+    if (!currentRoomId || !ws || ws.readyState !== WebSocket.OPEN) {
+        alert('채팅방을 먼저 선택해주세요.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('action', 'uploadImage');
+    formData.append('image', file);
+
+    // 업로드 중 표시
+    const chatMessages = document.getElementById('chatMessages');
+    const loadingId = 'img-loading-' + Date.now();
+    chatMessages.insertAdjacentHTML('beforeend',
+        `<div id="${loadingId}" class="message mine"><div class="message-content" style="color:#999;font-size:12px;">이미지 업로드 중...</div></div>`
+    );
+    scrollToBottom();
+
+    fetch('ChatServlet', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            const el = document.getElementById(loadingId);
+            if (el) el.remove();
+
+            if (data.success) {
+                const messageData = {
+                    type: 'image',
+                    message: data.imageUrl,
+                    senderName: userName
+                };
+                ws.send(JSON.stringify(messageData));
+            } else {
+                alert('이미지 업로드 실패: ' + (data.message || '알 수 없는 오류'));
+            }
+        })
+        .catch(e => {
+            const el = document.getElementById(loadingId);
+            if (el) el.remove();
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+        });
+}
+
+// 이미지 뷰어
+function openImageViewer(src) {
+    let viewer = document.getElementById('chatImageViewer');
+    if (!viewer) {
+        viewer = document.createElement('div');
+        viewer.id = 'chatImageViewer';
+        viewer.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;';
+        viewer.innerHTML = '<img style="max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);">';
+        viewer.addEventListener('click', function() { this.style.display = 'none'; });
+        document.body.appendChild(viewer);
+    }
+    viewer.querySelector('img').src = src;
+    viewer.style.display = 'flex';
+}

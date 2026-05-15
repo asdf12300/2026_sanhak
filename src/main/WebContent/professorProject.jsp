@@ -30,7 +30,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="resource/css/index.css">
 <link rel="stylesheet" href="resource/css/professorProject.css">
+ <style>
+    .settings-float-btn{
+        position: fixed;
+        right: 30px;
+        bottom: 30px;
+
+        background: #6c5ce7;
+        color: white;
+        padding: 14px 20px;
+
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: bold;
+
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        transition: 0.2s;
+        z-index: 999;
+    }
+
+    .settings-float-btn:hover{
+        background: #5849c9;
+        transform: translateY(-2px);
+    }
+    </style>
 </head>
+
 <body style="background: var(--bg);">
 
 <!-- ── 상단 바 ── -->
@@ -171,6 +197,10 @@
           </div>
           <div class="folder-header-right">
             <span class="folder-drag-hint">드래그하여 추가</span>
+            <!-- 이름 변경 버튼 추가 -->
+            <button class="folder-rename-btn"onclick="event.stopPropagation(); renameFolder(<%= folder.getId() %>, '<%= folder.getName() %>')">
+              ✏️
+            </button>
             <button class="folder-delete-btn"
                     onclick="event.stopPropagation(); if(confirm('폴더를 삭제하시겠습니까?\n프로젝트는 삭제되지 않습니다.')) { location.href='folderAction?action=delete&folderId=<%= folder.getId() %>'; }">
               <!-- trash icon -->
@@ -335,7 +365,6 @@
 
   </div>
 </div>
-
 <!-- 폴더 만들기 모달 -->
 <div id="folderModal" class="modal-bg">
   <div class="modal-box">
@@ -351,7 +380,27 @@
     </form>
   </div>
 </div>
+<script>
+function renameFolder(folderId, oldName) {
 
+    const newName = prompt("새 폴더명을 입력하세요.", oldName);
+
+    if (newName == null) return;
+
+    if (newName.trim() === "") {
+        alert("폴더명을 입력해주세요.");
+        return;
+    }
+
+    location.href =
+        "folderAction?action=rename"
+        + "&folderId=" + folderId
+        + "&folderName=" + encodeURIComponent(newName.trim());
+}
+</script>
 <script src="resource/js/professorProject.js"></script>
+<a href="<%=request.getContextPath()%>/settings/check" class="settings-float-btn">
+    ⚙ 설정변경
+</a>
 </body>
 </html>

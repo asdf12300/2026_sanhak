@@ -142,6 +142,17 @@ public class FeedbackDAO {
         }
     }
 
+    // ── 댓글 수정 (작성자 본인만) ──
+    public boolean updateComment(Connection conn, int commentId, String authorId, String content) throws Exception {
+        String sql = "UPDATE feedback_comment SET content=? WHERE id=? AND author_id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, content);
+            ps.setInt(2, commentId);
+            ps.setString(3, authorId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     // ── 댓글 삭제 (작성자 본인만) ──
     public boolean deleteComment(Connection conn, int commentId, String authorId) throws Exception {
         String sql = "DELETE FROM feedback_comment WHERE id=? AND author_id=?";

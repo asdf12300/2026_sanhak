@@ -9,6 +9,136 @@ pw varchar(20) NOT NULL,
 email varchar(30) NOT NULL,
 role varchar(20) NOT NULL
 )
+<<<<<<< HEAD
+=======
+-- 1. 외래키 제약 모두 제거
+ALTER TABLE project_member DROP FOREIGN KEY project_member_ibfk_2;
+ALTER TABLE task DROP FOREIGN KEY task_ibfk_2;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_2;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_3;
+ALTER TABLE meeting_minutes_history DROP FOREIGN KEY meeting_minutes_history_ibfk_2;
+ALTER TABLE feedback DROP FOREIGN KEY feedback_ibfk_2;
+ALTER TABLE feedback_comment DROP FOREIGN KEY feedback_comment_ibfk_2;
+ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
+
+-- 2. member PRIMARY KEY 변경
+ALTER TABLE member DROP PRIMARY KEY;
+ALTER TABLE member ADD PRIMARY KEY (id);
+ALTER TABLE member MODIFY id VARCHAR(20) NULL;
+ALTER TABLE member MODIFY pw VARCHAR(20) NULL;
+
+-- 2-2. 참조하는 테이블 데이터 전부 초기화
+DELETE FROM chat_messages;
+DELETE FROM chat_room_members;
+DELETE FROM chat_rooms;
+DELETE FROM feedback_comment;
+DELETE FROM feedback;
+DELETE FROM meeting_minutes_history;
+DELETE FROM meeting_minutes;
+DELETE FROM calendar;
+DELETE FROM task;
+DELETE FROM project_member;
+DELETE FROM folder;
+DELETE FROM board;
+DELETE FROM member;
+
+-- 3. 참조 컬럼을 email 기준으로 변경 후 외래키 재연결
+ALTER TABLE project_member MODIFY member_id VARCHAR(30);
+ALTER TABLE project_member ADD FOREIGN KEY (member_id) REFERENCES member(email) ON DELETE CASCADE;
+
+ALTER TABLE task MODIFY assignee VARCHAR(30);
+ALTER TABLE task ADD FOREIGN KEY (assignee) REFERENCES member(email) ON DELETE SET NULL;
+
+ALTER TABLE meeting_minutes MODIFY created_by VARCHAR(30);
+ALTER TABLE meeting_minutes MODIFY last_modified_by VARCHAR(30);
+ALTER TABLE meeting_minutes ADD FOREIGN KEY (created_by) REFERENCES member(email) ON DELETE RESTRICT;
+ALTER TABLE meeting_minutes ADD FOREIGN KEY (last_modified_by) REFERENCES member(email) ON DELETE SET NULL;
+
+ALTER TABLE meeting_minutes_history MODIFY modified_by VARCHAR(30);
+ALTER TABLE meeting_minutes_history ADD FOREIGN KEY (modified_by) REFERENCES member(email) ON DELETE RESTRICT;
+
+ALTER TABLE feedback MODIFY author_id VARCHAR(30);
+ALTER TABLE feedback ADD FOREIGN KEY (author_id) REFERENCES member(email) ON DELETE CASCADE;
+
+ALTER TABLE feedback_comment MODIFY author_id VARCHAR(30);
+ALTER TABLE feedback_comment ADD FOREIGN KEY (author_id) REFERENCES member(email) ON DELETE CASCADE;
+
+ALTER TABLE folder MODIFY owner_id VARCHAR(30);
+ALTER TABLE folder ADD FOREIGN KEY (owner_id) REFERENCES member(email) ON DELETE CASCADE;
+
+-- 1. member 기본키 확인 (email이 PRI여야 함)
+DESC member;
+
+-- 2. 외래키 연결 확인
+SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_COLUMN_NAME
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE REFERENCED_TABLE_NAME = 'member'
+AND TABLE_SCHEMA = 'sanhak';
+
+--1. 각 테이블의 실제 외래키 이름 먼저 확인
+SHOW CREATE TABLE project_member;
+SHOW CREATE TABLE task;
+SHOW CREATE TABLE meeting_minutes;
+SHOW CREATE TABLE meeting_minutes_history;
+SHOW CREATE TABLE feedback;
+SHOW CREATE TABLE feedback_comment;
+SHOW CREATE TABLE folder;
+
+
+ALTER TABLE project_member DROP FOREIGN KEY project_member_ibfk_2;
+ALTER TABLE task DROP FOREIGN KEY task_ibfk_2;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_2;
+ALTER TABLE meeting_minutes DROP FOREIGN KEY meeting_minutes_ibfk_3;
+ALTER TABLE meeting_minutes_history DROP FOREIGN KEY meeting_minutes_history_ibfk_2;
+ALTER TABLE feedback DROP FOREIGN KEY feedback_ibfk_2;
+ALTER TABLE feedback_comment DROP FOREIGN KEY feedback_comment_ibfk_2;
+ALTER TABLE folder DROP FOREIGN KEY folder_ibfk_1;
+
+-- 3. 데이터 초기화
+DELETE FROM feedback_comment;
+DELETE FROM feedback;
+DELETE FROM meeting_minutes_history;
+DELETE FROM meeting_minutes;
+DELETE FROM calendar;
+DELETE FROM task;
+DELETE FROM project_member;
+DELETE FROM folder;
+DELETE FROM board;
+DELETE FROM member where id = "정현숙";
+
+-- 4. member PK를 id로 복원
+ALTER TABLE member DROP PRIMARY KEY;
+ALTER TABLE member MODIFY id VARCHAR(20) NOT NULL;
+ALTER TABLE member MODIFY pw VARCHAR(20) NOT NULL;
+ALTER TABLE member ADD PRIMARY KEY (id);
+
+-- 5. 참조 컬럼 복원 및 외래키 재연결
+ALTER TABLE project_member MODIFY member_id VARCHAR(20);
+ALTER TABLE project_member ADD CONSTRAINT fk_pm_member FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
+
+ALTER TABLE task MODIFY assignee VARCHAR(20);
+ALTER TABLE task ADD CONSTRAINT fk_task_assignee FOREIGN KEY (assignee) REFERENCES member(id) ON DELETE SET NULL;
+
+ALTER TABLE meeting_minutes MODIFY created_by VARCHAR(20);
+ALTER TABLE meeting_minutes MODIFY last_modified_by VARCHAR(20);
+ALTER TABLE meeting_minutes ADD CONSTRAINT fk_mm_created_by FOREIGN KEY (created_by) REFERENCES member(id) ON DELETE RESTRICT;
+ALTER TABLE meeting_minutes ADD CONSTRAINT fk_mm_modified_by FOREIGN KEY (last_modified_by) REFERENCES member(id) ON DELETE SET NULL;
+
+ALTER TABLE meeting_minutes_history MODIFY modified_by VARCHAR(20);
+ALTER TABLE meeting_minutes_history ADD CONSTRAINT fk_mmh_modified_by FOREIGN KEY (modified_by) REFERENCES member(id) ON DELETE RESTRICT;
+
+ALTER TABLE feedback MODIFY author_id VARCHAR(20);
+ALTER TABLE feedback ADD CONSTRAINT fk_feedback_author FOREIGN KEY (author_id) REFERENCES member(id) ON DELETE CASCADE;
+
+ALTER TABLE feedback_comment MODIFY author_id VARCHAR(20);
+ALTER TABLE feedback_comment ADD CONSTRAINT fk_fc_author FOREIGN KEY (author_id) REFERENCES member(id) ON DELETE CASCADE;
+
+ALTER TABLE folder MODIFY owner_id VARCHAR(20);
+ALTER TABLE folder ADD CONSTRAINT fk_folder_owner FOREIGN KEY (owner_id) REFERENCES member(id) ON DELETE CASCADE;
+
+
+DESC member;
+>>>>>>> 61aa942664b1ef9df7029e256a6079ab940c6ae5
 
 CREATE TABLE board (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -117,6 +247,7 @@ INSERT INTO member VALUES ('최대로', 'dr123', '1234', 'dr123@gmail.com', 'stu
 INSERT INTO member VALUES ('차소희', 'sh123', '1234', 'sh123@gmail.com', 'student');
 INSERT INTO member VALUES ('이민제', 'mj123', '1234', 'mj123@gmail.com', 'student');
 INSERT INTO member VALUES ('김채연', 'cy123', '1234', 'cy123@gmail.com', 'student');
+INSERT INTO member VALUES ('hs123', '정현숙', '1234', 'hs123@gmail.com', 'professor');
 
 -- role에 교수 추가 // 기존에 있던 db 멤버들 기본값을 student로
 ALTER TABLE member ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'student';
@@ -203,7 +334,7 @@ CREATE INDEX idx_chat_room_members_last_read ON chat_room_members(last_read_at);
 CREATE TABLE chat_messages (
     message_id INT AUTO_INCREMENT PRIMARY KEY,
     room_id INT NOT NULL,
-    sender_id VARCHAR(20) NOT NULL,
+    sender_id VARCHAR(50) NULL,  -- 시스템 메시지는 NULL
     sender_name VARCHAR(50) NOT NULL,
     message TEXT NOT NULL,
     message_type ENUM('text', 'file', 'system') NOT NULL DEFAULT 'text',
@@ -236,5 +367,11 @@ CREATE TABLE file_share (
 );
 
 CREATE INDEX idx_file_share_project ON file_share(project_id);
+<<<<<<< HEAD
 INSERT INTO member (name, id, pw, email, role) VALUES ('테스트', 'test', '1234', 'test@test.com', 'student');
 INSERT INTO member (name, id, pw, email, role) VALUES ('교수', 'pf', '1234', 'test@test.com', 'professor');
+=======
+
+-- 기존 chat_messages 테이블의 sender_id를 NULL 허용으로 변경 (시스템 메시지 지원)
+ALTER TABLE chat_messages MODIFY sender_id VARCHAR(50) NULL;
+>>>>>>> 61aa942664b1ef9df7029e256a6079ab940c6ae5

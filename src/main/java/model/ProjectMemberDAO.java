@@ -266,7 +266,21 @@ public class ProjectMemberDAO {
         }
         return 0;
     }
-
+    // 멤버 ID로 이름 조회
+    public String getMemberNameById(String memberId) {
+        String sql = "SELECT name FROM member WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("name");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return memberId;
+    }
+    
     // 이미 초대/참여 상태인지 확인
     public boolean isMember(int projectId, String memberId) {        String sql =
             "SELECT id FROM project_member " +
@@ -325,5 +339,25 @@ public class ProjectMemberDAO {
             e.printStackTrace();
             return false;
         }
+    }
+    public boolean isUserLeader(String userId) {
+        String sql = "SELECT COUNT(*) FROM board WHERE team_leader = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }
