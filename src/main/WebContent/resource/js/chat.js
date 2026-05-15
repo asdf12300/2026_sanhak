@@ -3,16 +3,32 @@ let ws = null;
 let currentRoomId = null;
 let currentRoomType = null;
 let rooms = [];
+let messageOffset = 0;
+const messageLimit = 30;
+
+let isLoadingMessages = false;
+let hasMoreMessages = true;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
     loadChatRooms();
+
     try {
         setupEventListeners();
         console.log('[chat] 이벤트 리스너 등록 완료');
     } catch(e) {
         console.error('[chat] setupEventListeners 오류:', e);
     }
+
+    // 채팅 스크롤 무한 로딩
+    const chatMessages = document.getElementById('chatMessages');
+
+    chatMessages.addEventListener('scroll', function() {
+        // 스크롤이 맨 위 근처(100px 이내)에 도달하면 이전 메시지 로드
+        if (chatMessages.scrollTop <= 100 && currentRoomId && !isLoadingMessages && hasMoreMessages) {
+            loadMessages(currentRoomId, false);
+        }
+    });
 });
 
 // 이벤트 리스너 설정
@@ -202,8 +218,13 @@ function selectRoom(roomId) {
     typeBadge.textContent = currentRoomType === 'team' ? '팀 채팅' : '개인 채팅';
     typeBadge.className = `room-type-badge ${currentRoomType}`;
 
-    // 메시지 로드
-    loadMessages(roomId);
+	// 메시지 상태 초기화
+	messageOffset = 0;
+	hasMoreMessages = true;
+	isLoadingMessages = false;
+
+	// 메시지 로드
+	loadMessages(roomId, true);
 
     // WebSocket 연결
     connectWebSocket(roomId);
@@ -226,14 +247,57 @@ function selectRoom(roomId) {
 }
 
 // 메시지 로드
-function loadMessages(roomId) {
-    fetch(`ChatServlet?action=getMessages&roomId=${roomId}&limit=50`)
+function loadMessages(roomId, firstLoad = false) {
+
+    if (isLoadingMessages || !hasMoreMessages) return;
+
+    isLoadingMessages = true;
+
+    fetch(
+        `ChatServlet?action=getMessages&roomId=${roomId}&limit=${messageLimit}&offset=${messageOffset}`
+    )
         .then(response => response.json())
         .then(messages => {
-            displayMessages(messages); // ASC 정렬이므로 reverse 불필요
+
+            // 받은 개수가 limit보다 적으면 더 이상 불러올 메시지 없음
+            if (messages.length < messageLimit) {
+                hasMoreMessages = false;
+            }
+
+            // 서버는 DESC(최신순)로 내려주므로 화면 표시용으로 오래된 순 정렬
+            messages.reverse();
+
+            const chatMessages = document.getElementById('chatMessages');
+
+            if (firstLoad) {
+                // 첫 로드: 기존 내용 비우고 append, 맨 아래로 스크롤
+                chatMessages.innerHTML = '';
+                messages.forEach(msg => {
+                    chatMessages.insertAdjacentHTML('beforeend', createMessageElement(msg));
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else {
+                // 추가 로드: 현재 스크롤 높이 기억 → prepend → 스크롤 위치 보정
+                const prevHeight = chatMessages.scrollHeight;
+                const prevScrollTop = chatMessages.scrollTop;
+
+                // 오래된 순으로 뒤집었으므로 역순으로 prepend해야 순서 유지
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    chatMessages.insertAdjacentHTML('afterbegin', createMessageElement(messages[i]));
+                }
+
+                // 스크롤 위치 보정: 새로 추가된 높이만큼 아래로 밀기
+                chatMessages.scrollTop = prevScrollTop + (chatMessages.scrollHeight - prevHeight);
+            }
+
+            // offset은 실제로 받은 개수만큼만 증가
+            messageOffset += messages.length;
+
+            isLoadingMessages = false;
         })
         .catch(error => {
             console.error('메시지 로드 실패:', error);
+            isLoadingMessages = false;
         });
 }
 
@@ -310,6 +374,11 @@ function connectWebSocket(roomId) {
 
 // 메시지 추가
 function appendMessage(message) {
+	// WebSocket 메시지는 'type' 필드, DB 메시지는 'messageType' 필드 → 통일
+	if (!message.messageType && message.type) {
+	    message.messageType = message.type;
+	}
+		
     const chatMessages = document.getElementById('chatMessages');
     const messageElement = createMessageElement(message);
     chatMessages.insertAdjacentHTML('beforeend', messageElement);
@@ -526,6 +595,8 @@ function loadRoomInfo(roomId) {
                 return;
             }
             displayRoomInfo(data);
+            // 초대 가능 멤버도 함께 로드
+            loadInvitableMembers(roomId);
             showModal('chatInfoModal');
         })
         .catch(error => console.error('채팅방 정보 로드 실패:', error));
@@ -555,6 +626,71 @@ function displayRoomInfo(data) {
             </div>
         `;
     }).join('');
+}
+
+// 초대 가능한 멤버 로드
+function loadInvitableMembers(roomId) {
+    const container = document.getElementById('infoInvitableList');
+    container.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+    fetch(`ChatServlet?action=getInvitableMembers&roomId=${roomId}&projectId=${projectId}`)
+        .then(r => r.json())
+        .then(members => {
+            if (members.length === 0) {
+                container.innerHTML = '<div class="loading">초대할 수 있는 멤버가 없습니다.</div>';
+                return;
+            }
+            container.innerHTML = members.map(m => `
+                <div class="info-invitable-item">
+                    <div class="info-member-avatar" style="background:#64748b;">${m.name.charAt(0)}</div>
+                    <div class="info-member-name">${escapeHtml(m.name)}</div>
+                    <button class="btn-invite" onclick="inviteMember(${roomId}, '${escapeHtml(m.memberId)}', '${escapeHtml(m.name)}', this)">
+                        초대
+                    </button>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            container.innerHTML = '<div class="loading">불러오기 실패</div>';
+        });
+}
+
+// 멤버 초대
+function inviteMember(roomId, targetMemberId, targetName, btn) {
+    btn.disabled = true;
+    btn.textContent = '초대 중...';
+
+    const params = new URLSearchParams();
+    params.append('action', 'addMember');
+    params.append('roomId', roomId);
+    params.append('targetMemberId', targetMemberId);
+    params.append('targetName', targetName);
+
+    fetch('ChatServlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // 해당 행을 "초대됨" 상태로 변경
+            const item = btn.closest('.info-invitable-item');
+            btn.textContent = '초대됨';
+            btn.classList.add('btn-invite-done');
+            // 참여자 수 갱신을 위해 정보 다시 로드
+            loadRoomInfo(roomId);
+        } else {
+            btn.disabled = false;
+            btn.textContent = '초대';
+            alert('초대 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = '초대';
+        alert('초대 중 오류가 발생했습니다.');
+    });
 }
 
 // 읽음 처리

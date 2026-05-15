@@ -156,6 +156,14 @@
                     <div class="info-section-title">참여자 <span id="infoMemberCount" class="info-count"></span></div>
                     <div id="infoMemberList" class="info-member-list"></div>
                 </div>
+
+                <!-- 멤버 초대 섹션 -->
+                <div class="info-section" id="infoInviteSection">
+                    <div class="info-section-title">멤버 초대</div>
+                    <div id="infoInvitableList" class="info-invitable-list">
+                        <div class="loading">불러오는 중...</div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer info-footer">
                 <button id="infoLeaveRoom" class="btn-danger"> 채팅방 나가기</button>

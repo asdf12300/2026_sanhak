@@ -56,6 +56,8 @@ public class ChatServlet extends HttpServlet {
             getMessages(request, response, user);
         } else if ("getRoomInfo".equals(action)) {
             getRoomInfo(request, response, user);
+        } else if ("getInvitableMembers".equals(action)) {
+            getInvitableMembers(request, response, user);
         } else {
             request.getRequestDispatcher("chat.jsp").forward(request, response);
         }
@@ -96,6 +98,8 @@ public class ChatServlet extends HttpServlet {
                 renameRoom(request, response, user);
             } else if ("uploadImage".equals(action)) {
                 uploadImage(request, response, user);
+            } else if ("addMember".equals(action)) {
+                addMember(request, response, user);
             } else {
                 response.getWriter().write("{\"success\": false, \"message\": \"알 수 없는 action: " + action + "\"}");
             }
@@ -132,7 +136,7 @@ public class ChatServlet extends HttpServlet {
     private void getMessages(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
             throws IOException {
         int roomId = Integer.parseInt(request.getParameter("roomId"));
-        int limit = request.getParameter("limit") != null ? Integer.parseInt(request.getParameter("limit")) : 50;
+        int limit = request.getParameter("limit") != null ? Integer.parseInt(request.getParameter("limit")) : 30;
         int offset = request.getParameter("offset") != null ? Integer.parseInt(request.getParameter("offset")) : 0;
 
         // 채팅방 멤버 확인
@@ -377,6 +381,61 @@ public class ChatServlet extends HttpServlet {
     // 프로젝트 멤버 확인
     private boolean isProjectMember(int projectId, String memberId) {
         return projectMemberDAO.isActiveMember(projectId, memberId);
+    }
+
+    // 채팅방에 초대 가능한 프로젝트 멤버 조회
+    private void getInvitableMembers(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
+            throws IOException {
+        response.setContentType("application/json; charset=UTF-8");
+        try {
+            int roomId    = Integer.parseInt(request.getParameter("roomId"));
+            int projectId = Integer.parseInt(request.getParameter("projectId"));
+
+            if (!chatDAO.isRoomMember(roomId, user.getId())) {
+                response.getWriter().write("[]");
+                return;
+            }
+
+            List<java.util.Map<String, String>> members = chatDAO.getInvitableMembers(roomId, projectId, user.getId());
+            response.getWriter().write(gson.toJson(members));
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("[]");
+        }
+    }
+
+    // 채팅방에 멤버 추가 (초대)
+    private void addMember(HttpServletRequest request, HttpServletResponse response, LoginDTO user)
+            throws IOException {
+        response.setContentType("application/json; charset=UTF-8");
+        try {
+            int    roomId         = Integer.parseInt(request.getParameter("roomId"));
+            String targetMemberId = request.getParameter("targetMemberId");
+            String targetName     = request.getParameter("targetName");
+
+            if (targetMemberId == null || targetMemberId.trim().isEmpty()) {
+                response.getWriter().write("{\"success\": false, \"message\": \"대상 멤버가 없습니다\"}");
+                return;
+            }
+            if (!chatDAO.isRoomMember(roomId, user.getId())) {
+                response.getWriter().write("{\"success\": false, \"message\": \"권한 없음\"}");
+                return;
+            }
+
+            boolean added = chatDAO.addRoomMember(roomId, targetMemberId);
+            if (added) {
+                String displayName = (targetName != null && !targetName.trim().isEmpty())
+                                     ? targetName : targetMemberId;
+                chatDAO.saveSystemMessage(roomId,
+                    user.getName() + " 님이 " + displayName + " 님을 초대했습니다.");
+                response.getWriter().write("{\"success\": true}");
+            } else {
+                response.getWriter().write("{\"success\": false, \"message\": \"멤버 추가 실패\"}");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("{\"success\": false, \"message\": \"서버 오류: " + e.getMessage() + "\"}");
+        }
     }
 
     // 채팅 이미지 업로드

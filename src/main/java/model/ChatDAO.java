@@ -196,7 +196,7 @@ public class ChatDAO {
     // 채팅 메시지 조회 (페이징)
     public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
         List<ChatMessageDTO> messages = new ArrayList<>();
-        String sql = "SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at ASC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at DESC LIMIT ? OFFSET ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -275,6 +275,42 @@ public class ChatDAO {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, roomId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                java.util.Map<String, String> member = new java.util.HashMap<>();
+                member.put("memberId", rs.getString("member_id"));
+                member.put("name", rs.getString("name") != null ? rs.getString("name") : rs.getString("member_id"));
+                members.add(member);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
+
+    /**
+     * 채팅방에 초대 가능한 프로젝트 멤버 조회
+     * - 프로젝트에 accepted 상태로 참여 중인 학생(교수 제외)
+     * - 현재 채팅방에 없는 사람 (나간 사람 포함 — 나가면 chat_room_members에서 삭제되므로 재초대 가능)
+     */
+    public List<java.util.Map<String, String>> getInvitableMembers(int roomId, int projectId, String requesterId) {
+        List<java.util.Map<String, String>> members = new ArrayList<>();
+        String sql = "SELECT pm.member_id, m.name " +
+                     "FROM project_member pm " +
+                     "LEFT JOIN member m ON pm.member_id = m.id " +
+                     "WHERE pm.project_id = ? " +
+                     "  AND pm.status = 'accepted' " +
+                     "  AND m.role != 'professor' " +
+                     "  AND pm.member_id != ? " +
+                     "  AND pm.member_id NOT IN (" +
+                     "      SELECT member_id FROM chat_room_members WHERE room_id = ?" +
+                     "  ) " +
+                     "ORDER BY m.name ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, projectId);
+            pstmt.setString(2, requesterId);
+            pstmt.setInt(3, roomId);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 java.util.Map<String, String> member = new java.util.HashMap<>();
