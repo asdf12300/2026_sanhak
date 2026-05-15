@@ -247,7 +247,6 @@ body {
 
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
 
     min-height: 0;
 }
@@ -265,6 +264,7 @@ body {
 .message:hover {
     background: rgba(0,0,0,0.03);
 }
+
 .message.mine {
     align-items: flex-end;
 }

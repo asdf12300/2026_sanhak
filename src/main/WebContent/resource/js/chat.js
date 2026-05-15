@@ -275,7 +275,9 @@ function loadMessages(roomId, firstLoad = false) {
                 messages.forEach(msg => {
                     chatMessages.insertAdjacentHTML('beforeend', createMessageElement(msg));
                 });
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                requestAnimationFrame(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
             } else {
                 // 추가 로드: 현재 스크롤 높이 기억 → prepend → 스크롤 위치 보정
                 const prevHeight = chatMessages.scrollHeight;
@@ -374,12 +376,11 @@ function connectWebSocket(roomId) {
 
 // 메시지 추가
 function appendMessage(message) {
-
-    // WebSocket 메시지는 'type' 필드, DB 메시지는 'messageType' 필드 → 통일
-    if (!message.messageType && message.type) {
-        message.messageType = message.type;
-    }
-
+	// WebSocket 메시지는 'type' 필드, DB 메시지는 'messageType' 필드 → 통일
+	if (!message.messageType && message.type) {
+	    message.messageType = message.type;
+	}
+		
     const chatMessages = document.getElementById('chatMessages');
     const messageElement = createMessageElement(message);
     chatMessages.insertAdjacentHTML('beforeend', messageElement);
@@ -718,7 +719,9 @@ function hideModal(modalId) {
 
 function scrollToBottom() {
     const chatMessages = document.getElementById('chatMessages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    requestAnimationFrame(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
 }
 
 function escapeHtml(text) {
