@@ -242,7 +242,7 @@ CREATE INDEX idx_chat_room_members_last_read ON chat_room_members(last_read_at);
 CREATE TABLE chat_messages (
     message_id   INT AUTO_INCREMENT PRIMARY KEY,
     room_id      INT NOT NULL,
-    sender_id    VARCHAR(50) NOT NULL,
+    sender_id    VARCHAR(50) NULL,
     sender_name  VARCHAR(50) NOT NULL,
     message      TEXT NOT NULL,
     message_type ENUM('text', 'file', 'system') NOT NULL DEFAULT 'text',
@@ -269,4 +269,7 @@ ON DUPLICATE KEY UPDATE
     pw = VALUES(pw),
     email = VALUES(email),
     role = VALUES(role);
+
+-- Existing server DB migration for chat system messages.
+ALTER TABLE chat_messages MODIFY sender_id VARCHAR(50) NULL;
 

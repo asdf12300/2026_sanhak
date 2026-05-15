@@ -32,11 +32,38 @@ public class ChatDAO {
         String sql = "INSERT IGNORE INTO chat_room_members (room_id, member_id, joined_at) VALUES (?, ?, NOW())";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
             pstmt.setInt(1, roomId);
             pstmt.setString(2, memberId);
             pstmt.executeUpdate();
             return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 채팅방 멤버 제거 (나가기)
+    public boolean removeRoomMember(int roomId, String memberId) {
+        String sql = "DELETE FROM chat_room_members WHERE room_id = ? AND member_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            pstmt.setString(2, memberId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 채팅방 이름 변경
+    public boolean updateRoomName(int roomId, String newName) {
+        String sql = "UPDATE chat_rooms SET room_name = ? WHERE room_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newName);
+            pstmt.setInt(2, roomId);
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -145,18 +172,62 @@ public class ChatDAO {
         return false;
     }
     
-    // 채팅 메시지 조회 (페이징)
-    public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
-        List<ChatMessageDTO> messages = new ArrayList<>();
-        String sql = "SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at ASC LIMIT ? OFFSET ?";
-        
+    // 시스템 메시지 저장 (sender_id FK 제약 없이 저장)
+    public boolean saveSystemMessage(int roomId, String content) {
+        // sender_id 컬럼의 FK 제약을 피하기 위해 NULL로 저장
+        String sql = "INSERT INTO chat_messages (room_id, sender_id, sender_name, message, message_type, sent_at) " +
+                     "VALUES (?, NULL, 'system', ?, 'system', NOW())";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+            pstmt.setInt(1, roomId);
+            pstmt.setString(2, content);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    // 다른 Servlet 코드들에서 오류가나서 추가한 코드
+    /*public boolean saveSystemMessage(Integer roomId, String content) {
+        if (roomId == null) return false;
+        return saveSystemMessage(roomId.intValue(), content);
+    }*/
+
+    // 채팅 메시지 조회 (페이징)
+    public List<ChatMessageDTO> getRecentMessages(int roomId, int limit) {
+        List<ChatMessageDTO> messages = new ArrayList<>();
+        String sql = "SELECT * FROM (SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at DESC LIMIT ?) tmp ORDER BY sent_at ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            pstmt.setInt(2, limit);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                ChatMessageDTO message = new ChatMessageDTO();
+                message.setMessageId(rs.getInt("message_id"));
+                message.setRoomId(rs.getInt("room_id"));
+                message.setSenderId(rs.getString("sender_id"));
+                message.setSenderName(rs.getString("sender_name"));
+                message.setMessage(rs.getString("message"));
+                message.setMessageType(rs.getString("message_type"));
+                message.setSentAt(rs.getTimestamp("sent_at"));
+                messages.add(message);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messages;
+    }
+
+ // 채팅 메시지 조회 (페이징)
+    public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
+        List<ChatMessageDTO> messages = new ArrayList<>();
+        String sql = "SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at DESC LIMIT ? OFFSET ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, roomId);
             pstmt.setInt(2, limit);
             pstmt.setInt(3, offset);
-            
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 ChatMessageDTO message = new ChatMessageDTO();
@@ -216,7 +287,67 @@ public class ChatDAO {
         return null;
     }
     
-    // 채팅방 멤버 목록 조회
+    // 채팅방 멤버 목록 조회 (ID + 이름)
+    public List<java.util.Map<String, String>> getRoomMembersWithName(int roomId) {
+        List<java.util.Map<String, String>> members = new ArrayList<>();
+        String sql = "SELECT crm.member_id, m.name " +
+                     "FROM chat_room_members crm " +
+                     "LEFT JOIN member m ON crm.member_id = m.id " +
+                     "WHERE crm.room_id = ? " +
+                     "ORDER BY crm.joined_at ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, roomId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                java.util.Map<String, String> member = new java.util.HashMap<>();
+                member.put("memberId", rs.getString("member_id"));
+                member.put("name", rs.getString("name") != null ? rs.getString("name") : rs.getString("member_id"));
+                members.add(member);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
+
+    /**
+     * 채팅방에 초대 가능한 프로젝트 멤버 조회
+     * - 프로젝트에 accepted 상태로 참여 중인 학생(교수 제외)
+     * - 현재 채팅방에 없는 사람 (나간 사람 포함 — 나가면 chat_room_members에서 삭제되므로 재초대 가능)
+     */
+    public List<java.util.Map<String, String>> getInvitableMembers(int roomId, int projectId, String requesterId) {
+        List<java.util.Map<String, String>> members = new ArrayList<>();
+        String sql = "SELECT pm.member_id, m.name " +
+                     "FROM project_member pm " +
+                     "LEFT JOIN member m ON pm.member_id = m.id " +
+                     "WHERE pm.project_id = ? " +
+                     "  AND pm.status = 'accepted' " +
+                     "  AND m.role != 'professor' " +
+                     "  AND pm.member_id != ? " +
+                     "  AND pm.member_id NOT IN (" +
+                     "      SELECT member_id FROM chat_room_members WHERE room_id = ?" +
+                     "  ) " +
+                     "ORDER BY m.name ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, projectId);
+            pstmt.setString(2, requesterId);
+            pstmt.setInt(3, roomId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                java.util.Map<String, String> member = new java.util.HashMap<>();
+                member.put("memberId", rs.getString("member_id"));
+                member.put("name", rs.getString("name") != null ? rs.getString("name") : rs.getString("member_id"));
+                members.add(member);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
+
+    // 채팅방 멤버 목록 조회 (ID만, 기존 호환용)
     public List<String> getRoomMembers(int roomId) {
         List<String> members = new ArrayList<>();
         String sql = "SELECT member_id FROM chat_room_members WHERE room_id = ?";
@@ -254,4 +385,5 @@ public class ChatDAO {
         }
         return roomIds;
     }
+
 }

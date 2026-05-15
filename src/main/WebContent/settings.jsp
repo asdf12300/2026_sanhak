@@ -69,9 +69,27 @@ input:focus {
 }
 .error { background: #fff1f2; color: #e11d48; }
 .success { background: #ecfdf5; color: #059669; }
+.email-check-row {
+  display: flex;
+  gap: 8px;
+}
+.email-check-row input {
+  flex: 1;
+}
+.email-code-btn {
+  width: 120px;
+  border: none;
+  border-radius: 12px;
+  background: #374151;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.email-code-btn:hover { background: #1f2937; }
 </style>
 </head>
-<body>
+<body data-context="<%=request.getContextPath()%>">
 
 <%@ include file="sidebar.jsp" %>
 
@@ -119,6 +137,14 @@ input:focus {
 
     <br><br>
 
+    <label>이메일 인증</label>
+    <div class="email-check-row">
+        <input type="text" name="deleteCode" placeholder="인증번호 입력" required>
+        <button type="button" class="email-code-btn" onclick="sendDeleteCode()">인증번호 발송</button>
+    </div>
+
+    <br><br>
+
     <button type="submit" style="background:red; color:white;">
         계정 탈퇴
     </button>
@@ -143,5 +169,22 @@ input:focus {
   <% } %>
 </div>
 
+<script>
+function sendDeleteCode() {
+  var contextPath = document.body.dataset.context || '';
+  fetch(contextPath + '/delete/sendCode', {
+    method: 'POST'
+  })
+  .then(function(res) {
+    return res.text();
+  })
+  .then(function(msg) {
+    alert(msg);
+  })
+  .catch(function() {
+    alert('인증번호 발송 중 오류가 발생했습니다.');
+  });
+}
+</script>
 </body>
 </html>

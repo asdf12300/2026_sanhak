@@ -68,6 +68,33 @@ sanhak은 서버 배포용 설정을 유지합니다.
 web.xml에 servlet-mapping을 추가하면서 Java 파일의 @WebServlet을 그대로 두면 중복 매핑 오류가 발생할 수 있어서 새 Servlet을 만드실 땐 Java 파일에 @WebServlet 경로로 명시해주세요 !
 ```
 
+## 요청 파라미터 규칙
+
+프로젝트별 화면과 기능은 서버의 `ProjectAccessFilter`가 먼저 접근 권한을 확인합니다.
+
+중요:
+
+```text
+프로젝트 ID 파라미터 이름은 반드시 projectID로 통일합니다.
+projectId, project_id, id로 보내면 서버 필터에서 잘못된 접근으로 처리될 수 있습니다.
+```
+
+Java Servlet에서는 문자열을 직접 쓰기보다 공통 상수를 사용합니다.
+
+```java
+request.getParameter(RequestParamNames.PROJECT_ID)
+```
+
+JSP/JS에서는 아래처럼 `projectID` 이름을 그대로 맞춥니다.
+
+```text
+index.jsp?projectID=1
+fetch("taskApi?projectID=" + projectId)
+params.append("projectID", projectId)
+```
+
+새 기능을 추가할 때 `ProjectAccessFilter` 보호 대상 URL에 들어가는 기능이라면 요청 URL, form hidden input, fetch body에 `projectID`가 포함되어야 합니다.
+
 ## 환경 파일
 
 .gitignore에 설정이 되어있고 따로 배포 및 테스트를 진행하실 땐 각 환경에 맞는 파일 및 키 값을 수정해주시면 돼요

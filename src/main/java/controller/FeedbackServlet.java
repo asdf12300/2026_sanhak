@@ -165,6 +165,17 @@ public class FeedbackServlet extends HttpServlet {
                 dao.deleteComment(conn, commentId, loginId);
                 conn.commit();
                 resp.sendRedirect("feedback?action=view&projectID=" + projectId + "&id=" + feedbackId);
+
+            // ── 댓글 수정 (작성자 본인만) ──
+            } else if ("updateComment".equals(action)) {
+                int commentId  = Integer.parseInt(req.getParameter("commentId"));
+                int feedbackId = Integer.parseInt(req.getParameter("feedbackId"));
+                String content = req.getParameter("content");
+                if (content != null && !content.trim().isEmpty()) {
+                    dao.updateComment(conn, commentId, loginId, content.trim());
+                    conn.commit();
+                }
+                resp.sendRedirect("feedback?action=view&projectID=" + projectId + "&id=" + feedbackId);
             }
 
         } catch (Exception e) {

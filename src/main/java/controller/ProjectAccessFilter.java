@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import model.LoginDTO;
 import model.ProjectMemberDAO;
+import util.RequestParamNames;
 
 @WebFilter(urlPatterns = {
     "/index.jsp",
@@ -89,7 +90,7 @@ public class ProjectAccessFilter implements Filter {
     }
 
     private Integer parseProjectID(HttpServletRequest req) {
-        String value = req.getParameter("projectID");
+        String value = req.getParameter(RequestParamNames.PROJECT_ID);
         if (value == null || value.trim().isEmpty()) {
             return null;
         }

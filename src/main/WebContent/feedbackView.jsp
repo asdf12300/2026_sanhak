@@ -75,6 +75,24 @@
 .comment-del { margin-left:auto; background:none; border:none; color:var(--muted2);
                font-size:12px; cursor:pointer; padding:2px 6px; border-radius:4px; }
 .comment-del:hover { color:var(--red); background:var(--red-light); }
+.comment-edit-btn { background:none; border:none; color:var(--muted2);
+               font-size:12px; cursor:pointer; padding:2px 6px; border-radius:4px; }
+.comment-edit-btn:hover { color:var(--blue); background:var(--blue-light); }
+.comment-edit-form { display:none; margin-top:8px; }
+.comment-edit-form.open { display:flex; gap:8px; align-items:flex-end; }
+.comment-edit-form textarea {
+    flex:1; padding:8px 12px; border:1.5px solid var(--blue);
+    border-radius:8px; font-size:13px; font-family:inherit;
+    outline:none; resize:none; height:52px;
+}
+.comment-edit-form .btn-save-sm {
+    background:var(--blue); color:#fff; border:none; border-radius:8px;
+    padding:8px 14px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; height:52px;
+}
+.comment-edit-form .btn-cancel-sm {
+    background:#fff; color:var(--muted); border:1px solid var(--border);
+    border-radius:8px; padding:8px 12px; font-size:12px; cursor:pointer; white-space:nowrap; height:52px;
+}
 
 /* 댓글 입력 */
 .comment-form { margin-top:16px; display:flex; gap:10px; align-items:flex-end; }
@@ -168,17 +186,34 @@
           <span class="comment-author"><%= c.getAuthorName() != null ? c.getAuthorName() : c.getAuthorId() %></span>
           <span class="comment-time"><%= c.getCreatedAt() %></span>
           <% if (loginUser.getId().equals(c.getAuthorId())) { %>
-          <form action="feedback" method="post" style="margin-left:auto"
-                onsubmit="return confirm('댓글을 삭제하시겠습니까?')">
-            <input type="hidden" name="action" value="deleteComment">
-            <input type="hidden" name="projectID" value="<%= projectId %>">
-            <input type="hidden" name="feedbackId" value="<%= feedback.getId() %>">
-            <input type="hidden" name="commentId" value="<%= c.getId() %>">
-            <button type="submit" class="comment-del">삭제</button>
-          </form>
+          <div style="margin-left:auto; display:flex; gap:2px;">
+            <button type="button" class="comment-edit-btn"
+                    onclick="toggleCommentEdit(<%= c.getId() %>)">수정</button>
+            <form action="feedback" method="post" style="display:inline"
+                  onsubmit="return confirm('댓글을 삭제하시겠습니까?')">
+              <input type="hidden" name="action" value="deleteComment">
+              <input type="hidden" name="projectID" value="<%= projectId %>">
+              <input type="hidden" name="feedbackId" value="<%= feedback.getId() %>">
+              <input type="hidden" name="commentId" value="<%= c.getId() %>">
+              <button type="submit" class="comment-del">삭제</button>
+            </form>
+          </div>
           <% } %>
         </div>
-        <div class="comment-content"><%= c.getContent() %></div>
+        <div class="comment-content" id="comment-text-<%= c.getId() %>"><%= c.getContent() %></div>
+        <% if (loginUser.getId().equals(c.getAuthorId())) { %>
+        <form action="feedback" method="post"
+              class="comment-edit-form" id="comment-edit-<%= c.getId() %>">
+          <input type="hidden" name="action" value="updateComment">
+          <input type="hidden" name="projectID" value="<%= projectId %>">
+          <input type="hidden" name="feedbackId" value="<%= feedback.getId() %>">
+          <input type="hidden" name="commentId" value="<%= c.getId() %>">
+          <textarea name="content"><%= c.getContent() %></textarea>
+          <button type="submit" class="btn-save-sm">저장</button>
+          <button type="button" class="btn-cancel-sm"
+                  onclick="toggleCommentEdit(<%= c.getId() %>)">취소</button>
+        </form>
+        <% } %>
       </div>
       <% } %>
     <% } %>
@@ -201,6 +236,13 @@ function toggleEdit() {
   document.getElementById('viewMode').style.display =
     document.getElementById('viewMode').style.display === 'none' ? '' : 'none';
   document.getElementById('editForm').classList.toggle('open');
+}
+function toggleCommentEdit(id) {
+  var form = document.getElementById('comment-edit-' + id);
+  var text = document.getElementById('comment-text-' + id);
+  var isOpen = form.classList.contains('open');
+  form.classList.toggle('open');
+  text.style.display = isOpen ? '' : 'none';
 }
 </script>
 </body>
