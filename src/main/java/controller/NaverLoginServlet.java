@@ -155,9 +155,9 @@ public class NaverLoginServlet extends HttpServlet {
     }
 
     private String createNaverMemberId(String email) {
-        return email.split("@")[0];
+        return "NAVER_" + email;
     }
-
+    
     private String readGet(String url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("GET");

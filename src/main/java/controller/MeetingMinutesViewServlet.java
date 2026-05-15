@@ -31,13 +31,13 @@ public class MeetingMinutesViewServlet extends HttpServlet {
         
         try {
             int id = Integer.parseInt(request.getParameter("id"));
-            String projectId = request.getParameter("projectId");
+            String projectId = request.getParameter("projectID");
             
             MeetingMinutesDAO dao = new MeetingMinutesDAO();
             MeetingMinutesDTO minutes = dao.getById(id);
             
             if (minutes == null) {
-                response.sendRedirect("meetingMinutes?projectId=" + projectId + "&error=not_found");
+                response.sendRedirect("meetingMinutes?projectID=" + projectId + "&error=not_found");
                 return;
             }
             

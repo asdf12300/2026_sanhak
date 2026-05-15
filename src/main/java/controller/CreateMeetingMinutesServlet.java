@@ -28,7 +28,7 @@ public class CreateMeetingMinutesServlet extends HttpServlet {
             return;
         }
         
-        String projectIdStr = request.getParameter("projectId");
+        String projectIdStr = request.getParameter("projectID");
         if (projectIdStr == null || projectIdStr.trim().isEmpty()) {
             response.sendRedirect("projects.jsp");
             return;
@@ -65,12 +65,12 @@ public class CreateMeetingMinutesServlet extends HttpServlet {
         
         // 교수는 회의록 작성 불가
         if ("professor".equals(loginUser.getRole())) {
-            response.sendRedirect("meetingMinutes?projectId=" + request.getParameter("projectId") + "&error=access_denied");
+            response.sendRedirect("meetingMinutes?projectID=" + request.getParameter("projectID") + "&error=access_denied");
             return;
         }
         
         try {
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
             
             // 권한 체크: 프로젝트 멤버인지 확인
             ProjectMemberDAO memberDAO = new ProjectMemberDAO();
@@ -85,15 +85,15 @@ public class CreateMeetingMinutesServlet extends HttpServlet {
             
             // 입력값 검증
             if (title == null || title.trim().isEmpty()) {
-                response.sendRedirect("meetingMinutes?projectId=" + projectId + "&error=empty_title");
+                response.sendRedirect("meetingMinutes?projectID=" + projectId + "&error=empty_title");
                 return;
             }
             if (meetingDateStr == null || meetingDateStr.trim().isEmpty()) {
-                response.sendRedirect("meetingMinutes?projectId=" + projectId + "&error=empty_date");
+                response.sendRedirect("meetingMinutes?projectID=" + projectId + "&error=empty_date");
                 return;
             }
             if (content == null || content.trim().isEmpty()) {
-                response.sendRedirect("meetingMinutes?projectId=" + projectId + "&error=empty_content");
+                response.sendRedirect("meetingMinutes?projectID=" + projectId + "&error=empty_content");
                 return;
             }
             
@@ -108,9 +108,9 @@ public class CreateMeetingMinutesServlet extends HttpServlet {
             boolean success = dao.insert(minutes);
             
             if (success) {
-                response.sendRedirect("meetingMinutes?projectId=" + projectId);
+                response.sendRedirect("meetingMinutes?projectID=" + projectId);
             } else {
-                response.sendRedirect("meetingMinutes?projectId=" + projectId + "&error=insert_failed");
+                response.sendRedirect("meetingMinutes?projectID=" + projectId + "&error=insert_failed");
             }
             
         } catch (NumberFormatException e) {

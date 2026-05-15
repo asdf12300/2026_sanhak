@@ -13,18 +13,18 @@
     String activeFileShare = path.contains("fileShare") ? "active" : "";
     
     Integer currentProjectId = (Integer) session.getAttribute("currentProjectId");
-    String projectParam = request.getParameter("projectId");
+    String projectParam = request.getParameter("projectID");
     if (projectParam != null && !projectParam.isEmpty()) {
         try {
             currentProjectId = Integer.parseInt(projectParam);
         } catch (NumberFormatException e) { }
     }
-    String projectQuery = (currentProjectId != null) ? "?projectId=" + currentProjectId : "";
+    String projectQuery = (currentProjectId != null) ? "?projectID=" + currentProjectId : "";
 
     // projectId 처리
     String sidebarProjectId = request.getParameter("id");
     if (sidebarProjectId == null || sidebarProjectId.trim().isEmpty()) {
-        sidebarProjectId = request.getParameter("projectId");
+        sidebarProjectId = request.getParameter("projectID");
     }
     if (sidebarProjectId == null || sidebarProjectId.trim().isEmpty()) {
         Object pidObj = request.getAttribute("projectId");
@@ -62,7 +62,7 @@ String lastProjectId = (String) session.getAttribute("lastProjectId");
 String teamMemberUrl;
 
 if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
-    teamMemberUrl = request.getContextPath() + "/teamMemberManage.jsp?projectId=" + lastProjectId;
+    teamMemberUrl = request.getContextPath() + "/teamMemberManage.jsp?projectID=" + lastProjectId;
 } else {
     teamMemberUrl = "javascript:alert('먼저 프로젝트를 선택하세요.')";
 }
@@ -122,7 +122,7 @@ if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
 <%
 String chatUrl;
 if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
-    chatUrl = request.getContextPath() + "/chat.jsp?projectId=" + lastProjectId;
+    chatUrl = request.getContextPath() + "/chat.jsp?projectID=" + lastProjectId;
 } else {
     chatUrl = "javascript:alert('먼저 프로젝트를 선택하세요.')";
 }

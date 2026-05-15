@@ -105,7 +105,7 @@ public class ProjectMemberDAO {
 
     // 초대 상태 변경
     public boolean updateInvitationStatus(int pmNo, String memberId, String status) {
-        String sql = "UPDATE project_member SET status = ? WHERE id = ? AND member_id = ?";
+        String sql = "UPDATE project_member SET status = ? WHERE id = ? AND member_id = ? AND status = 'invited'";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -267,6 +267,27 @@ public class ProjectMemberDAO {
         return 0;
     }
 
+    public int getInvitedProjectId(int pmNo, String memberId) {
+        String sql =
+            "SELECT project_id FROM project_member " +
+            "WHERE id = ? AND member_id = ? AND status = 'invited'";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, pmNo);
+            ps.setString(2, memberId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("project_id");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     // 이미 초대/참여 상태인지 확인
     public boolean isMember(int projectId, String memberId) {        String sql =
             "SELECT id FROM project_member " +
@@ -345,5 +366,38 @@ public class ProjectMemberDAO {
         }
 
         return false;
+    }
+
+    // 프로젝트 접근 권한 확인: 팀장이거나 accepted 상태의 프로젝트 멤버여야 함
+    public boolean canAccessProject(int projectId, String memberId) {
+        if (memberId == null || memberId.trim().isEmpty()) {
+            return false;
+        }
+
+        String sql =
+            "SELECT 1 " +
+            "FROM board b " +
+            "LEFT JOIN project_member pm " +
+            "  ON b.id = pm.project_id " +
+            " AND pm.member_id = ? " +
+            " AND pm.status = 'accepted' " +
+            "WHERE b.id = ? " +
+            "  AND (b.team_leader = ? OR pm.id IS NOT NULL)";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, memberId);
+            ps.setInt(2, projectId);
+            ps.setString(3, memberId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

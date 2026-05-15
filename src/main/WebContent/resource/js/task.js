@@ -5,7 +5,7 @@ let projectMembers = []; // 프로젝트 팀원 캐시
 
 // ── 팀원 목록 로드 ──
 function loadMembers() {
-  return fetch("taskApi?projectId=" + PROJECT_ID + "&type=members")
+  return fetch("taskApi?projectID=" + PROJECT_ID + "&type=members")
     .then(r => r.json())
     .then(data => { projectMembers = data; })
     .catch(() => { projectMembers = []; });
@@ -26,7 +26,7 @@ function populateAssigneeSelect(selectedId) {
 
 // ── 데이터 로드 ──
 function loadTasks() {
-  fetch("taskApi?projectId=" + PROJECT_ID)
+  fetch("taskApi?projectID=" + PROJECT_ID)
     .then(r => r.json())
     .then(data => { tasks = data; renderTable(); })
     .catch(() => { tasks = []; renderTable(); });
@@ -117,7 +117,7 @@ function saveTask() {
 
   const params = new URLSearchParams({
     action:    editId >= 0 ? 'update' : 'save',
-    projectId: PROJECT_ID,
+    projectID: PROJECT_ID,
     title:     title,
     assignee:  document.getElementById('taskAssignee').value,
     status:    document.getElementById('taskStatus').value,
@@ -146,7 +146,7 @@ function confirmDelete(id) {
   fetch('taskApi', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ action: 'delete', id: id })
+    body: new URLSearchParams({ action: 'delete', projectID: PROJECT_ID, id: id })
   }).then(() => loadTasks());
 }
 
@@ -156,7 +156,7 @@ function deleteTask() {
   fetch('taskApi', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ action: 'delete', id: editId })
+    body: new URLSearchParams({ action: 'delete', projectID: PROJECT_ID, id: editId })
   }).then(() => { closeModal(); loadTasks(); });
 }
 

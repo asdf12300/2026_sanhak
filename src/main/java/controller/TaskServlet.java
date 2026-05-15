@@ -38,7 +38,7 @@ public class TaskServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
 
         int projectId = 0;
-        try { projectId = Integer.parseInt(req.getParameter("projectId")); } catch (Exception e) {}
+        try { projectId = Integer.parseInt(req.getParameter("projectID")); } catch (Exception e) {}
 
         // 팀원 목록 요청
         if ("members".equals(req.getParameter("type"))) {
@@ -122,7 +122,7 @@ public class TaskServlet extends HttpServlet {
 
                 if ("save".equals(action)) {
                     TaskDTO t = new TaskDTO();
-                    String projectIdStr = req.getParameter("projectId");
+                    String projectIdStr = req.getParameter("projectID");
                     String assignee = req.getParameter("assignee");
                     System.out.println("4. 업무 등록 - projectId: " + projectIdStr + ", title: " + req.getParameter("title"));
 
@@ -150,8 +150,8 @@ public class TaskServlet extends HttpServlet {
                     System.out.println("4. 업무 수정 - id: " + req.getParameter("id"));
                     TaskDTO t = new TaskDTO();
                     t.setId(Integer.parseInt(req.getParameter("id")));
-                    t.setProjectId(Integer.parseInt(req.getParameter("projectId") != null
-                                    ? req.getParameter("projectId") : "0"));
+                    t.setProjectId(Integer.parseInt(req.getParameter("projectID") != null
+                                    ? req.getParameter("projectID") : "0"));
                     t.setTitle(req.getParameter("title"));
                     t.setContent(req.getParameter("content"));
                     t.setAssignee(req.getParameter("assignee"));

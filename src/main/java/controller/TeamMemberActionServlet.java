@@ -27,7 +27,7 @@ public class TeamMemberActionServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        String projectIdStr = request.getParameter("projectId");
+        String projectIdStr = request.getParameter("projectID");
         String memberId = request.getParameter("memberId");
         String pmNoStr = request.getParameter("pmNo");
 
@@ -57,7 +57,7 @@ public class TeamMemberActionServlet extends HttpServlet {
         if (("remove".equals(action) || "setLeader".equals(action))
                 && (teamLeaderId == null || !teamLeaderId.equals(loginId))) {
             msg = "팀장만 사용할 수 있는 기능입니다.";
-            response.sendRedirect("teamMemberManage.jsp?projectId=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
+            response.sendRedirect("teamMemberManage.jsp?projectID=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
             return;
         }
 
@@ -95,26 +95,20 @@ public class TeamMemberActionServlet extends HttpServlet {
                     profMsg = result ? "교수 초대가 완료되었습니다." : "교수 초대에 실패했습니다.";
                 }
             }
-            response.sendRedirect("teamMemberManage.jsp?projectId=" + projectId + "&profMsg=" + URLEncoder.encode(profMsg, "UTF-8"));
+            response.sendRedirect("teamMemberManage.jsp?projectID=" + projectId + "&profMsg=" + URLEncoder.encode(profMsg, "UTF-8"));
             return;
         } else if ("accept".equals(action)) {
             int pmNo = Integer.parseInt(pmNoStr);
+            int targetProjectId = dao.getInvitedProjectId(pmNo, loginId);
 
             System.out.println("[TeamMemberAction] accept: loginId=" + loginId
-                    + ", pmNo=" + pmNo + ", projectId=" + projectId);
+                    + ", pmNo=" + pmNo + ", projectId=" + targetProjectId);
 
-            boolean result = dao.updateInvitationStatus(pmNo, loginId, "accepted");
+            boolean result = targetProjectId > 0 && dao.updateInvitationStatus(pmNo, loginId, "accepted");
             msg = result ? "초대를 수락했습니다." : "초대 수락에 실패했습니다.";
 
             // 수락한 멤버를 해당 프로젝트의 모든 팀 채팅방에 자동 추가
             if (result) {
-                // projectId가 0이면 pmNo로 projectId를 직접 조회
-                int targetProjectId = projectId;
-                if (targetProjectId <= 0) {
-                    targetProjectId = dao.getProjectIdByPmNo(pmNo);
-                    System.out.println("[TeamMemberAction] projectId가 0이어서 pmNo로 조회: " + targetProjectId);
-                }
-
                 if (targetProjectId > 0) {
                     List<Integer> teamRoomIds = chatDAO.getTeamChatRoomIds(targetProjectId);
                     for (int roomId : teamRoomIds) {
@@ -137,7 +131,8 @@ public class TeamMemberActionServlet extends HttpServlet {
 
         } else if ("reject".equals(action)) {
             int pmNo = Integer.parseInt(pmNoStr);
-            boolean result = dao.updateInvitationStatus(pmNo, loginId, "rejected");
+            int targetProjectId = dao.getInvitedProjectId(pmNo, loginId);
+            boolean result = targetProjectId > 0 && dao.updateInvitationStatus(pmNo, loginId, "rejected");
             msg = result ? "초대를 거절했습니다." : "초대 거절에 실패했습니다.";
             String myRole = dao.getMemberRole(loginId);
             if ("professor".equals(myRole)) {
@@ -155,7 +150,7 @@ public class TeamMemberActionServlet extends HttpServlet {
             String profMsg = "";
             boolean result = dao.removeMember(projectId, memberId);
             profMsg = result ? "교수를 제외했습니다." : "교수 제외에 실패했습니다.";
-            response.sendRedirect("teamMemberManage.jsp?projectId=" + projectId + "&profMsg=" + URLEncoder.encode(profMsg, "UTF-8"));
+            response.sendRedirect("teamMemberManage.jsp?projectID=" + projectId + "&profMsg=" + URLEncoder.encode(profMsg, "UTF-8"));
             return;
 
         } else if ("setLeader".equals(action)) {
@@ -166,7 +161,7 @@ public class TeamMemberActionServlet extends HttpServlet {
             msg = "잘못된 요청입니다.";
         }
 
-        //response.sendRedirect("teamMemberManage?projectId=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
-        response.sendRedirect("teamMemberManage.jsp?projectId=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
+        //response.sendRedirect("teamMemberManage?projectID=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
+        response.sendRedirect("teamMemberManage.jsp?projectID=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
     }
 }

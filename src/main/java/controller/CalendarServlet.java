@@ -29,7 +29,7 @@ public class CalendarServlet extends HttpServlet {
             PrintWriter out = resp.getWriter();
 
             try (Connection conn = DBConnection.getConnection()) {
-            	String pidStr = req.getParameter("projectId");
+                String pidStr = req.getParameter("projectID");
             	if (pidStr == null || pidStr.isEmpty()) {
             	    out.print("[]");
             	    return;
@@ -74,7 +74,7 @@ public class CalendarServlet extends HttpServlet {
         } else if ("members".equals(action)) {
             resp.setContentType("application/json;charset=UTF-8");
             PrintWriter out = resp.getWriter();
-            String pidStr = req.getParameter("projectId");
+            String pidStr = req.getParameter("projectID");
             if (pidStr == null || pidStr.isEmpty()) { out.print("[]"); return; }
             int projectId = Integer.parseInt(pidStr);
             try (Connection conn = DBConnection.getConnection()) {
@@ -121,7 +121,7 @@ public class CalendarServlet extends HttpServlet {
             conn.setAutoCommit(false);
 
             if ("save".equals(action)) {
-                String projectIdStr = req.getParameter("project_id");
+                String projectIdStr = req.getParameter("projectID");
                 if (projectIdStr == null || projectIdStr.isEmpty() || projectIdStr.equals("null")) {
                     resp.getWriter().print("error");
                     conn.rollback();
@@ -142,7 +142,7 @@ public class CalendarServlet extends HttpServlet {
             } else if ("update".equals(action)) {
                 CalendarDTO e = new CalendarDTO();
                 e.setId(Integer.parseInt(req.getParameter("id")));
-                e.setProjectId(Integer.parseInt(req.getParameter("project_id")));
+                e.setProjectId(Integer.parseInt(req.getParameter("projectID")));
                 e.setTitle(req.getParameter("title"));
                 e.setDate(req.getParameter("date"));
                 e.setTime(req.getParameter("time"));

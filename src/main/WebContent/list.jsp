@@ -40,7 +40,7 @@
     %>
     <div class="project-grid">
       <% for (ProjectDTO dto : list) { %>
-      <a href="view?id=<%= dto.getId() %>" class="project-card">
+      <a href="view?projectID=<%= dto.getId() %>" class="project-card">
         <div class="project-card-title"><%= dto.getTitle() %></div>
         <div class="project-card-meta">
           <span style="display:flex;align-items:center;gap:4px">

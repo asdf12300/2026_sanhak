@@ -16,7 +16,7 @@ function closeCreateModal() {
 function openViewModal(id, projectId) {
     const modal = document.getElementById('viewModal');
     const iframe = document.getElementById('viewFrame');
-    iframe.src = 'meetingMinutesView?id=' + id + '&projectId=' + projectId;
+    iframe.src = 'meetingMinutesView?id=' + id + '&projectID=' + projectId;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }

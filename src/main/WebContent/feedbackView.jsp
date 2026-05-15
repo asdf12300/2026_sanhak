@@ -127,7 +127,7 @@
         <form action="feedback" method="post" style="display:inline"
               onsubmit="return confirm('피드백을 삭제하시겠습니까?')">
           <input type="hidden" name="action" value="delete">
-          <input type="hidden" name="projectId" value="<%= projectId %>">
+          <input type="hidden" name="projectID" value="<%= projectId %>">
           <input type="hidden" name="id" value="<%= feedback.getId() %>">
           <button type="submit" class="btn-del">삭제</button>
         </form>
@@ -140,7 +140,7 @@
     <div class="edit-form" id="editForm">
       <form action="feedback" method="post">
         <input type="hidden" name="action" value="update">
-        <input type="hidden" name="projectId" value="<%= projectId %>">
+        <input type="hidden" name="projectID" value="<%= projectId %>">
         <input type="hidden" name="id" value="<%= feedback.getId() %>">
         <input type="text" name="title" value="<%= feedback.getTitle() %>" required>
         <textarea name="content" required><%= feedback.getContent() %></textarea>
@@ -171,7 +171,7 @@
           <form action="feedback" method="post" style="margin-left:auto"
                 onsubmit="return confirm('댓글을 삭제하시겠습니까?')">
             <input type="hidden" name="action" value="deleteComment">
-            <input type="hidden" name="projectId" value="<%= projectId %>">
+            <input type="hidden" name="projectID" value="<%= projectId %>">
             <input type="hidden" name="feedbackId" value="<%= feedback.getId() %>">
             <input type="hidden" name="commentId" value="<%= c.getId() %>">
             <button type="submit" class="comment-del">삭제</button>
@@ -186,7 +186,7 @@
     <!-- 댓글 입력 (모든 프로젝트 멤버) -->
     <form action="feedback" method="post" class="comment-form">
       <input type="hidden" name="action" value="comment">
-      <input type="hidden" name="projectId" value="<%= projectId %>">
+      <input type="hidden" name="projectID" value="<%= projectId %>">
       <input type="hidden" name="feedbackId" value="<%= feedback.getId() %>">
       <textarea name="content" placeholder="댓글을 입력하세요..." required></textarea>
       <button type="submit" class="btn-comment">등록</button>

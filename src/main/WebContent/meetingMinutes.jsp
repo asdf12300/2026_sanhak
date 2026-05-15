@@ -118,7 +118,7 @@
         
         <div class="modal-body">
             <form method="post" action="createMeetingMinutes" id="createForm">
-                <input type="hidden" name="projectId" value="<%= projectId %>">
+                <input type="hidden" name="projectID" value="<%= projectId %>">
                 
                 <div class="form-group">
                     <label for="title">회의 제목</label>

@@ -82,7 +82,7 @@ public class ChatServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
 
         try {
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
 
             System.out.println("[ChatServlet] getRooms projectId=" + projectId + ", user=" + user.getId());
 
@@ -148,7 +148,7 @@ public class ChatServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
 
         try {
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
             String roomName = request.getParameter("roomName");
             String roomType = request.getParameter("roomType");
 
@@ -191,7 +191,7 @@ public class ChatServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
 
         try {
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
             String targetMemberId = request.getParameter("targetMemberId");
 
             if (targetMemberId == null || targetMemberId.trim().isEmpty()) {

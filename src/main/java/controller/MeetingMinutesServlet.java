@@ -31,7 +31,7 @@ public class MeetingMinutesServlet extends HttpServlet {
             return;
         }
         
-        String projectIdStr = request.getParameter("projectId");
+        String projectIdStr = request.getParameter("projectID");
         if (projectIdStr == null || projectIdStr.trim().isEmpty()) {
             response.sendRedirect("projects.jsp");
             return;

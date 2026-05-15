@@ -33,12 +33,12 @@ public class FolderServlet extends HttpServlet {
             dao.deleteFolder(folderId);
 
         } else if ("assign".equals(action)) {
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
             int folderId  = Integer.parseInt(request.getParameter("folderId"));
             dao.assignProjectToFolder(projectId, folderId);
 
         } else if ("remove".equals(action)) {
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
             dao.removeProjectFromFolder(projectId);
         } else if ("rename".equals(action)) {
 

@@ -84,7 +84,7 @@ public class FileShareServlet extends HttpServlet {
         }
 
         if ("professor".equals(loginUser.getRole())) {
-            resp.sendRedirect("fileShare?projectId=" + projectId);
+            resp.sendRedirect("fileShare?projectID=" + projectId);
             return;
         }
 
@@ -104,7 +104,7 @@ public class FileShareServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        resp.sendRedirect("fileShare?projectId=" + projectId);
+        resp.sendRedirect("fileShare?projectID=" + projectId);
     }
 
     private void upload(HttpServletRequest req, int projectId, LoginDTO loginUser, Connection conn)
@@ -153,7 +153,7 @@ public class FileShareServlet extends HttpServlet {
             throws IOException {
         String idStr = req.getParameter("id");
         if (idStr == null || idStr.trim().isEmpty()) {
-            resp.sendRedirect("fileShare?projectId=" + projectId);
+            resp.sendRedirect("fileShare?projectID=" + projectId);
             return;
         }
 
@@ -165,7 +165,7 @@ public class FileShareServlet extends HttpServlet {
 
             FileShareDTO file = dao.getById(conn, Integer.parseInt(idStr));
             if (file == null || file.getProjectId() != projectId || file.getS3Key() == null) {
-                resp.sendRedirect("fileShare?projectId=" + projectId);
+                resp.sendRedirect("fileShare?projectID=" + projectId);
                 return;
             }
 
@@ -176,7 +176,7 @@ public class FileShareServlet extends HttpServlet {
             storage.download(file.getS3Key(), resp.getOutputStream());
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect("fileShare?projectId=" + projectId);
+            resp.sendRedirect("fileShare?projectID=" + projectId);
         }
     }
 
@@ -212,7 +212,7 @@ public class FileShareServlet extends HttpServlet {
 
     private int parseProjectId(HttpServletRequest req) {
         try {
-            return Integer.parseInt(req.getParameter("projectId"));
+            return Integer.parseInt(req.getParameter("projectID"));
         } catch (Exception e) {
             return 0;
         }

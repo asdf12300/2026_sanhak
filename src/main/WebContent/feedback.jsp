@@ -76,7 +76,7 @@
     <h3>새 피드백 작성</h3>
     <form action="feedback" method="post">
       <input type="hidden" name="action" value="write">
-      <input type="hidden" name="projectId" value="<%= projectId %>">
+      <input type="hidden" name="projectID" value="<%= projectId %>">
       <input type="text" name="title" placeholder="제목을 입력하세요" required>
       <textarea name="content" placeholder="피드백 내용을 입력하세요" required></textarea>
       <div class="form-actions">
@@ -92,7 +92,7 @@
     <div class="empty">아직 등록된 피드백이 없습니다.</div>
   <% } else { %>
     <% for (FeedbackDTO fb : feedbackList) { %>
-    <div class="fb-card" onclick="location.href='feedback?action=view&projectId=<%= projectId %>&id=<%= fb.getId() %>'">
+    <div class="fb-card" onclick="location.href='feedback?action=view&projectID=<%= projectId %>&id=<%= fb.getId() %>'">
       <div class="fb-card-title"><%= fb.getTitle() %></div>
       <div class="fb-card-meta">
         <span class="badge-prof">교수</span>

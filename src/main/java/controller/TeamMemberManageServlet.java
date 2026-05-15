@@ -20,7 +20,7 @@ public class TeamMemberManageServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String projectIdStr = request.getParameter("projectId");
+        String projectIdStr = request.getParameter("projectID");
 
         if (projectIdStr == null || projectIdStr.trim().isEmpty()) {
             response.sendRedirect("list");

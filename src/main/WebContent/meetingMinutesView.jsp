@@ -511,7 +511,7 @@
             <div class="edit-mode" id="editMode">
                 <form method="post" action="updateMeetingMinutes" id="editForm">
                     <input type="hidden" name="id" value="<%= minutes.getId() %>">
-                    <input type="hidden" name="projectId" value="<%= projectId %>">
+                    <input type="hidden" name="projectID" value="<%= projectId %>">
                     
                     <div class="form-group">
                         <label for="title">회의 제목</label>
@@ -665,7 +665,7 @@
     
     <form id="deleteForm" method="post" action="deleteMeetingMinutes" style="display:none;">
         <input type="hidden" name="id" value="<%= minutes.getId() %>">
-        <input type="hidden" name="projectId" value="<%= projectId %>">
+        <input type="hidden" name="projectID" value="<%= projectId %>">
     </form>
     
     <script>
@@ -843,7 +843,7 @@
                 window.parent.postMessage('closeModal', '*');
             } else {
                 // 일반 페이지면 목록으로 이동
-                location.href = 'meetingMinutes?projectId=<%= projectId %>';
+                location.href = 'meetingMinutes?projectID=<%= projectId %>';
             }
         }
     </script>

@@ -38,7 +38,7 @@ public class UpdateMeetingMinutesServlet extends HttpServlet {
         
         try {
             int id = Integer.parseInt(request.getParameter("id"));
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
             
             // 권한 체크: 프로젝트 멤버인지 확인
             ProjectMemberDAO memberDAO = new ProjectMemberDAO();
@@ -53,15 +53,15 @@ public class UpdateMeetingMinutesServlet extends HttpServlet {
             
             // 입력값 검증
             if (title == null || title.trim().isEmpty()) {
-                response.sendRedirect("meetingMinutesView?id=" + id + "&projectId=" + projectId + "&error=empty_title");
+                response.sendRedirect("meetingMinutesView?id=" + id + "&projectID=" + projectId + "&error=empty_title");
                 return;
             }
             if (meetingDateStr == null || meetingDateStr.trim().isEmpty()) {
-                response.sendRedirect("meetingMinutesView?id=" + id + "&projectId=" + projectId + "&error=empty_date");
+                response.sendRedirect("meetingMinutesView?id=" + id + "&projectID=" + projectId + "&error=empty_date");
                 return;
             }
             if (content == null || content.trim().isEmpty()) {
-                response.sendRedirect("meetingMinutesView?id=" + id + "&projectId=" + projectId + "&error=empty_content");
+                response.sendRedirect("meetingMinutesView?id=" + id + "&projectID=" + projectId + "&error=empty_content");
                 return;
             }
             
@@ -80,10 +80,10 @@ public class UpdateMeetingMinutesServlet extends HttpServlet {
                 // iframe 안에서 실행되면 같은 페이지 새로고침
                 response.setContentType("text/html; charset=UTF-8");
                 response.getWriter().println("<script>");
-                response.getWriter().println("location.href='meetingMinutesView?id=" + id + "&projectId=" + projectId + "';");
+                response.getWriter().println("location.href='meetingMinutesView?id=" + id + "&projectID=" + projectId + "';");
                 response.getWriter().println("</script>");
             } else {
-                response.sendRedirect("meetingMinutesView?id=" + id + "&projectId=" + projectId + "&error=update_failed");
+                response.sendRedirect("meetingMinutesView?id=" + id + "&projectID=" + projectId + "&error=update_failed");
             }
             
         } catch (NumberFormatException e) {

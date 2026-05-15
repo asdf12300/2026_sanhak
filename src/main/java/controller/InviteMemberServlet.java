@@ -35,7 +35,7 @@ public class InviteMemberServlet extends HttpServlet {
 
 			String[] memberIds = memberIdsPart.split(",");
 
-			String projectId = request.getParameter("projectId");
+			String projectId = request.getParameter("projectID");
 			if (projectId == null)
 				projectId = "1";
 

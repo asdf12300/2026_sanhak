@@ -9,6 +9,7 @@ import javax.servlet.http.*;
 import model.CalendarDAO;
 import model.CalendarDTO;
 import model.DBConnection;
+import model.LoginDTO;
 import model.ProjectDAO;
 import model.ProjectDTO;
 
@@ -18,11 +19,17 @@ public class EditProjectServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String idStr = request.getParameter("id");
+        String idStr = request.getParameter("projectID");
         if (idStr == null) { response.sendRedirect("list"); return; }
 
         ProjectDAO dao = new ProjectDAO();
         ProjectDTO dto = dao.getById(Integer.parseInt(idStr));
+        LoginDTO loginUser = (LoginDTO) request.getSession().getAttribute("loginUser");
+        if (dto == null || loginUser == null || !loginUser.getId().equals(dto.getTeam_leader())) {
+            request.getSession().setAttribute("accessError", "\uC798\uBABB\uB41C \uC811\uADFC \uC785\uB2C8\uB2E4.");
+            response.sendRedirect("projects.jsp");
+            return;
+        }
         request.setAttribute("dto", dto);
         request.getRequestDispatcher("editProject.jsp").forward(request, response);
     }
@@ -32,7 +39,7 @@ public class EditProjectServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        int id          = Integer.parseInt(request.getParameter("id"));
+        int id          = Integer.parseInt(request.getParameter("projectID"));
         String title    = request.getParameter("title");
         String content  = request.getParameter("content");
         String deadline = request.getParameter("deadline");
@@ -42,7 +49,16 @@ public class EditProjectServlet extends HttpServlet {
         dto.setTitle(title);
         dto.setContent(content);
         dto.setDeadline(deadline);
-        new ProjectDAO().update(dto);
+        ProjectDAO projectDAO = new ProjectDAO();
+        ProjectDTO currentProject = projectDAO.getById(id);
+        LoginDTO loginUser = (LoginDTO) request.getSession().getAttribute("loginUser");
+        if (currentProject == null || loginUser == null || !loginUser.getId().equals(currentProject.getTeam_leader())) {
+            request.getSession().setAttribute("accessError", "\uC798\uBABB\uB41C \uC811\uADFC \uC785\uB2C8\uB2E4.");
+            response.sendRedirect("projects.jsp");
+            return;
+        }
+
+        projectDAO.update(dto);
 
         // 캘린더 마감일 이벤트 동기화
         if (deadline != null && !deadline.trim().isEmpty()) {

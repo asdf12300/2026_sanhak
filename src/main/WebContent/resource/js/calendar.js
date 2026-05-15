@@ -14,7 +14,7 @@ var calProjectMembers = [];
 function loadEvents() {
   var el = document.getElementById('evtProjectId');
   var projectId = el ? el.value : '';
-  fetch(contextPath + "/event?action=list&projectId=" + projectId)
+  fetch(contextPath + "/event?action=list&projectID=" + projectId)
     .then(function(res) { return res.json(); })
     .then(function(data) {
       events = data.map(function(e) {
@@ -35,7 +35,7 @@ function loadCalMembers() {
   var el = document.getElementById('evtProjectId');
   var projectId = el ? el.value : '';
   if (!projectId) return Promise.resolve();
-  return fetch(contextPath + "/event?action=members&projectId=" + projectId)
+  return fetch(contextPath + "/event?action=members&projectID=" + projectId)
     .then(function(r) { return r.json(); })
     .then(function(data) { calProjectMembers = data; })
     .catch(function() { calProjectMembers = []; });
@@ -318,7 +318,7 @@ document.getElementById('saveBtn').onclick = function() {
   var params = new URLSearchParams();
   params.append('action', editIdx >= 0 ? 'update' : 'save');
   params.append('title', title);
-  params.append('project_id', document.getElementById('evtProjectId').value);
+  params.append('projectID', document.getElementById('evtProjectId').value);
   params.append('date', document.getElementById('evtDate').value);
   params.append('time', document.getElementById('evtTime').value);
   params.append('cat', parseInt(document.getElementById('evtCat').value, 10));
@@ -347,6 +347,7 @@ document.getElementById('delBtn').onclick = function() {
     var params = new URLSearchParams();
     params.append('action', 'delete');
     params.append('id', events[editIdx].id);
+    params.append('projectID', document.getElementById('evtProjectId').value);
     fetch(contextPath + "/event", {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},

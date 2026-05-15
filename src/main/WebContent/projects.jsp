@@ -683,13 +683,13 @@
           <div class="notification-item-actions">
             <form action="teamMemberAction" method="post" style="display: inline;">
               <input type="hidden" name="action" value="accept">
-              <input type="hidden" name="projectId" value="<%= invite.getProjectId() %>">
+              <input type="hidden" name="projectID" value="<%= invite.getProjectId() %>">
               <input type="hidden" name="pmNo" value="<%= invite.getPmNo() %>">
               <button type="submit" class="btn-notification-accept">수락</button>
             </form>
             <form action="teamMemberAction" method="post" style="display: inline;">
               <input type="hidden" name="action" value="reject">
-              <input type="hidden" name="projectId" value="<%= invite.getProjectId() %>">
+              <input type="hidden" name="projectID" value="<%= invite.getProjectId() %>">
               <input type="hidden" name="pmNo" value="<%= invite.getPmNo() %>">
               <button type="submit" class="btn-notification-reject">거절</button>
             </form>
@@ -729,6 +729,13 @@
 </div>
 
 <div class="projects-container">
+  <%
+    String accessError = (String) session.getAttribute("accessError");
+    if (accessError != null) {
+      session.removeAttribute("accessError");
+  %>
+  <div class="alert alert-danger" style="margin-bottom:20px;"><%= accessError %></div>
+  <% } %>
   <!-- 헤더 -->
   <div class="projects-header">
     <div class="projects-title">내 프로젝트</div>
@@ -763,10 +770,10 @@
     <% 
       boolean isLeader = project.getTeam_leader() != null && project.getTeam_leader().equals(userId);
     %>
-    <a href="index.jsp?projectId=<%= project.getId() %>" class="project-card">
+    <a href="index.jsp?projectID=<%= project.getId() %>" class="project-card">
       <% if (isLeader) { %>
       <!-- 팀장: 프로젝트 삭제 버튼 -->
-      <button class="project-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('정말 이 프로젝트를 삭제하시겠습니까?\n\n프로젝트와 관련된 모든 데이터(팀원, 업무, 일정)가 함께 삭제됩니다.')) { location.href='deleteProject?id=<%= project.getId() %>'; }">
+      <button class="project-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('정말 이 프로젝트를 삭제하시겠습니까?\n\n프로젝트와 관련된 모든 데이터(팀원, 업무, 일정)가 함께 삭제됩니다.')) { location.href='deleteProject?projectID=<%= project.getId() %>'; }">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
@@ -776,7 +783,7 @@
       </button>
       <% } else { %>
       <!-- 팀원: 프로젝트 나가기 버튼 -->
-      <button class="project-delete-btn" style="background: #f59e0b;" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 프로젝트에서 나가시겠습니까?')) { location.href='leaveProject?id=<%= project.getId() %>'; }">
+      <button class="project-delete-btn" style="background: #f59e0b;" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 프로젝트에서 나가시겠습니까?')) { location.href='leaveProject?projectID=<%= project.getId() %>'; }">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -895,12 +902,12 @@ function openEditModal(id, title, content, deadline) {
 	  var deadline = document.getElementById('editDeadline').value;
 	  if (!title) { alert('제목을 입력하세요.'); return; }
 	  var form = new FormData();
-	  form.append('id', id);
+	  form.append('projectID', id);
 	  form.append('title', title);
 	  form.append('content', content);
 	  form.append('deadline', deadline);
 	  var params = new URLSearchParams();
-	  params.append('id', id);
+	  params.append('projectID', id);
 	  params.append('title', title);
 	  params.append('content', content);
 	  params.append('deadline', deadline);

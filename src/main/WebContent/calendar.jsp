@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%
-String projectIdParam = request.getParameter("projectId");
+String projectIdParam = request.getParameter("projectID");
 model.LoginDTO loginUser = (model.LoginDTO) session.getAttribute("loginUser");
 boolean isProfessor = loginUser != null && "professor".equals(loginUser.getRole());
 %>

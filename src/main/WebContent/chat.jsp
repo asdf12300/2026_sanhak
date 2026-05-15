@@ -7,7 +7,7 @@
         return;
     }
     
-    String projectIdParam = request.getParameter("projectId");
+    String projectIdParam = request.getParameter("projectID");
     if (projectIdParam == null) {
         response.sendRedirect("list.jsp");
         return;

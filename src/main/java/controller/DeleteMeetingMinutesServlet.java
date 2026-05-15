@@ -35,7 +35,7 @@ public class DeleteMeetingMinutesServlet extends HttpServlet {
         
         try {
             int id = Integer.parseInt(request.getParameter("id"));
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
+            int projectId = Integer.parseInt(request.getParameter("projectID"));
             
             // 권한 체크: 프로젝트 멤버인지 확인
             ProjectMemberDAO memberDAO = new ProjectMemberDAO();
@@ -54,11 +54,11 @@ public class DeleteMeetingMinutesServlet extends HttpServlet {
                 response.getWriter().println("if (window.parent !== window) {");
                 response.getWriter().println("    window.parent.postMessage('closeModal', '*');");
                 response.getWriter().println("} else {");
-                response.getWriter().println("    location.href='meetingMinutes?projectId=" + projectId + "';");
+                response.getWriter().println("    location.href='meetingMinutes?projectID=" + projectId + "';");
                 response.getWriter().println("}");
                 response.getWriter().println("</script>");
             } else {
-                response.sendRedirect("meetingMinutes?projectId=" + projectId + "&error=delete_failed");
+                response.sendRedirect("meetingMinutes?projectID=" + projectId + "&error=delete_failed");
             }
             
         } catch (NumberFormatException e) {

@@ -53,7 +53,7 @@ function onFolderDrop(event, folderId) {
   // 서버에 폴더 지정 요청
   const params = new URLSearchParams();
   params.append('action', 'assign');
-  params.append('projectId', draggedProjectId);
+  params.append('projectID', draggedProjectId);
   params.append('folderId', folderId);
 
   fetch('folderAction', {

@@ -24,7 +24,7 @@ public class ProjectMemberServlet extends HttpServlet {
         String action = req.getParameter("action");
         
         if ("getMembers".equals(action)) {
-            String projectIdStr = req.getParameter("projectId");
+            String projectIdStr = req.getParameter("projectID");
             if (projectIdStr != null) {
                 int projectId = Integer.parseInt(projectIdStr);
                 var members = dao.getMembersByProject(projectId);
@@ -48,7 +48,7 @@ public class ProjectMemberServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
 
         String action       = req.getParameter("action");
-        String projectIdStr = req.getParameter("projectId");
+        String projectIdStr = req.getParameter("projectID");
         String memberId     = req.getParameter("memberId");
 
         if (projectIdStr == null || memberId == null || action == null) {
@@ -114,6 +114,6 @@ public class ProjectMemberServlet extends HttpServlet {
             msg = "잘못된 요청입니다.";
         }
 
-        resp.sendRedirect("view?id=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
+        resp.sendRedirect("view?projectID=" + projectId + "&msg=" + URLEncoder.encode(msg, "UTF-8"));
     }
 }

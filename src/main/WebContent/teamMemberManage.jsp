@@ -6,13 +6,13 @@
 <%@ page import="model.ProjectMemberDAO" %>
 <%@ page import="model.ProjectMemberDTO" %>
 <%
-String projectIdStr = request.getParameter("projectId");
+String projectIdStr = request.getParameter("projectID");
 int projectId = 0;
 
 if (projectIdStr == null || projectIdStr.trim().isEmpty() || "null".equals(projectIdStr)) {
     String lastProjectId = (String) session.getAttribute("lastProjectId");
     if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {
-        response.sendRedirect(request.getContextPath() + "/teamMemberManage.jsp?projectId=" + lastProjectId);
+        response.sendRedirect(request.getContextPath() + "/teamMemberManage.jsp?projectID=" + lastProjectId);
         return;
     } else {
         response.sendRedirect(request.getContextPath() + "/index.jsp");
@@ -190,7 +190,7 @@ boolean amILeader = loginId != null && loginId.equals(teamLeaderId);
     <% if (amILeader) { %>
     <form action="<%= request.getContextPath() %>/teamMemberAction" method="post" class="invite-row">
       <input type="hidden" name="action" value="invite">
-      <input type="hidden" name="projectId" value="<%= projectId %>">
+      <input type="hidden" name="projectID" value="<%= projectId %>">
       <input type="text" name="memberId" placeholder="초대할 학생 아이디를 입력하세요" required>
       <button type="submit" class="btn-invite">팀원 초대</button>
     </form>
@@ -236,7 +236,7 @@ boolean amILeader = loginId != null && loginId.equals(teamLeaderId);
             <% if ("accepted".equals(dto.getStatus()) && !isLeader && !isMe) { %>
               <form action="<%= request.getContextPath() %>/teamMemberAction" method="post" class="inline-form">
                 <input type="hidden" name="action" value="setLeader">
-                <input type="hidden" name="projectId" value="<%= dto.getProjectId() %>">
+                <input type="hidden" name="projectID" value="<%= dto.getProjectId() %>">
                 <input type="hidden" name="memberId" value="<%= dto.getMemberId() %>">
                 <button type="submit" class="btn-sm btn-yellow">팀장 지정</button>
               </form>
@@ -245,7 +245,7 @@ boolean amILeader = loginId != null && loginId.equals(teamLeaderId);
               <form action="<%= request.getContextPath() %>/teamMemberAction" method="post" class="inline-form"
                     onsubmit="return confirm('팀원을 제외하시겠습니까?')">
                 <input type="hidden" name="action" value="remove">
-                <input type="hidden" name="projectId" value="<%= dto.getProjectId() %>">
+                <input type="hidden" name="projectID" value="<%= dto.getProjectId() %>">
                 <input type="hidden" name="memberId" value="<%= dto.getMemberId() %>">
                 <button type="submit" class="btn-sm btn-red">제외</button>
               </form>
@@ -272,7 +272,7 @@ boolean amILeader = loginId != null && loginId.equals(teamLeaderId);
     <!-- 교수 초대 폼 -->
     <form action="<%= request.getContextPath() %>/teamMemberAction" method="post" class="invite-row">
       <input type="hidden" name="action" value="inviteProfessor">
-      <input type="hidden" name="projectId" value="<%= projectId %>">
+      <input type="hidden" name="projectID" value="<%= projectId %>">
       <input type="text" name="memberId" placeholder="초대할 교수 아이디를 입력하세요" required>
       <button type="submit" class="btn-invite prof">교수 초대</button>
     </form>
@@ -309,7 +309,7 @@ boolean amILeader = loginId != null && loginId.equals(teamLeaderId);
             <form action="<%= request.getContextPath() %>/teamMemberAction" method="post" class="inline-form"
                   onsubmit="return confirm('교수를 제외하시겠습니까?')">
               <input type="hidden" name="action" value="removeProfessor">
-              <input type="hidden" name="projectId" value="<%= dto.getProjectId() %>">
+              <input type="hidden" name="projectID" value="<%= dto.getProjectId() %>">
               <input type="hidden" name="memberId" value="<%= dto.getMemberId() %>">
               <button type="submit" class="btn-sm btn-red">제외</button>
             </form>

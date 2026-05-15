@@ -13,7 +13,7 @@ public class LeaveProjectServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String projectIdStr = request.getParameter("id");
+        String projectIdStr = request.getParameter("projectID");
         HttpSession session = request.getSession();
         
         String userId = null;

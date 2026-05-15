@@ -39,7 +39,7 @@
       <div class="card-body">
         <% if (dto != null) { %>
         <form action="editProject" method="post">
-          <input type="hidden" name="id" value="<%= dto.getId() %>">
+          <input type="hidden" name="projectID" value="<%= dto.getId() %>">
           <div class="form-group">
             <label class="form-label">프로젝트명 *</label>
             <input type="text" name="title" class="form-control" value="<%= dto.getTitle() != null ? dto.getTitle() : "" %>" required>

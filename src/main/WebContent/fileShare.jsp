@@ -194,7 +194,7 @@
           <td><%= f.getCreatedAt() %></td>
           <td>
             <a class="fs-download-btn"
-               href="fileShare?action=download&projectId=<%= projectId %>&id=<%= f.getId() %>">
+               href="fileShare?action=download&projectID=<%= projectId %>&id=<%= f.getId() %>">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
@@ -206,7 +206,7 @@
             <form action="fileShare" method="post" style="display:inline;"
                   onsubmit="return confirm('파일을 삭제하시겠습니까?')">
               <input type="hidden" name="action" value="delete">
-              <input type="hidden" name="projectId" value="<%= projectId %>">
+              <input type="hidden" name="projectID" value="<%= projectId %>">
               <input type="hidden" name="id" value="<%= f.getId() %>">
               <button type="submit" class="fs-delete-btn">삭제</button>
             </form>
@@ -229,7 +229,7 @@
     <h3>📤 파일 업로드</h3>
     <form action="fileShare" method="post" enctype="multipart/form-data" id="uploadForm">
       <input type="hidden" name="action" value="upload">
-      <input type="hidden" name="projectId" value="<%= projectId %>">
+      <input type="hidden" name="projectID" value="<%= projectId %>">
 
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
            ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">

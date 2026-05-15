@@ -124,7 +124,7 @@
 </div>
 
 <script>
-const PROJECT_ID = <%= request.getParameter("projectId") != null ? request.getParameter("projectId") : "1" %>;
+const PROJECT_ID = <%= request.getParameter("projectID") != null ? request.getParameter("projectID") : "1" %>;
 const IS_PROFESSOR = <%= isProfessor %>;
 </script>
 <script src="resource/js/task.js"></script>

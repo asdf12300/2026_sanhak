@@ -5,7 +5,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.sql.Connection" %>
 <%
-String selectedProjectId = request.getParameter("projectId");
+String selectedProjectId = request.getParameter("projectID");
 if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".equals(selectedProjectId)) {
   session.setAttribute("lastProjectId", selectedProjectId);
 }
@@ -16,7 +16,7 @@ String userName = (loginUser != null) ? loginUser.getName() : "게스트";
 String userId   = (loginUser != null) ? loginUser.getId()   : "";
 String initials = (userName.length() >= 2) ? userName.substring(0,2) : userName;
 
-String projectIdParam = request.getParameter("projectId");
+String projectIdParam = request.getParameter("projectID");
 ProjectDTO currentProject = null;
 boolean isLeader = false;
 boolean isProfessor = "professor".equals(loginUser != null ? loginUser.getRole() : "");
@@ -34,7 +34,7 @@ if (projectIdParam != null && !projectIdParam.isEmpty()) {
 }
 
 String projectQuery = (projectIdParam != null && !projectIdParam.isEmpty())
-  ? "?projectId=" + projectIdParam
+  ? "?projectID=" + projectIdParam
   : "";
 %>
 <%
@@ -338,7 +338,7 @@ if (currentProject != null) {
       <div class="card-hd">
         <div class="card-t">파일 공유</div>
         <% if (currentProject != null) { %>
-        <a href="fileShare?projectId=<%= currentProject.getId() %>" style="text-decoration:none;">
+        <a href="fileShare?projectID=<%= currentProject.getId() %>" style="text-decoration:none;">
           <% if (!isProfessor) { %>
           <button class="btn btn-g" style="font-size:11px;padding:5px 10px">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -439,7 +439,7 @@ var dashCurY, dashCurM;
 
 function dashLoadEvents() {
   if (!DASH_PROJECT_ID) { dashRenderCal(); renderSchedList([]); return; }
-  fetch(DASH_CONTEXT + '/event?action=list&projectId=' + DASH_PROJECT_ID)
+  fetch(DASH_CONTEXT + '/event?action=list&projectID=' + DASH_PROJECT_ID)
     .then(function(r){ return r.json(); })
     .then(function(data){ dashEvents=data; dashRenderCal(); renderSchedList(data); })
     .catch(function(){ dashEvents=[]; dashRenderCal(); renderSchedList([]); });
@@ -520,7 +520,7 @@ function renderSchedList(data) {
 var KANBAN_PROJECT_ID = <%= currentProject != null ? currentProject.getId() : 0 %>;
 function loadKanban() {
   if(!KANBAN_PROJECT_ID) return;
-  fetch('taskApi?projectId='+KANBAN_PROJECT_ID)
+  fetch('taskApi?projectID='+KANBAN_PROJECT_ID)
     .then(function(r){ return r.json(); })
     .then(function(tasks){ renderKanban(tasks); })
     .catch(function(){ renderKanban([]); });

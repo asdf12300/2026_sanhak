@@ -79,13 +79,13 @@
             <div class="notification-item-actions">
               <form action="teamMemberAction" method="post" style="display:inline;">
                 <input type="hidden" name="action" value="accept">
-                <input type="hidden" name="projectId" value="<%= invite.getProjectId() %>">
+                <input type="hidden" name="projectID" value="<%= invite.getProjectId() %>">
                 <input type="hidden" name="pmNo" value="<%= invite.getPmNo() %>">
                 <button type="submit" class="btn-notification-accept">수락</button>
               </form>
               <form action="teamMemberAction" method="post" style="display:inline;">
                 <input type="hidden" name="action" value="reject">
-                <input type="hidden" name="projectId" value="<%= invite.getProjectId() %>">
+                <input type="hidden" name="projectID" value="<%= invite.getProjectId() %>">
                 <input type="hidden" name="pmNo" value="<%= invite.getPmNo() %>">
                 <button type="submit" class="btn-notification-reject">거절</button>
               </form>
@@ -194,9 +194,9 @@
                if (p.getFolderId() == folder.getId()) { %>
           <div class="folder-child-row">
             <div class="child-indent-line"></div>
-            <a href="index.jsp?projectId=<%= p.getId() %>" class="project-card child-project-card">
+            <a href="index.jsp?projectID=<%= p.getId() %>" class="project-card child-project-card">
               <button class="project-delete-btn"
-                      onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 프로젝트에서 나가시겠습니까?')) { location.href='leaveProject?id=<%= p.getId() %>'; }">
+                      onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 프로젝트에서 나가시겠습니까?')) { location.href='leaveProject?projectID=<%= p.getId() %>'; }">
                 <!-- leave icon -->
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
@@ -205,7 +205,7 @@
                 </svg>
               </button>
               <button class="project-folder-out-btn"
-                      onclick="event.preventDefault(); event.stopPropagation(); if(confirm('폴더에서 꺼내시겠습니까?')) { location.href='folderAction?action=remove&projectId=<%= p.getId() %>'; }">
+                      onclick="event.preventDefault(); event.stopPropagation(); if(confirm('폴더에서 꺼내시겠습니까?')) { location.href='folderAction?action=remove&projectID=<%= p.getId() %>'; }">
                 꺼내기
               </button>
               <div class="project-card-header">
@@ -265,7 +265,7 @@
       <% for (ProjectDTO project : myProjects) {
            if (project.getFolderId() != 0) continue;
       %>
-      <a href="index.jsp?projectId=<%= project.getId() %>"
+      <a href="index.jsp?projectID=<%= project.getId() %>"
          class="project-card"
          draggable="true"
          data-project-id="<%= project.getId() %>"
@@ -273,7 +273,7 @@
          ondragend="onProjectDragEnd(event)">
 
         <button class="project-delete-btn"
-                onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 프로젝트에서 나가시겠습니까?')) { location.href='leaveProject?id=<%= project.getId() %>'; }">
+                onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 프로젝트에서 나가시겠습니까?')) { location.href='leaveProject?projectID=<%= project.getId() %>'; }">
           <!-- leave icon -->
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>

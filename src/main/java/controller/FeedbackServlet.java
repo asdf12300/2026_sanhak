@@ -30,7 +30,7 @@ public class FeedbackServlet extends HttpServlet {
         }
 
         String action = req.getParameter("action");
-        String pidStr  = req.getParameter("projectId");
+        String pidStr  = req.getParameter("projectID");
 
         if (pidStr == null || pidStr.isEmpty()) {
             resp.sendRedirect("projects.jsp");
@@ -58,7 +58,7 @@ public class FeedbackServlet extends HttpServlet {
                 int feedbackId = Integer.parseInt(req.getParameter("id"));
                 FeedbackDTO feedback = dao.getById(conn, feedbackId);
                 if (feedback == null || feedback.getProjectId() != projectId) {
-                    resp.sendRedirect("feedback?projectId=" + projectId);
+                    resp.sendRedirect("feedback?projectID=" + projectId);
                     return;
                 }
                 req.setAttribute("feedback", feedback);
@@ -92,7 +92,7 @@ public class FeedbackServlet extends HttpServlet {
         }
 
         String action    = req.getParameter("action");
-        String pidStr    = req.getParameter("projectId");
+        String pidStr    = req.getParameter("projectID");
         int projectId    = (pidStr != null && !pidStr.isEmpty()) ? Integer.parseInt(pidStr) : 0;
         String loginId   = loginUser.getId();
 
@@ -109,7 +109,7 @@ public class FeedbackServlet extends HttpServlet {
             // ── 피드백 등록 (교수만) ──
             if ("write".equals(action)) {
                 if (!"professor".equals(myRole)) {
-                    resp.sendRedirect("feedback?projectId=" + projectId);
+                    resp.sendRedirect("feedback?projectID=" + projectId);
                     return;
                 }
                 FeedbackDTO dto = new FeedbackDTO();
@@ -119,12 +119,12 @@ public class FeedbackServlet extends HttpServlet {
                 dto.setContent(req.getParameter("content"));
                 dao.insert(conn, dto);
                 conn.commit();
-                resp.sendRedirect("feedback?projectId=" + projectId);
+                resp.sendRedirect("feedback?projectID=" + projectId);
 
             // ── 피드백 수정 (교수 본인만) ──
             } else if ("update".equals(action)) {
                 if (!"professor".equals(myRole)) {
-                    resp.sendRedirect("feedback?projectId=" + projectId);
+                    resp.sendRedirect("feedback?projectID=" + projectId);
                     return;
                 }
                 FeedbackDTO dto = new FeedbackDTO();
@@ -134,18 +134,18 @@ public class FeedbackServlet extends HttpServlet {
                 dto.setContent(req.getParameter("content"));
                 dao.update(conn, dto);
                 conn.commit();
-                resp.sendRedirect("feedback?action=view&projectId=" + projectId + "&id=" + dto.getId());
+                resp.sendRedirect("feedback?action=view&projectID=" + projectId + "&id=" + dto.getId());
 
             // ── 피드백 삭제 (교수 본인만) ──
             } else if ("delete".equals(action)) {
                 if (!"professor".equals(myRole)) {
-                    resp.sendRedirect("feedback?projectId=" + projectId);
+                    resp.sendRedirect("feedback?projectID=" + projectId);
                     return;
                 }
                 int id = Integer.parseInt(req.getParameter("id"));
                 dao.delete(conn, id, loginId);
                 conn.commit();
-                resp.sendRedirect("feedback?projectId=" + projectId);
+                resp.sendRedirect("feedback?projectID=" + projectId);
 
             // ── 댓글 등록 (팀원/팀장) ──
             } else if ("comment".equals(action)) {
@@ -156,7 +156,7 @@ public class FeedbackServlet extends HttpServlet {
                 dto.setContent(req.getParameter("content"));
                 dao.insertComment(conn, dto);
                 conn.commit();
-                resp.sendRedirect("feedback?action=view&projectId=" + projectId + "&id=" + feedbackId);
+                resp.sendRedirect("feedback?action=view&projectID=" + projectId + "&id=" + feedbackId);
 
             // ── 댓글 삭제 (작성자 본인만) ──
             } else if ("deleteComment".equals(action)) {
@@ -164,12 +164,12 @@ public class FeedbackServlet extends HttpServlet {
                 int feedbackId = Integer.parseInt(req.getParameter("feedbackId"));
                 dao.deleteComment(conn, commentId, loginId);
                 conn.commit();
-                resp.sendRedirect("feedback?action=view&projectId=" + projectId + "&id=" + feedbackId);
+                resp.sendRedirect("feedback?action=view&projectID=" + projectId + "&id=" + feedbackId);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect("feedback?projectId=" + projectId);
+            resp.sendRedirect("feedback?projectID=" + projectId);
         }
     }
 }

@@ -92,7 +92,7 @@ function setupEventListeners() {
 
 // 채팅방 목록 로드
 function loadChatRooms() {
-    fetch(`ChatServlet?action=getRooms&projectId=${projectId}`)
+    fetch(`ChatServlet?action=getRooms&projectID=${projectId}`)
         .then(response => response.text())
         .then(text => {
             console.log('[loadChatRooms] 응답:', text);
@@ -284,7 +284,7 @@ function sendMessage() {
 function createTeamChatRoom(roomName) {
     const params = new URLSearchParams();
     params.append('action', 'createRoom');
-    params.append('projectId', projectId);
+    params.append('projectID', projectId);
     params.append('roomName', roomName);
     params.append('roomType', 'team');
 
@@ -317,7 +317,7 @@ function createTeamChatRoom(roomName) {
 
 // 프로젝트 멤버 로드 (학생만, 교수 제외)
 function loadProjectMembers() {
-    fetch(`projectMember?action=getMembers&projectId=${projectId}`)
+    fetch(`projectMember?action=getMembers&projectID=${projectId}`)
         .then(response => response.json())
         .then(members => {
             // accepted 상태이고, 본인이 아니고, 학생인 멤버만 필터링
@@ -355,7 +355,7 @@ function displayMembers(members) {
 function startPersonalChat(targetMemberId) {
     const params = new URLSearchParams();
     params.append('action', 'createPersonalChat');
-    params.append('projectId', projectId);
+    params.append('projectID', projectId);
     params.append('targetMemberId', targetMemberId);
 
     fetch('ChatServlet', {

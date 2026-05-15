@@ -18,7 +18,7 @@ public class ViewServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String idStr = request.getParameter("id");
+        String idStr = request.getParameter("projectID");
 
         if (idStr == null || idStr.isEmpty()) {
             request.setAttribute("error", "잘못된 접근입니다.");
