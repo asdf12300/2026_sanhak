@@ -4,7 +4,7 @@ public class LoginDTO {
     private String id;
     private String name;
     private String role;
-
+    private String loginType;
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -13,5 +13,7 @@ public class LoginDTO {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
-
+    
+    public String getLoginType() { return loginType; }
+    public void setLoginType(String loginType) { this.loginType = loginType; }
 }

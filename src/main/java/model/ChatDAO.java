@@ -222,7 +222,7 @@ public class ChatDAO {
  // 채팅 메시지 조회 (페이징)
     public List<ChatMessageDTO> getMessages(int roomId, int limit, int offset) {
         List<ChatMessageDTO> messages = new ArrayList<>();
-        String sql = "SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at ASC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM chat_messages WHERE room_id = ? ORDER BY sent_at DESC LIMIT ? OFFSET ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, roomId);

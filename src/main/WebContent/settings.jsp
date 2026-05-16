@@ -1,10 +1,19 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="model.LoginDTO" %>
 <%
 String role = (String)session.getAttribute("role");
 String movePage = "projects.jsp";
 
 if ("professor".equals(role)) {
     movePage = "professorProject.jsp";
+}
+%>
+<%
+LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
+String loginType = "";
+
+if (loginUser != null && loginUser.getLoginType() != null) {
+    loginType = loginUser.getLoginType();
 }
 %>
 <!DOCTYPE html>
@@ -238,18 +247,19 @@ input:focus {
 
       <label>탈퇴 확인 문구</label>
       <input type="text" name="confirmText" placeholder="탈퇴합니다" required>
-
+      <% if (!"naver".equals(loginType)) { %>
       <label>비밀번호 확인</label>
       <input type="password" name="password" required>
+      <% } %>
       <label>이메일 인증</label>
       <div class="email-check-row">
-        <input type="text" name="deleteCode" placeholder="인증번호 입력" required>
-        <button type="button"
-          class="email-code-btn"
-          onclick="sendDeleteCode()">
-          인증번호 발송
-        </button>
-      </div>
+      <input type="text" name="deleteCode" placeholder="인증번호 입력" required>
+      <button type="button"
+        class="email-code-btn"
+        onclick="sendDeleteCode()">
+        인증번호 발송
+      </button>
+    </div>
       <button type="submit" class="delete-btn">계정 탈퇴</button>
     </form>
   </div>

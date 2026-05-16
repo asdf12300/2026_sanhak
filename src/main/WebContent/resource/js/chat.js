@@ -275,9 +275,19 @@ function loadMessages(roomId, firstLoad = false) {
                 messages.forEach(msg => {
                     chatMessages.insertAdjacentHTML('beforeend', createMessageElement(msg));
                 });
-                requestAnimationFrame(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                });
+				requestAnimationFrame(() => {
+				    chatMessages.scrollTop = chatMessages.scrollHeight;
+				    const images = chatMessages.querySelectorAll('img');
+				    images.forEach(img => {
+				        img.onload = () => {
+				            chatMessages.scrollTop = chatMessages.scrollHeight;
+				        };
+				    });
+				    setTimeout(() => {
+				        chatMessages.scrollTop = chatMessages.scrollHeight;
+				    }, 100);
+
+				});
             } else {
                 // 추가 로드: 현재 스크롤 높이 기억 → prepend → 스크롤 위치 보정
                 const prevHeight = chatMessages.scrollHeight;

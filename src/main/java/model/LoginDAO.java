@@ -14,7 +14,7 @@ public class LoginDAO {
     // 로그인 인증 메서드 (role 검증 포함)
     public LoginDTO authenticate(String userid, String password, String role) {
 
-        String sql = "SELECT id, name, role FROM member WHERE id = ? AND pw = ? AND role = ?";
+    	String sql = "SELECT id, name, role, login_type FROM member WHERE id = ? AND pw = ? AND role = ?";
 
         try (
             Connection conn = getConnection();
