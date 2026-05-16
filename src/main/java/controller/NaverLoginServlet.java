@@ -141,13 +141,13 @@ public class NaverLoginServlet extends HttpServlet {
             }
             /* =========================
                6. DB 연결 및 로그인 처리
+               // 본인의 DB로 변경해주세요
             ========================= */
             Class.forName("com.mysql.cj.jdbc.Driver");
             dbConn = DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/test2026?serverTimezone=Asia/Seoul&characterEncoding=UTF-8",
                     "root",
                     "lost5595@"
-                    //"1234"
             );
 
             String extractedId = "naver_" + email.split("@")[0];
@@ -155,7 +155,7 @@ public class NaverLoginServlet extends HttpServlet {
             String sql = "SELECT * FROM member WHERE email = ?";
             pstmt = dbConn.prepareStatement(sql);
             pstmt.setString(1, email);
-
+            
             rs = pstmt.executeQuery();
 
             HttpSession session = request.getSession();
