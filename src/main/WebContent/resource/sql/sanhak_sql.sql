@@ -366,12 +366,6 @@ CREATE TABLE file_share (
     FOREIGN KEY (uploader_id) REFERENCES member(id)  ON DELETE CASCADE
 );
 
-CREATE INDEX idx_file_share_project ON file_share(project_id);
-<<<<<<< HEAD
-INSERT INTO member (name, id, pw, email, role) VALUES ('테스트', 'test', '1234', 'test@test.com', 'student');
-INSERT INTO member (name, id, pw, email, role) VALUES ('교수', 'pf', '1234', 'test@test.com', 'professor');
-=======
 
 -- 기존 chat_messages 테이블의 sender_id를 NULL 허용으로 변경 (시스템 메시지 지원)
 ALTER TABLE chat_messages MODIFY sender_id VARCHAR(50) NULL;
->>>>>>> 61aa942664b1ef9df7029e256a6079ab940c6ae5

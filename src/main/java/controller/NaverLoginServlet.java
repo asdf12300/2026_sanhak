@@ -156,8 +156,6 @@ public class NaverLoginServlet extends HttpServlet {
 
             rs = pstmt.executeQuery();
 
-            rs = pstmt.executeQuery();
-
             HttpSession session = request.getSession();
 
          // 기존 회원 로그인
