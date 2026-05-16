@@ -34,9 +34,10 @@ public class SettingsCheckServlet extends HttpServlet {
             return;
         }
 
-        String loginType = loginUser.getLoginType();
+        String userId = loginUser.getId();
+        boolean isNaverUser = userId != null && userId.startsWith("naver_");
 
-        if ("naver".equals(loginType)) {
+        if (isNaverUser) {
             request.setAttribute("naverUser", true);
             request.getRequestDispatcher("/settingsCheck.jsp").forward(request, response);
             return;
@@ -60,9 +61,9 @@ public class SettingsCheckServlet extends HttpServlet {
         }
 
         String userId = loginUser.getId();
-        String loginType = loginUser.getLoginType();
+        boolean isNaverUser = userId != null && userId.startsWith("naver_");
 
-        if ("naver".equals(loginType)) {
+        if (isNaverUser) {
             String inputCode = request.getParameter("settingsCode");
 
             String sessionCode = (String) session.getAttribute("deleteEmailCode");

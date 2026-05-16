@@ -27,7 +27,7 @@ public class DeleteAccountServlet extends HttpServlet {
 
         LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
         String userId = loginUser.getId();
-        String loginType = loginUser.getLoginType();
+        boolean isNaverUser = userId != null && userId.startsWith("naver_");
 
         String confirmText = request.getParameter("confirmText");
         String password = request.getParameter("password");
@@ -56,7 +56,7 @@ public class DeleteAccountServlet extends HttpServlet {
 
             LoginDAO loginDAO = new LoginDAO();
 
-            if (!"naver".equals(loginType)) {
+            if (!isNaverUser) {
                 boolean passwordOk = loginDAO.checkPassword(userId, password);
 
                 if (!passwordOk) {

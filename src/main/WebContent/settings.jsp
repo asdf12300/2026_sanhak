@@ -10,11 +10,14 @@ if ("professor".equals(role)) {
 %>
 <%
 LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
-String loginType = "";
 
-if (loginUser != null && loginUser.getLoginType() != null) {
-    loginType = loginUser.getLoginType();
+String userId = "";
+
+if (loginUser != null && loginUser.getId() != null) {
+    userId = loginUser.getId();
 }
+
+boolean isNaverUser = userId.startsWith("naver_");
 %>
 <!DOCTYPE html>
 <html>
@@ -247,7 +250,7 @@ input:focus {
 
       <label>탈퇴 확인 문구</label>
       <input type="text" name="confirmText" placeholder="탈퇴합니다" required>
-      <% if (!"naver".equals(loginType)) { %>
+      <% if (!isNaverUser) { %>
       <label>비밀번호 확인</label>
       <input type="password" name="password" required>
       <% } %>

@@ -3,12 +3,12 @@
 <%
     LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
 
-    String loginType = "";
-    if (loginUser != null && loginUser.getLoginType() != null) {
-        loginType = loginUser.getLoginType();
+    String userId = "";
+    if (loginUser != null && loginUser.getId() != null) {
+        userId = loginUser.getId();
     }
 
-    boolean isNaverUser = "naver".equals(loginType);
+    boolean isNaverUser = userId.startsWith("naver_");
 %>
 <!DOCTYPE html>
 <html>

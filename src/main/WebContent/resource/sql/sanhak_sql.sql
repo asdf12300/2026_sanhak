@@ -383,3 +383,5 @@ ADD COLUMN login_type VARCHAR(20) DEFAULT 'local';
 UPDATE member
 SET login_type = 'naver'
 WHERE id = '??';   
+--DB 변경 없이 하도록 기존에 추가한 로그인 타입 삭제 / 추가 안하셨으면 실행 x
+ALTER TABLE member DROP COLUMN login_type;

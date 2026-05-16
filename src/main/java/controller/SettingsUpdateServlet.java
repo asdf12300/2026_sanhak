@@ -37,6 +37,7 @@ public class SettingsUpdateServlet extends HttpServlet {
         }
 
         String userId = loginUser.getId();
+        boolean isNaverUser = userId != null && userId.startsWith("naver_");
 
         String authUserId = (String) session.getAttribute("settingsAuthUserId");
         if (authUserId == null || !authUserId.equals(userId)) {
@@ -47,6 +48,11 @@ public class SettingsUpdateServlet extends HttpServlet {
         String email = request.getParameter("email");
         String newPw = request.getParameter("newPw");
         String newPwCheck = request.getParameter("newPwCheck");
+        
+        if (isNaverUser && newPw != null && !newPw.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/settings.jsp?error=naverPw");
+            return;
+        }
 
         if ((email == null || email.trim().isEmpty()) &&
             (newPw == null || newPw.trim().isEmpty())) {

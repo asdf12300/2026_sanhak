@@ -152,7 +152,7 @@ public class NaverLoginServlet extends HttpServlet {
 
             String extractedId = "naver_" + email.split("@")[0];
 
-            String sql = "SELECT * FROM member WHERE login_type = 'naver' AND email = ?";
+            String sql = "SELECT * FROM member WHERE email = ?";
             pstmt = dbConn.prepareStatement(sql);
             pstmt.setString(1, email);
 
@@ -166,10 +166,8 @@ public class NaverLoginServlet extends HttpServlet {
                 loginUser.setId(rs.getString("id"));
                 loginUser.setName(rs.getString("name"));
                 loginUser.setRole(rs.getString("role"));
-                loginUser.setLoginType("naver");
                 
                 session.setAttribute("loginUser", loginUser);
-                session.setAttribute("loginType", "naver");
                 
                 response.sendRedirect(request.getContextPath() + "/projects.jsp");
 
@@ -177,24 +175,20 @@ public class NaverLoginServlet extends HttpServlet {
                 // 신규 회원 INSERT
                 // String extractedId = email.split("@")[0];
                 
-            	String insertSql = "INSERT INTO member(id, pw, email, name, role, login_type) VALUES (?, ?, ?, ?, ?, ?)";
-                PreparedStatement insertStmt = dbConn.prepareStatement(insertSql);
-                insertStmt.setString(1, extractedId);
-                insertStmt.setString(2, "NaverLogin");
-                insertStmt.setString(3, email);
-                insertStmt.setString(4, name);
-                insertStmt.setString(5, role);
-                insertStmt.setString(6, "naver");
-                insertStmt.executeUpdate();
+            	String insertSql = "INSERT INTO member(id, pw, email, name, role) VALUES (?, ?, ?, ?, ?)";
+            	PreparedStatement insertStmt = dbConn.prepareStatement(insertSql);
+            	insertStmt.setString(1, extractedId);
+            	insertStmt.setString(2, "NaverLogin");
+            	insertStmt.setString(3, email);
+            	insertStmt.setString(4, name);
+            	insertStmt.setString(5, role);
+            	insertStmt.executeUpdate();
                 
                 LoginDTO loginUser = new LoginDTO();
                 loginUser.setId(extractedId);
                 loginUser.setName(name);
                 loginUser.setRole(role);
-                loginUser.setLoginType("naver");
-                
                 session.setAttribute("loginUser", loginUser);
-                session.setAttribute("loginType", "naver");
                 
                 response.sendRedirect(request.getContextPath() + "/projects.jsp");
             }

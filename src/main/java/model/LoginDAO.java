@@ -14,7 +14,7 @@ public class LoginDAO {
     // 로그인 인증 메서드 (role 검증 포함)
     public LoginDTO authenticate(String userid, String password, String role) {
 
-    	String sql = "SELECT id, name, role, login_type FROM member WHERE id = ? AND pw = ? AND role = ?";
+    	String sql = "SELECT id, name, role FROM member WHERE id = ? AND pw = ? AND role = ?";
 
         try (
             Connection conn = getConnection();
@@ -79,24 +79,32 @@ public class LoginDAO {
     }
     // 계정 탈퇴
     public boolean deleteMember(String userId) {
-        String sql1 = "DELETE FROM project_member WHERE member_id = ?";
-        String sql2 = "DELETE FROM member WHERE id = ?";
+    	String sql1 = "DELETE FROM project_member WHERE member_id = ?";
+    	String sql2 = "DELETE FROM meeting_minutes WHERE created_by = ?";
+    	String sql3 = "DELETE FROM member WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection()) {
 
             conn.setAutoCommit(false);
 
             try (PreparedStatement pstmt1 = conn.prepareStatement(sql1);
-                 PreparedStatement pstmt2 = conn.prepareStatement(sql2)) {
+            	 PreparedStatement pstmt2 = conn.prepareStatement(sql2);
+            	 PreparedStatement pstmt3 = conn.prepareStatement(sql3)) {
 
-                pstmt1.setString(1, userId);
-                pstmt1.executeUpdate();
+            	 // project_member 삭제
+            	 pstmt1.setString(1, userId);
+            	 pstmt1.executeUpdate();
 
-                pstmt2.setString(1, userId);
-                int result = pstmt2.executeUpdate();
+            	 // meeting_minutes 삭제
+            	 pstmt2.setString(1, userId);
+            	 pstmt2.executeUpdate();
 
-                conn.commit();
-                return result > 0;
+            	 // member 삭제
+            	 pstmt3.setString(1, userId);
+            	 int result = pstmt3.executeUpdate();
+            	 
+            	 conn.commit();
+                 return result > 0;
 
             } catch (Exception e) {
                 conn.rollback();
