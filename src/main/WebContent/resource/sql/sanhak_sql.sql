@@ -239,15 +239,10 @@ CREATE TABLE file_share (
 
 -- 기존 chat_messages 테이블의 sender_id를 NULL 허용으로 변경 (시스템 메시지 지원)
 ALTER TABLE chat_messages MODIFY sender_id VARCHAR(50) NULL;
-<<<<<<< HEAD
-=======
->>>>>>> 61aa942664b1ef9df7029e256a6079ab940c6ae5
 
 --DB에 로그인 타입 추가 /일반 회원가입한 사용자는 local, 네이버 로그인은 naver로 표시됨 
-ALTER TABLE member
-ADD COLUMN login_type VARCHAR(20) DEFAULT 'local';
+ALTER TABLE member ADD COLUMN login_type VARCHAR(20) DEFAULT 'local';
 -- 네이버 계정 id를 ??를 교체하고 넣어주세요 
 UPDATE member
 SET login_type = 'naver'
-WHERE id = '??';   
->>>>>>> 8cd4ba4d4c8fc92371cba84ea74641ca97afc2c7
+WHERE id = '??';  
