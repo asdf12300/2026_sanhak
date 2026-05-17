@@ -32,6 +32,16 @@
 <link rel="stylesheet" href="resource/css/professorProject.css">
 </head>
 <body style="background: var(--bg);">
+<%
+  String pageMsg = request.getParameter("msg");
+  if (pageMsg != null && !pageMsg.trim().isEmpty()) {
+%>
+<script>
+  alert("<%= pageMsg.replace("\\", "\\\\").replace("\"", "\\\"").replace("</", "<\\/").replace("\r", "").replace("\n", "\\n") %>");
+</script>
+<%
+  }
+%>
 
 <!-- ── 상단 바 ── -->
 <div class="top-bar">

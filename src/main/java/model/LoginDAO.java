@@ -6,20 +6,15 @@ import java.sql.ResultSet;
 
 public class LoginDAO {
 
-    // DBConnection 재사용 (설정 통합)
     private Connection getConnection() {
         return DBConnection.getConnection();
     }
 
-    // 로그인 인증 메서드 (role 검증 포함)
     public LoginDTO authenticate(String userid, String password, String role) {
-
         String sql = "SELECT id, name, role FROM member WHERE id = ? AND pw = ? AND role = ?";
 
-        try (
-            Connection conn = getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, userid);
             ps.setString(2, password);
@@ -36,28 +31,27 @@ public class LoginDAO {
             }
 
         } catch (Exception e) {
-            e.printStackTrace(); // 콘솔에서 원인 확인 가능
+            e.printStackTrace();
         }
 
-        return null; // 로그인 실패
+        return null;
     }
 
-    // DB 연결 상태 확인용 메서드(LoginServlet에서 함수 호출해서 웹페이지에서 오류창 팝업)
     public boolean testConnection() {
         try (Connection conn = getConnection()) {
             if (conn != null && !conn.isClosed()) {
-                System.out.println("LoginDAO: DB 연결 성공");
+                System.out.println("LoginDAO: DB connection success");
                 return true;
-            } else {
-                System.out.println("LoginDAO: DB 연결 실패 (conn is null or closed)");
-                return false;
             }
+            System.out.println("LoginDAO: DB connection failed (conn is null or closed)");
+            return false;
         } catch (Exception e) {
-            System.out.println("LoginDAO: DB 연결 실패 (예외 발생)");
+            System.out.println("LoginDAO: DB connection failed (exception)");
             e.printStackTrace();
             return false;
         }
     }
+
     public boolean checkPassword(String userId, String password) {
         String sql = "SELECT id FROM member WHERE id = ? AND pw = ?";
 
@@ -77,23 +71,45 @@ public class LoginDAO {
 
         return false;
     }
-    // 계정 탈퇴
+
     public boolean deleteMember(String userId) {
-        String sql1 = "DELETE FROM project_member WHERE member_id = ?";
-        String sql2 = "DELETE FROM member WHERE id = ?";
+        String deleteOwnMinutesHistory =
+            "DELETE FROM meeting_minutes_history " +
+            "WHERE minutes_id IN (SELECT id FROM meeting_minutes WHERE created_by = ?)";
+        String deleteModifiedMinutesHistory =
+            "DELETE FROM meeting_minutes_history WHERE modified_by = ?";
+        String deleteMeetingMinutes =
+            "DELETE FROM meeting_minutes WHERE created_by = ?";
+        String deleteProjectMember =
+            "DELETE FROM project_member WHERE member_id = ?";
+        String deleteMember =
+            "DELETE FROM member WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection()) {
-
             conn.setAutoCommit(false);
 
-            try (PreparedStatement pstmt1 = conn.prepareStatement(sql1);
-                 PreparedStatement pstmt2 = conn.prepareStatement(sql2)) {
+            try (PreparedStatement psOwnHistory = conn.prepareStatement(deleteOwnMinutesHistory);
+                 PreparedStatement psModifiedHistory = conn.prepareStatement(deleteModifiedMinutesHistory);
+                 PreparedStatement psMinutes = conn.prepareStatement(deleteMeetingMinutes);
+                 PreparedStatement psProjectMember = conn.prepareStatement(deleteProjectMember);
+                 PreparedStatement psMember = conn.prepareStatement(deleteMember)) {
 
-                pstmt1.setString(1, userId);
-                pstmt1.executeUpdate();
+                new ProjectMemberDAO().cleanupMemberAllProjectData(conn, userId);
 
-                pstmt2.setString(1, userId);
-                int result = pstmt2.executeUpdate();
+                psOwnHistory.setString(1, userId);
+                psOwnHistory.executeUpdate();
+
+                psModifiedHistory.setString(1, userId);
+                psModifiedHistory.executeUpdate();
+
+                psMinutes.setString(1, userId);
+                psMinutes.executeUpdate();
+
+                psProjectMember.setString(1, userId);
+                psProjectMember.executeUpdate();
+
+                psMember.setString(1, userId);
+                int result = psMember.executeUpdate();
 
                 conn.commit();
                 return result > 0;

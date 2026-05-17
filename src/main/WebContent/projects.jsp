@@ -625,6 +625,16 @@
 </style>
 </head>
 <body style="background: var(--bg);">
+<%
+  String pageMsg = request.getParameter("msg");
+  if (pageMsg != null && !pageMsg.trim().isEmpty()) {
+%>
+<script>
+  alert("<%= pageMsg.replace("\\", "\\\\").replace("\"", "\\\"").replace("</", "<\\/").replace("\r", "").replace("\n", "\\n") %>");
+</script>
+<%
+  }
+%>
 
 <%
   // 받은 초대 목록 가져오기
