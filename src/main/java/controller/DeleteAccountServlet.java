@@ -27,6 +27,7 @@ public class DeleteAccountServlet extends HttpServlet {
 
         LoginDTO loginUser = (LoginDTO) session.getAttribute("loginUser");
         String userId = loginUser.getId();
+        boolean naverUser = isNaverUser(userId);
 
         String confirmText = request.getParameter("confirmText");
         String password = request.getParameter("password");
@@ -56,12 +57,14 @@ public class DeleteAccountServlet extends HttpServlet {
 
             LoginDAO loginDAO = new LoginDAO();
 
-            boolean passwordOk = loginDAO.checkPassword(userId, password);
+            if (!naverUser) {
+                boolean passwordOk = loginDAO.checkPassword(userId, password);
 
-            if (!passwordOk) {
-                request.setAttribute("deleteError", "비밀번호가 일치하지 않습니다.");
-                request.getRequestDispatcher("settings.jsp").forward(request, response);
-                return;
+                if (!passwordOk) {
+                    request.setAttribute("deleteError", "비밀번호가 일치하지 않습니다.");
+                    request.getRequestDispatcher("settings.jsp").forward(request, response);
+                    return;
+                }
             }
 
             ProjectMemberDAO projectMemberDAO = new ProjectMemberDAO();
@@ -91,5 +94,9 @@ public class DeleteAccountServlet extends HttpServlet {
             request.setAttribute("deleteError", "오류 발생: " + e.getMessage());
             request.getRequestDispatcher("settings.jsp").forward(request, response);
         }
+    }
+
+    private boolean isNaverUser(String userId) {
+        return userId != null && userId.startsWith("NAVER_");
     }
 }

@@ -55,7 +55,8 @@ public class DeleteSendCodeServlet extends HttpServlet {
             session.setAttribute("deleteEmailCode", code);
             session.setAttribute("deleteEmailCodeTime", System.currentTimeMillis());
 
-            sendMail(email, code);
+            String mode = request.getParameter("mode");
+            sendMail(email, code, mode);
             response.getWriter().write("등록된 이메일로 인증번호를 발송했습니다. "
                     + CODE_EXPIRE_MINUTES + "분 안에 입력해주세요.");
         } catch (Exception e) {
@@ -64,7 +65,7 @@ public class DeleteSendCodeServlet extends HttpServlet {
         }
     }
 
-    private void sendMail(String toEmail, String code) throws Exception {
+    private void sendMail(String toEmail, String code, String mode) throws Exception {
         Properties secret = new Properties();
         try (InputStream is = getServletContext().getResourceAsStream("/WEB-INF/classes/secret.properties")) {
             if (is == null) {
@@ -98,11 +99,13 @@ public class DeleteSendCodeServlet extends HttpServlet {
         MimeMessage message = new MimeMessage(mailSession);
         message.setFrom(new InternetAddress(username, "ProjectOS"));
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
-        message.setSubject("[ProjectOS] 계정 탈퇴 인증번호");
+        boolean settingsMode = "settings".equals(mode);
+        message.setSubject(settingsMode ? "[ProjectOS] 설정 변경 인증번호" : "[ProjectOS] 계정 탈퇴 인증번호");
         message.setContent(
-            "<h2>ProjectOS 계정 탈퇴 인증</h2>"
-                + "<p>계정 탈퇴를 계속하려면 아래 인증번호를 입력해주세요.</p>"
-                + "<div style='font-size:2rem;font-weight:700;letter-spacing:8px;color:#dc2626;margin:20px 0;'>"
+            "<h2>ProjectOS " + (settingsMode ? "설정 변경" : "계정 탈퇴") + " 인증</h2>"
+                + "<p>" + (settingsMode ? "설정 변경을 계속하려면" : "계정 탈퇴를 계속하려면") + " 아래 인증번호를 입력해주세요.</p>"
+                + "<div style='font-size:2rem;font-weight:700;letter-spacing:8px;color:"
+                + (settingsMode ? "#2563eb" : "#dc2626") + ";margin:20px 0;'>"
                 + code
                 + "</div>"
                 + "<p style='color:#94a3b8;font-size:12px;'>본인이 요청하지 않았다면 이 메일을 무시해주세요.</p>",

@@ -1,4 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    boolean isNaverUser = Boolean.TRUE.equals(request.getAttribute("naverUser"));
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -52,16 +55,41 @@ p { color: #6b7280; font-size: 14px; margin-bottom: 26px; }
   color: #e11d48;
   font-size: 14px;
 }
+.email-check-row {
+  display: flex;
+  gap: 8px;
+}
+.email-check-row .input {
+  flex: 1;
+}
+.email-code-btn {
+  width: 120px;
+  border: none;
+  border-radius: 12px;
+  background: #374151;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.email-code-btn:hover { background: #1f2937; }
 </style>
 </head>
-<body>
+<body data-context="<%=request.getContextPath()%>">
 
 <div class="card">
   <h2>설정 페이지 접근 확인</h2>
-  <p>개인정보 변경을 위해 현재 비밀번호를 입력하세요.</p>
+  <p><%= isNaverUser ? "네이버 로그인 사용자는 이메일 인증 후 설정 변경이 가능합니다." : "개인정보 변경을 위해 현재 비밀번호를 입력하세요." %></p>
 
   <form action="<%=request.getContextPath()%>/settings/check" method="post">
-    <input class="input" type="password" name="currentPw" placeholder="현재 비밀번호" required>
+    <% if (isNaverUser) { %>
+      <div class="email-check-row">
+        <input class="input" type="text" name="settingsCode" placeholder="인증번호 입력" required>
+        <button class="email-code-btn" type="button" onclick="sendSettingsCode()">인증번호 발송</button>
+      </div>
+    <% } else { %>
+      <input class="input" type="password" name="currentPw" placeholder="현재 비밀번호" required>
+    <% } %>
     <button class="btn" type="submit">확인</button>
   </form>
 
@@ -70,5 +98,22 @@ p { color: #6b7280; font-size: 14px; margin-bottom: 26px; }
   <% } %>
 </div>
 
+<script>
+function sendSettingsCode() {
+  var contextPath = document.body.dataset.context || '';
+  fetch(contextPath + '/delete/sendCode?mode=settings', {
+    method: 'POST'
+  })
+  .then(function(res) {
+    return res.text();
+  })
+  .then(function(msg) {
+    alert(msg);
+  })
+  .catch(function() {
+    alert('인증번호 발송 중 오류가 발생했습니다.');
+  });
+}
+</script>
 </body>
 </html>

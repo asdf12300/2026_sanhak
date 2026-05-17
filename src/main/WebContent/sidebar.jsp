@@ -17,6 +17,8 @@
     if (projectParam != null && !projectParam.isEmpty()) {
         try {
             currentProjectId = Integer.parseInt(projectParam);
+            session.setAttribute("currentProjectId", currentProjectId);
+            session.setAttribute("lastProjectId", projectParam);
         } catch (NumberFormatException e) { }
     }
     String projectQuery = (currentProjectId != null) ? "?projectID=" + currentProjectId : "";
@@ -59,6 +61,10 @@
     </a>
 <%
 String lastProjectId = (String) session.getAttribute("lastProjectId");
+if (lastProjectId == null) {
+    Integer cid = (Integer) session.getAttribute("currentProjectId");
+    if (cid != null) lastProjectId = String.valueOf(cid);
+}
 String teamMemberUrl;
 
 if (lastProjectId != null && !lastProjectId.trim().isEmpty()) {

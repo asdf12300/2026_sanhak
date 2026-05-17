@@ -1,4 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="model.LoginDTO" %>
+<%
+LoginDTO settingsLoginUser = (LoginDTO) session.getAttribute("loginUser");
+boolean settingsNaverUser = settingsLoginUser != null
+    && settingsLoginUser.getId() != null
+    && settingsLoginUser.getId().startsWith("NAVER_");
+%>
 
 <!DOCTYPE html>
 <html>
@@ -103,15 +110,17 @@ input:focus {
       <input type="email" name="email" placeholder="변경할 이메일">
     </div>
 
-    <div class="form-group">
-      <label>새 비밀번호</label>
-      <input type="password" name="newPw" placeholder="변경할 비밀번호">
-    </div>
+    <% if (!settingsNaverUser) { %>
+      <div class="form-group">
+        <label>새 비밀번호</label>
+        <input type="password" name="newPw" placeholder="변경할 비밀번호">
+      </div>
 
-    <div class="form-group">
-      <label>새 비밀번호 확인</label>
-      <input type="password" name="newPwCheck" placeholder="비밀번호 확인">
-    </div>
+      <div class="form-group">
+        <label>새 비밀번호 확인</label>
+        <input type="password" name="newPwCheck" placeholder="비밀번호 확인">
+      </div>
+    <% } %>
 
     <button class="btn" type="submit">변경하기</button>
   </form>
@@ -132,8 +141,10 @@ input:focus {
 
     <br><br>
 
-    <label>비밀번호 확인</label>
-    <input type="password" name="password" required>
+    <% if (!settingsNaverUser) { %>
+      <label>비밀번호 확인</label>
+      <input type="password" name="password" required>
+    <% } %>
 
     <br><br>
 
@@ -166,6 +177,9 @@ input:focus {
 
   <% if ("pw".equals(request.getParameter("error"))) { %>
     <div class="error">비밀번호가 일치하지 않습니다.</div>
+  <% } %>
+  <% if ("naverPw".equals(request.getParameter("error"))) { %>
+    <div class="error">네이버 로그인 사용자는 비밀번호를 변경할 수 없습니다.</div>
   <% } %>
 </div>
 

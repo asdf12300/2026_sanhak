@@ -9,6 +9,9 @@
 String selectedProjectId = request.getParameter("projectID");
 if (selectedProjectId != null && !selectedProjectId.trim().isEmpty() && !"null".equals(selectedProjectId)) {
   session.setAttribute("lastProjectId", selectedProjectId);
+  try {
+    session.setAttribute("currentProjectId", Integer.parseInt(selectedProjectId));
+  } catch (NumberFormatException e) { }
 }
 %>
 <%
@@ -313,13 +316,8 @@ if (currentProject != null) {
 
   <div class="grid" style="margin-bottom:16px">
     <div class="card c4">
-      <div class="card-hd"><div class="card-t">오늘의 일정</div><span class="badge b-bl">3월 29일 · 일</span></div>
-      <div class="today-list">
-        <div class="today-item" style="background:var(--blue-light);border-color:var(--blue)"><div class="t-time" style="color:var(--blue)">09:00 — 10:00</div><div class="t-name">디자인 시스템 검토 회의</div><div class="t-where">📹 화상회의 · Zoom</div></div>
-        <div class="today-item" style="background:var(--orange-light);border-color:var(--orange)"><div class="t-time" style="color:var(--orange)">11:30 — 12:30</div><div class="t-name">스프린트 플래닝 #12</div><div class="t-where">🏢 오프라인 · 3층 세미나실</div></div>
-        <div class="today-item" style="background:var(--violet-light);border-color:var(--violet)"><div class="t-time" style="color:var(--violet)">14:00 — 15:00</div><div class="t-name">클라이언트 데모 발표</div><div class="t-where">💻 온라인 · Google Meet</div></div>
-        <div class="today-item" style="background:var(--teal-light);border-color:var(--teal)"><div class="t-time" style="color:var(--teal)">16:00 — 17:00</div><div class="t-name">API 연동 테스트 체크</div><div class="t-where">🛠 개발팀 · 슬랙 채널</div></div>
-      </div>
+      <div class="card-hd"><div class="card-t">오늘의 일정</div></div>
+      <div class="today-list" id="today-sched-list"></div>
     </div>
     
     <div class="card c4">
@@ -375,12 +373,8 @@ if (currentProject != null) {
   <div class="grid" style="margin-bottom:16px">
   <% if (!isProfessor) { %>
      <div class="card c12">
-      <div class="card-hd"><div class="card-t">팀 채팅</div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></div><span style="font-size:11px;color:var(--teal);font-weight:600">4명 접속 중</span></div></div>
+      <div class="card-hd"><div class="card-t">팀 채팅</div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></div><span style="font-size:11px;color:var(--teal);font-weight:600"></span></div></div>
       <div class="chat-msgs" id="chat-messages">
-        <div class="chat-msg"><div class="chat-av" style="background:var(--teal)">LM</div><div class="chat-in"><div class="chat-nm">이민준 · 오전 9:02</div><div class="chat-bbl">안녕하세요! 오늘 스프린트 플래닝 준비됐나요?</div></div></div>
-        <div class="chat-msg me"><div class="chat-av" style="background:var(--blue)">KJ</div><div class="chat-in"><div class="chat-nm">나 · 오전 9:05</div><div class="chat-bbl">네! 자료 다 준비했어요. 11:30 세미나실에서 봐요 😊</div></div></div>
-        <div class="chat-msg"><div class="chat-av" style="background:var(--violet)">JS</div><div class="chat-in"><div class="chat-nm">장수연 · 오전 9:08</div><div class="chat-bbl">저도 준비 완료! 클라이언트 데모 자료도 공유드릴게요 📎</div></div></div>
-        <div class="chat-msg"><div class="chat-av" style="background:var(--orange)">PH</div><div class="chat-in"><div class="chat-nm">박현우 · 오전 9:15</div><div class="chat-bbl">로그인 페이지 버그 찾았어요. PR 올릴게요!</div></div></div>
       </div>
       <div class="chat-foot">
         <input class="chat-inp" id="chat-input" placeholder="메시지를 입력하세요..." onkeydown="if(event.key==='Enter')sendChat()">
@@ -432,11 +426,11 @@ var dashCurY, dashCurM;
 (function(){ var n=new Date(); dashCurY=n.getFullYear(); dashCurM=n.getMonth(); })();
 
 function dashLoadEvents() {
-  if (!DASH_PROJECT_ID) { dashRenderCal(); renderSchedList([]); return; }
+  if (!DASH_PROJECT_ID) { dashRenderCal(); renderSchedList([]); renderTodayList([]); return; }
   fetch(DASH_CONTEXT + '/event?action=list&projectID=' + DASH_PROJECT_ID)
     .then(function(r){ return r.json(); })
-    .then(function(data){ dashEvents=data; dashRenderCal(); renderSchedList(data); })
-    .catch(function(){ dashEvents=[]; dashRenderCal(); renderSchedList([]); });
+    .then(function(data){ dashEvents=data; dashRenderCal(); renderSchedList(data); renderTodayList(data); })
+    .catch(function(){ dashEvents=[]; dashRenderCal(); renderSchedList([]); renderTodayList([]); });
 }
 
 function dashRenderCal() {
@@ -508,6 +502,33 @@ function renderSchedList(data) {
       +'<div class="stime">'+timeStr+'</div>'
       +'<div class="stitle">'+e.title+'</div>'
       +'<div class="swho">'+(e.taskAssignee||'')+'</div></div>';
+  }).join('');
+}
+
+function renderTodayList(data) {
+  var today = new Date();
+  var todayStr = today.getFullYear() + '-'
+    + ('0' + (today.getMonth() + 1)).slice(-2) + '-'
+    + ('0' + today.getDate()).slice(-2);
+  var list = document.getElementById('today-sched-list');
+  if (!list) return;
+
+  var todayEvts = data.filter(function(e){ return e.date === todayStr; })
+    .sort(function(a,b){ return (a.time || '').localeCompare(b.time || ''); });
+
+  if (todayEvts.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted2);font-size:12px;padding:20px 0;">오늘 등록된 일정이 없습니다</div>';
+    return;
+  }
+
+  var colors = ['var(--blue)', 'var(--orange)', 'var(--violet)', 'var(--teal)'];
+  var lights = ['var(--blue-light)', 'var(--orange-light)', 'var(--violet-light)', 'var(--teal-light)'];
+  list.innerHTML = todayEvts.map(function(e, i){
+    var c = i % colors.length;
+    return '<div class="today-item" style="background:' + lights[c] + ';border-color:' + colors[c] + '">'
+      + '<div class="t-time" style="color:' + colors[c] + '">' + (e.time ? e.time.substring(0,5) : '-') + '</div>'
+      + '<div class="t-name">' + escHtml(e.title) + '</div>'
+      + '</div>';
   }).join('');
 }
 

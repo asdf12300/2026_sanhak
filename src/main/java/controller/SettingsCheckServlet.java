@@ -34,6 +34,9 @@ public class SettingsCheckServlet extends HttpServlet {
             return;
         }
 
+        if (isNaverUser(loginUser.getId())) {
+            request.setAttribute("naverUser", true);
+        }
         request.getRequestDispatcher("/settingsCheck.jsp").forward(request, response);
     }
 
@@ -52,6 +55,30 @@ public class SettingsCheckServlet extends HttpServlet {
         }
 
         String userId = loginUser.getId();
+        if (isNaverUser(userId)) {
+            String inputCode = request.getParameter("settingsCode");
+            String sessionCode = (String) session.getAttribute("deleteEmailCode");
+            Long codeTime = (Long) session.getAttribute("deleteEmailCodeTime");
+
+            if (sessionCode == null || inputCode == null || !sessionCode.equals(inputCode)) {
+                request.setAttribute("naverUser", true);
+                request.setAttribute("error", "이메일 인증번호가 일치하지 않습니다.");
+                request.getRequestDispatcher("/settingsCheck.jsp").forward(request, response);
+                return;
+            }
+
+            if (codeTime == null || System.currentTimeMillis() - codeTime > 3 * 60 * 1000) {
+                request.setAttribute("naverUser", true);
+                request.setAttribute("error", "이메일 인증번호가 만료되었습니다. 다시 발송해주세요.");
+                request.getRequestDispatcher("/settingsCheck.jsp").forward(request, response);
+                return;
+            }
+
+            session.setAttribute("settingsAuthUserId", userId);
+            response.sendRedirect(request.getContextPath() + "/settings.jsp");
+            return;
+        }
+
         String currentPw = request.getParameter("currentPw");
 
         UserSettingDAO dao = new UserSettingDAO();
@@ -64,5 +91,9 @@ public class SettingsCheckServlet extends HttpServlet {
             request.setAttribute("error", "비밀번호가 일치하지 않습니다.");
             request.getRequestDispatcher("/settingsCheck.jsp").forward(request, response);
         }
+    }
+
+    private boolean isNaverUser(String userId) {
+        return userId != null && userId.startsWith("NAVER_");
     }
 }
