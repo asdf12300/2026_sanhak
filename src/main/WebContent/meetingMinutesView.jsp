@@ -509,7 +509,7 @@
             <div class="view-mode" id="viewMode"><%= minutes.getContent() %></div>
             
             <div class="edit-mode" id="editMode">
-                <form method="post" action="updateMeetingMinutes" id="editForm">
+                <form method="post" action="updateMeetingMinutes" id="editForm" accept-charset="UTF-8">
                     <input type="hidden" name="id" value="<%= minutes.getId() %>">
                     <input type="hidden" name="projectID" value="<%= projectId %>">
                     

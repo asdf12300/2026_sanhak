@@ -128,7 +128,7 @@ function saveTask() {
 
   fetch('taskApi', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
     body: params
   }).then(r => r.text()).then(res => {
     if (res.startsWith('error:')) {
@@ -145,7 +145,7 @@ function confirmDelete(id) {
   if (!confirm('업무를 삭제하시겠습니까?')) return;
   fetch('taskApi', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
     body: new URLSearchParams({ action: 'delete', projectID: PROJECT_ID, id: id })
   }).then(() => loadTasks());
 }
@@ -155,7 +155,7 @@ function deleteTask() {
   if (!confirm('업무를 삭제하시겠습니까?')) return;
   fetch('taskApi', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
     body: new URLSearchParams({ action: 'delete', projectID: PROJECT_ID, id: editId })
   }).then(() => { closeModal(); loadTasks(); });
 }

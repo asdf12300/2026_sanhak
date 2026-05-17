@@ -225,23 +225,6 @@
     .intro-panel { display: none; }
     .login-panel { width: 100%; min-width: unset; background: #f8fafc; }
   }
-  .btn-kakao {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  background: #FEE500;
-  color: rgba(0,0,0,0.85);
-  border: none;
-  border-radius: 0.6rem;
-  font-size: 1rem;
-  font-weight: 700;
-  padding: 0.8rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.btn-kakao:hover { background: #f0d900; }
 .btn-naver {
   display: flex;
   align-items: center;
@@ -261,7 +244,6 @@
 }
 .btn-naver:hover { background: #02b351; }
 </style>
-<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body>
 
@@ -269,47 +251,10 @@
     Properties prop = new Properties();
     InputStream is = application.getResourceAsStream("/WEB-INF/classes/secret.properties");
     prop.load(is);
-    String kakaoJsKey = prop.getProperty("kakao.js.key");
     String naverClientId = prop.getProperty("naver.client.id");
 %>
 
 <script>
- <%--  Kakao.init('<%= kakaoJsKey %>');
-
-  function kakaoLogin() {
-	    Kakao.Auth.login({
-	        success: function(res) {
-	            // 사용자 정보를 별도로 요청
-	            Kakao.API.request({
-	                url: '/v2/user/me',
-	                success: function(userInfo) {
-	                    var userId = userInfo.id;
-	                    var nickname = userInfo.kakao_account?.profile?.nickname || '';
-
-	                    fetch('/sanhak/kakao/login', {
-	                        method: 'POST',
-	                        headers: { 'Content-Type': 'application/json' },
-	                        body: JSON.stringify({
-	                            id: userId,
-	                            nickname: nickname
-	                        })
-	                    })
-	                    .then(response => response.json())
-	                    .then(data => {
-	                        window.location.href = '/sanhak/projects.jsp';
-	                    });
-	                },
-	                fail: function(err) {
-	                    console.error('카카오 로그인 실패', err);
-	                }
-	            });
-	        },
-	        fail: function(err) {
-	            console.error(err);
-	        }
-	    });
-	}           --%>         
-
   function naverLogin() {
 	  var CLIENT_ID = '<%= naverClientId %>';
 	  var REDIRECT_URI = window.location.origin + '<%= request.getContextPath() %>/naver/login';
@@ -458,12 +403,6 @@
 
     <div class="divider">또는</div>
 
-	<!-- <button class="btn-kakao" onclick="kakaoLogin()">
-	  <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-	    <path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.67 1.69 5.02 4.26 6.37l-1.08 3.97 4.64-3.06c.37.05.75.07 1.18.07 4.97 0 9-3.36 9-7.5S16.97 3 12 3z" fill="rgba(0,0,0,0.85)"/>
-	  </svg>
-	  카카오 로그인
-	</button> -->
 	<button class="btn-naver" onclick="naverLogin()">
 	  <svg viewBox="0 0 24 24" width="20" height="20">
 	    <path d="M13.5 12.3L10.2 7H7v10h3.5V11.7L13.8 17H17V7h-3.5z" fill="#fff"/>

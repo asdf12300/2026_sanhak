@@ -58,6 +58,8 @@ public class ProjectAccessFilter implements Filter {
 
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
         HttpSession session = req.getSession(false);
 
         LoginDTO loginUser = session != null ? (LoginDTO) session.getAttribute("loginUser") : null;

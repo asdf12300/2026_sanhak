@@ -117,7 +117,7 @@
         </div>
         
         <div class="modal-body">
-            <form method="post" action="createMeetingMinutes" id="createForm">
+            <form method="post" action="createMeetingMinutes" id="createForm" accept-charset="UTF-8">
                 <input type="hidden" name="projectID" value="<%= projectId %>">
                 
                 <div class="form-group">
