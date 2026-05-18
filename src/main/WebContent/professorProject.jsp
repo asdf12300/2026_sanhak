@@ -42,6 +42,17 @@
 <%
   }
 %>
+<%
+  String accessError = (String) session.getAttribute("accessError");
+  if (accessError != null) {
+    session.removeAttribute("accessError");
+%>
+<script>
+  alert("<%= accessError.replace("\\", "\\\\").replace("\"", "\\\"").replace("</", "<\\/").replace("\r", "").replace("\n", "\\n") %>");
+</script>
+<%
+  }
+%>
 
 <!-- ── 상단 바 ── -->
 <div class="top-bar">

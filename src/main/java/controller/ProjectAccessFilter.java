@@ -68,6 +68,8 @@ public class ProjectAccessFilter implements Filter {
             return;
         }
 
+        String projectListPage = getProjectListPage(loginUser);
+
         if (isInvitationResponse(req)) {
             chain.doFilter(request, response);
             return;
@@ -75,12 +77,12 @@ public class ProjectAccessFilter implements Filter {
 
         Integer projectID = parseProjectID(req);
         if (projectID == null || projectID <= 0) {
-            reject(req, resp, "projects.jsp");
+            reject(req, resp, projectListPage);
             return;
         }
 
         if (!projectMemberDAO.canAccessProject(projectID, loginUser.getId())) {
-            reject(req, resp, "projects.jsp");
+            reject(req, resp, projectListPage);
             return;
         }
 
@@ -109,6 +111,10 @@ public class ProjectAccessFilter implements Filter {
         String action = req.getParameter("action");
         return "/teamMemberAction".equals(servletPath)
                 && ("accept".equals(action) || "reject".equals(action));
+    }
+
+    private String getProjectListPage(LoginDTO loginUser) {
+        return "professor".equals(loginUser.getRole()) ? "professorProject.jsp" : "projects.jsp";
     }
 
     private void reject(HttpServletRequest req, HttpServletResponse resp, String target)

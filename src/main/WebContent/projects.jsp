@@ -744,7 +744,9 @@
     if (accessError != null) {
       session.removeAttribute("accessError");
   %>
-  <div class="alert alert-danger" style="margin-bottom:20px;"><%= accessError %></div>
+  <script>
+    alert("<%= accessError.replace("\\", "\\\\").replace("\"", "\\\"").replace("</", "<\\/").replace("\r", "").replace("\n", "\\n") %>");
+  </script>
   <% } %>
   <!-- 헤더 -->
   <div class="projects-header">
