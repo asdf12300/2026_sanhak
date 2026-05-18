@@ -75,6 +75,11 @@ public class ProjectAccessFilter implements Filter {
             return;
         }
 
+        if (isFolderOnlyAction(req)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         Integer projectID = parseProjectID(req);
         if (projectID == null || projectID <= 0) {
             reject(req, resp, projectListPage);
@@ -111,6 +116,13 @@ public class ProjectAccessFilter implements Filter {
         String action = req.getParameter("action");
         return "/teamMemberAction".equals(servletPath)
                 && ("accept".equals(action) || "reject".equals(action));
+    }
+
+    private boolean isFolderOnlyAction(HttpServletRequest req) {
+        String servletPath = req.getServletPath();
+        String action = req.getParameter("action");
+        return "/folderAction".equals(servletPath)
+                && ("create".equals(action) || "delete".equals(action) || "rename".equals(action));
     }
 
     private String getProjectListPage(LoginDTO loginUser) {

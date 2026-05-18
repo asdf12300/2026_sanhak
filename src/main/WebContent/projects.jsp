@@ -621,6 +621,27 @@
 .edit-modal-actions { display:flex; gap:8px; justify-content:flex-end; }
 .edit-btn-save { background:var(--blue); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; }
 .edit-btn-cancel { background:var(--surface2); color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:13px; cursor:pointer; }
+
+.settings-float-btn {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    background: #2F6FED;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: 0.2s;
+    z-index: 999;
+}
+
+.settings-float-btn:hover {
+    background: #1f57d6;
+    transform: translateY(-2px);
+}
   
 </style>
 </head>
@@ -784,8 +805,8 @@
     %>
     <a href="index.jsp?projectID=<%= project.getId() %>" class="project-card">
       <% if (isLeader) { %>
-      <!-- 팀장: 프로젝트 삭제 버튼 -->
-      <button class="project-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('정말 이 프로젝트를 삭제하시겠습니까?\n\n프로젝트와 관련된 모든 데이터(팀원, 업무, 일정)가 함께 삭제됩니다.')) { location.href='deleteProject?projectID=<%= project.getId() %>'; }">
+      <!-- 팀장: 혼자 있는 프로젝트만 나갈 수 있으며, 팀원이 있으면 서버에서 차단됩니다. -->
+      <button class="project-delete-btn" style="background: #f59e0b;" onclick="event.preventDefault(); event.stopPropagation(); if(confirm('이 프로젝트에서 나가시겠습니까?\\n팀원이 있는 프로젝트는 팀장을 넘긴 후 나갈 수 있습니다.')) { location.href='leaveProject?projectID=<%= project.getId() %>'; }">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
@@ -892,6 +913,10 @@
     </div>
   </div>
 </div>
+
+<a href="<%=request.getContextPath()%>/settings/check" class="settings-float-btn">
+    ⚙ 설정변경
+</a>
 
 <script>
 function openEditModal(id, title, content, deadline) {

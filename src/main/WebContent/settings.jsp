@@ -1,12 +1,18 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="model.LoginDTO" %>
 <%
+String role = (String) session.getAttribute("role");
+String movePage = "projects.jsp";
+
+if ("professor".equals(role)) {
+    movePage = "professorProject.jsp";
+}
+
 LoginDTO settingsLoginUser = (LoginDTO) session.getAttribute("loginUser");
 boolean settingsNaverUser = settingsLoginUser != null
     && settingsLoginUser.getId() != null
     && settingsLoginUser.getId().startsWith("NAVER_");
 %>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,27 +26,78 @@ body {
   font-family: 'Pretendard', 'Noto Sans KR', Arial, sans-serif;
   background: linear-gradient(135deg, #eef4ff, #f8fbff);
   min-height: 100vh;
+}
+
+.back-btn {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  background: #2F6FED;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 999;
+}
+
+.back-btn:hover {
+  background: #1f57d6;
+}
+
+.settings-wrapper {
+  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  gap: 0;
 }
-.card {
-  width: 460px;
+
+.settings-card {
+  width: 390px;
+  height: 620px;
   background: #fff;
-  border-radius: 22px;
   padding: 38px;
+  border: 1px solid #dbe3f0;
   box-shadow: 0 20px 45px rgba(47,111,237,.12);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
-h2 { margin: 0 0 8px; font-size: 28px; color: #1f2937; }
-.desc { color: #6b7280; font-size: 14px; margin-bottom: 28px; }
-.form-group { margin-bottom: 18px; }
+
+.settings-card:first-child {
+  border-radius: 22px 0 0 22px;
+}
+
+.settings-card:last-child {
+  border-radius: 0 22px 22px 0;
+  border-left: none;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  color: #1f2937;
+}
+
+.desc {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
 label {
   display: block;
+  margin-top: 18px;
   margin-bottom: 7px;
   font-size: 14px;
   font-weight: 700;
   color: #374151;
 }
+
 input {
   width: 100%;
   height: 48px;
@@ -50,138 +107,212 @@ input {
   font-size: 14px;
   box-sizing: border-box;
 }
+
 input:focus {
   outline: none;
   border-color: #2F6FED;
   box-shadow: 0 0 0 3px rgba(47,111,237,.12);
 }
-.btn {
+
+.update-btn,
+.delete-btn {
   width: 100%;
   height: 52px;
-  margin-top: 10px;
+  margin-top: 24px;
   border: none;
   border-radius: 12px;
-  background: #2F6FED;
   color: white;
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
 }
-.btn:hover { background: #245bd0; }
-.error, .success {
-  margin-top: 16px;
-  padding: 12px;
+
+.update-btn {
+  background: #2F6FED;
+}
+
+.update-btn:hover {
+  background: #245bd0;
+}
+
+.delete-btn {
+  background: #dc2626;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+}
+
+.warning {
+  color: red;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.error,
+.success {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  padding: 12px 18px;
   border-radius: 10px;
   font-size: 14px;
+  z-index: 1000;
 }
-.error { background: #fff1f2; color: #e11d48; }
-.success { background: #ecfdf5; color: #059669; }
+
+.error {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.success {
+  background: #ecfdf5;
+  color: #059669;
+}
+
 .email-check-row {
   display: flex;
   gap: 8px;
 }
+
 .email-check-row input {
   flex: 1;
 }
+
 .email-code-btn {
   width: 120px;
   border: none;
   border-radius: 12px;
   background: #374151;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
+  color: white;
+  font-weight: bold;
   cursor: pointer;
 }
-.email-code-btn:hover { background: #1f2937; }
+
+.email-code-btn:hover {
+  background: #1f2937;
+}
+
+.update-btn {
+  margin-top: 28px;
+}
+
+.delete-btn {
+  margin-top: 32px;
+}
+
+@media (max-width: 860px) {
+  .settings-wrapper {
+    padding: 96px 18px 36px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .settings-card {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    min-height: 0;
+  }
+
+  .settings-card:first-child,
+  .settings-card:last-child {
+    border-radius: 22px;
+    border-left: 1px solid #dbe3f0;
+  }
+}
 </style>
 </head>
 <body data-context="<%=request.getContextPath()%>">
+<a href="<%=request.getContextPath()%>/<%=movePage%>" class="back-btn">
+   ← 프로젝트 목록으로 돌아가기
+</a>
 
-<%@ include file="sidebar.jsp" %>
+<div class="settings-wrapper">
 
-<div class="card">
-  <h2>계정 설정</h2>
-  <p class="desc">이메일 또는 비밀번호를 변경할 수 있습니다.</p>
+  <div class="settings-card">
+    <h2>계정 설정</h2>
+    <p class="desc">이메일 또는 비밀번호를 변경할 수 있습니다.</p>
 
-  <form action="<%=request.getContextPath()%>/settings/update" method="post">
-    <div class="form-group">
+    <form action="<%=request.getContextPath()%>/settings/update" method="post">
       <label>새 이메일</label>
       <input type="email" name="email" placeholder="변경할 이메일">
-    </div>
 
-    <% if (!settingsNaverUser) { %>
-      <div class="form-group">
+      <% if (!settingsNaverUser) { %>
         <label>새 비밀번호</label>
         <input type="password" name="newPw" placeholder="변경할 비밀번호">
-      </div>
 
-      <div class="form-group">
         <label>새 비밀번호 확인</label>
         <input type="password" name="newPwCheck" placeholder="비밀번호 확인">
-      </div>
-    <% } %>
+      <% } %>
 
-    <button class="btn" type="submit">변경하기</button>
-  </form>
-  <hr>
+      <button class="update-btn" type="submit">변경하기</button>
+    </form>
+  </div>
 
-<h3>계정 탈퇴</h3>
-
-<form action="<%= request.getContextPath() %>/deleteAccount" method="post"
-      onsubmit="return confirm('정말 탈퇴하시겠습니까?');">
-
-    <p style="color:red;">
-        계정 탈퇴 시 되돌릴 수 없습니다.<br>
-        팀장인 경우 팀장을 다른 팀원에게 넘긴 후 탈퇴할 수 있습니다.
+  <div class="settings-card delete-card">
+    <h2>계정 탈퇴</h2>
+    <p class="warning">
+      계정 탈퇴 시 되돌릴 수 없습니다.<br>
+      팀장인 경우 팀장을 다른 팀원에게 넘긴 후 탈퇴할 수 있습니다.
     </p>
 
-    <label>탈퇴 확인 문구</label>
-    <input type="text" name="confirmText" placeholder="탈퇴합니다" required>
+    <form action="<%= request.getContextPath() %>/deleteAccount" method="post"
+          onsubmit="return confirm('정말 탈퇴하시겠습니까?');">
+      <label>탈퇴 확인 문구</label>
+      <input type="text" name="confirmText" placeholder="탈퇴합니다" required>
 
-    <br><br>
+      <% if (!settingsNaverUser) { %>
+        <label>비밀번호 확인</label>
+        <input type="password" name="password" required>
+      <% } %>
 
-    <% if (!settingsNaverUser) { %>
-      <label>비밀번호 확인</label>
-      <input type="password" name="password" required>
-    <% } %>
-
-    <br><br>
-
-    <label>이메일 인증</label>
-    <div class="email-check-row">
+      <label>이메일 인증</label>
+      <div class="email-check-row">
         <input type="text" name="deleteCode" placeholder="인증번호 입력" required>
         <button type="button" class="email-code-btn" onclick="sendDeleteCode()">인증번호 발송</button>
-    </div>
+      </div>
 
-    <br><br>
+      <button type="submit" class="delete-btn">계정 탈퇴</button>
+    </form>
+  </div>
 
-    <button type="submit" style="background:red; color:white;">
-        계정 탈퇴
-    </button>
-</form>
+</div>
 
 <% if (request.getAttribute("deleteError") != null) { %>
-    <p style="color:red;"><%= request.getAttribute("deleteError") %></p>
+  <div class="error"><%= request.getAttribute("deleteError") %></div>
 <% } %>
-  <% if (request.getAttribute("error") != null) { %>
-    <div class="error"><%= request.getAttribute("error") %></div>
-  <% } %>
 
-  <% if (request.getAttribute("success") != null) { %>
-    <div class="success"><%= request.getAttribute("success") %></div>
-  <% } %>
-  <% if ("1".equals(request.getParameter("success"))) { %>
-    <div class="success">회원 정보가 변경되었습니다.</div>
-  <% } %>
+<% if (request.getAttribute("error") != null) { %>
+  <div class="error"><%= request.getAttribute("error") %></div>
+<% } %>
 
-  <% if ("pw".equals(request.getParameter("error"))) { %>
-    <div class="error">비밀번호가 일치하지 않습니다.</div>
-  <% } %>
-  <% if ("naverPw".equals(request.getParameter("error"))) { %>
-    <div class="error">네이버 로그인 사용자는 비밀번호를 변경할 수 없습니다.</div>
-  <% } %>
-</div>
+<% if (request.getAttribute("success") != null) { %>
+  <div class="success"><%= request.getAttribute("success") %></div>
+<% } %>
+
+<% if ("1".equals(request.getParameter("success"))) { %>
+  <div class="success">회원 정보가 변경되었습니다.</div>
+<% } %>
+
+<% if ("pw".equals(request.getParameter("error"))) { %>
+  <div class="error">비밀번호가 일치하지 않습니다.</div>
+<% } %>
+
+<% if ("naverPw".equals(request.getParameter("error"))) { %>
+  <div class="error">네이버 로그인 사용자는 비밀번호를 변경할 수 없습니다.</div>
+<% } %>
+
+<% if ("empty".equals(request.getParameter("error"))) { %>
+  <div class="error">변경할 이메일 또는 비밀번호를 입력해주세요.</div>
+<% } %>
+
+<% if ("fail".equals(request.getParameter("error"))) { %>
+  <div class="error">회원 정보 변경에 실패했습니다.</div>
+<% } %>
 
 <script>
 function sendDeleteCode() {

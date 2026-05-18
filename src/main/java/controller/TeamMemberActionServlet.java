@@ -42,7 +42,7 @@ public class TeamMemberActionServlet extends HttpServlet {
         ProjectDTO project = new ProjectDAO().getById(projectId);
         String teamLeaderId = project != null ? project.getTeam_leader() : null;
 
-        if (("remove".equals(action) || "setLeader".equals(action))
+        if (("remove".equals(action) || "removeProfessor".equals(action) || "setLeader".equals(action))
                 && (teamLeaderId == null || !teamLeaderId.equals(loginId))) {
             msg = "팀장만 사용할 수 있는 기능입니다.";
             redirect(response, "teamMemberManage.jsp", projectId, "msg", msg);

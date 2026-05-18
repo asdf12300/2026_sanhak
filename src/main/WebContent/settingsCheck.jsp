@@ -17,6 +17,7 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .card {
   width: 420px;
   background: #fff;
@@ -24,8 +25,19 @@ body {
   padding: 38px;
   box-shadow: 0 20px 45px rgba(47,111,237,.12);
 }
-h2 { margin: 0 0 10px; font-size: 26px; color: #1f2937; }
-p { color: #6b7280; font-size: 14px; margin-bottom: 26px; }
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 26px;
+  color: #1f2937;
+}
+
+p {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 26px;
+}
+
 .input {
   width: 100%;
   height: 48px;
@@ -35,6 +47,13 @@ p { color: #6b7280; font-size: 14px; margin-bottom: 26px; }
   font-size: 14px;
   box-sizing: border-box;
 }
+
+.input:focus {
+  outline: none;
+  border-color: #2F6FED;
+  box-shadow: 0 0 0 3px rgba(47,111,237,.12);
+}
+
 .btn {
   width: 100%;
   height: 50px;
@@ -47,6 +66,11 @@ p { color: #6b7280; font-size: 14px; margin-bottom: 26px; }
   font-weight: 700;
   cursor: pointer;
 }
+
+.btn:hover {
+  background: #245bd0;
+}
+
 .error {
   margin-top: 16px;
   padding: 12px;
@@ -55,13 +79,16 @@ p { color: #6b7280; font-size: 14px; margin-bottom: 26px; }
   color: #e11d48;
   font-size: 14px;
 }
+
 .email-check-row {
   display: flex;
   gap: 8px;
 }
+
 .email-check-row .input {
   flex: 1;
 }
+
 .email-code-btn {
   width: 120px;
   border: none;
@@ -72,7 +99,10 @@ p { color: #6b7280; font-size: 14px; margin-bottom: 26px; }
   font-weight: 700;
   cursor: pointer;
 }
-.email-code-btn:hover { background: #1f2937; }
+
+.email-code-btn:hover {
+  background: #1f2937;
+}
 </style>
 </head>
 <body data-context="<%=request.getContextPath()%>">

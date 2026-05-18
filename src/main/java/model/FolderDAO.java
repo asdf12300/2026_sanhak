@@ -1,18 +1,22 @@
 package model;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FolderDAO {
 
-    // 폴더 목록 가져오기
     public List<FolderDTO> getFoldersByUser(String userId) {
         List<FolderDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM folder WHERE owner_id = ? ORDER BY created_at ASC";
+
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, userId);
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
                 FolderDTO dto = new FolderDTO();
                 dto.setId(rs.getInt("id"));
@@ -20,64 +24,91 @@ public class FolderDAO {
                 dto.setOwnerId(rs.getString("owner_id"));
                 list.add(dto);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return list;
     }
 
-    // 폴더 생성
     public void createFolder(String name, String userId) {
         String sql = "INSERT INTO folder (name, owner_id) VALUES (?, ?)";
+
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, name);
             ps.setString(2, userId);
             ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    // 폴더 삭제
-    public void deleteFolder(int folderId) {
-        String sql = "DELETE FROM folder WHERE id = ?";
+    public boolean isFolderOwner(int folderId, String userId) {
+        String sql = "SELECT 1 FROM folder WHERE id = ? AND owner_id = ?";
+
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, folderId);
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+            ps.setString(2, userId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
-    // 프로젝트를 폴더에 넣기
+    public boolean deleteFolder(int folderId, String userId) {
+        String sql = "DELETE FROM folder WHERE id = ? AND owner_id = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, folderId);
+            ps.setString(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public void assignProjectToFolder(int projectId, int folderId) {
         String sql = "UPDATE board SET folder_id = ? WHERE id = ?";
+
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, folderId);
             ps.setInt(2, projectId);
             ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    // 프로젝트를 폴더에서 꺼내기
     public void removeProjectFromFolder(int projectId) {
         String sql = "UPDATE board SET folder_id = NULL WHERE id = ?";
+
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, projectId);
             ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-    // 폴더 이름 변경
-    public boolean renameFolder(int folderId, String folderName) {
 
-        String sql = "UPDATE folder SET name = ? WHERE id = ?";
+    public boolean renameFolder(int folderId, String folderName, String userId) {
+        String sql = "UPDATE folder SET name = ? WHERE id = ? AND owner_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setString(1, folderName);
             pstmt.setInt(2, folderId);
-
+            pstmt.setString(3, userId);
             return pstmt.executeUpdate() > 0;
-
         } catch (Exception e) {
             e.printStackTrace();
         }

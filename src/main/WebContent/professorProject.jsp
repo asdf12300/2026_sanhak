@@ -30,6 +30,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="resource/css/index.css">
 <link rel="stylesheet" href="resource/css/professorProject.css">
+<style>
+    .settings-float-btn {
+        position: fixed;
+        right: 30px;
+        bottom: 30px;
+        background: #2F6FED;
+        color: white;
+        padding: 14px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        transition: 0.2s;
+        z-index: 999;
+    }
+
+    .settings-float-btn:hover {
+        background: #1f57d6;
+        transform: translateY(-2px);
+    }
+</style>
 </head>
 <body style="background: var(--bg);">
 <%
@@ -395,5 +417,8 @@ function renameFolder(folderId, oldName) {
 }
 </script>
 <script src="resource/js/professorProject.js"></script>
+<a href="<%=request.getContextPath()%>/settings/check" class="settings-float-btn">
+    ⚙ 설정변경
+</a>
 </body>
 </html>
